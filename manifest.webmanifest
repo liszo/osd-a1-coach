@@ -1,0 +1,16 @@
+{
+  "name": "ÖSD A1 Coach",
+  "short_name": "A1 Coach",
+  "description": "34-day study plan for the ÖSD Zertifikat A1 exam",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f6f7",
+  "theme_color": "#0d6070",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

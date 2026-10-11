@@ -1,0 +1,1600 @@
+{
+ "day": 1,
+ "title": "Alphabet, sounds, greetings, du or Sie",
+ "title_fa": "الفبا، تلفظ، سلام و احوال‌پرسی، تو یا شما",
+ "objectives": [
+  {
+   "en": "Say and spell every letter of the German alphabet, including Ä, Ö, Ü and ß.",
+   "fa": "همه حروف الفبای آلمانی، از جمله Ä، Ö، Ü و ß را بگویی و هجی کنی."
+  },
+  {
+   "en": "Spell your own name aloud, as the examiner will ask in Sprechen Teil 1.",
+   "fa": "اسم خودت را بلند هجی کنی؛ ممتحن در بخش اول صحبت کردن این را می‌پرسد."
+  },
+  {
+   "en": "Greet and say goodbye correctly, including the Austrian forms Grüß Gott and Servus.",
+   "fa": "درست سلام و خداحافظی کنی، از جمله شکل‌های اتریشی Grüß Gott و Servus."
+  },
+  {
+   "en": "Choose du or Sie. It works like Persian تو and شما.",
+   "fa": "بین du و Sie درست انتخاب کنی؛ دقیقاً مثل «تو» و «شما» در فارسی."
+  }
+ ],
+ "alphabet": [
+  {
+   "l": "A",
+   "name": "ah",
+   "fa": "آ"
+  },
+  {
+   "l": "B",
+   "name": "beh",
+   "fa": "بِه"
+  },
+  {
+   "l": "C",
+   "name": "tseh",
+   "fa": "تسِه"
+  },
+  {
+   "l": "D",
+   "name": "deh",
+   "fa": "دِه"
+  },
+  {
+   "l": "E",
+   "name": "eh",
+   "fa": "اِه"
+  },
+  {
+   "l": "F",
+   "name": "eff",
+   "fa": "اِف"
+  },
+  {
+   "l": "G",
+   "name": "geh",
+   "fa": "گِه"
+  },
+  {
+   "l": "H",
+   "name": "hah",
+   "fa": "ها"
+  },
+  {
+   "l": "I",
+   "name": "ih",
+   "fa": "ای"
+  },
+  {
+   "l": "J",
+   "name": "jott (AT: jeh)",
+   "fa": "یُت (اتریش: یِه)"
+  },
+  {
+   "l": "K",
+   "name": "kah",
+   "fa": "کا"
+  },
+  {
+   "l": "L",
+   "name": "ell",
+   "fa": "اِل"
+  },
+  {
+   "l": "M",
+   "name": "emm",
+   "fa": "اِم"
+  },
+  {
+   "l": "N",
+   "name": "enn",
+   "fa": "اِن"
+  },
+  {
+   "l": "O",
+   "name": "oh",
+   "fa": "اُ"
+  },
+  {
+   "l": "P",
+   "name": "peh",
+   "fa": "پِه"
+  },
+  {
+   "l": "Q",
+   "name": "kuh (AT: kweh)",
+   "fa": "کو (اتریش: کوِه)"
+  },
+  {
+   "l": "R",
+   "name": "err",
+   "fa": "اِر"
+  },
+  {
+   "l": "S",
+   "name": "ess",
+   "fa": "اِس"
+  },
+  {
+   "l": "T",
+   "name": "teh",
+   "fa": "تِه"
+  },
+  {
+   "l": "U",
+   "name": "uh",
+   "fa": "او"
+  },
+  {
+   "l": "V",
+   "name": "fau",
+   "fa": "فاو"
+  },
+  {
+   "l": "W",
+   "name": "weh (like 'veh')",
+   "fa": "وِه"
+  },
+  {
+   "l": "X",
+   "name": "iks",
+   "fa": "ایکس"
+  },
+  {
+   "l": "Y",
+   "name": "üpsilon",
+   "fa": "ئوپسیلون"
+  },
+  {
+   "l": "Z",
+   "name": "tsett",
+   "fa": "تسِت"
+  },
+  {
+   "l": "Ä",
+   "name": "ä (like 'e' in 'bed', long)",
+   "fa": "اِه کشیده"
+  },
+  {
+   "l": "Ö",
+   "name": "ö (say 'e', round your lips)",
+   "fa": "اِ با لب‌های گرد"
+  },
+  {
+   "l": "Ü",
+   "name": "ü (say 'i', round your lips)",
+   "fa": "ای با لب‌های گرد"
+  },
+  {
+   "l": "ß",
+   "name": "eszett / scharfes S",
+   "fa": "اِس‌تسِت (س تیز)"
+  }
+ ],
+ "vocab": [
+  {
+   "de": "Name",
+   "article": "der",
+   "plural": "die Namen",
+   "pos": "noun",
+   "en": "name",
+   "fa": "نام، اسم",
+   "example_de": "Mein Name ist Thomas.",
+   "example_en": "My name is Thomas.",
+   "austrian": ""
+  },
+  {
+   "de": "Vorname",
+   "article": "der",
+   "plural": "die Vornamen",
+   "pos": "noun",
+   "en": "first name",
+   "fa": "نام کوچک",
+   "example_de": "Mein Vorname ist Anna.",
+   "example_en": "My first name is Anna.",
+   "austrian": ""
+  },
+  {
+   "de": "Familienname",
+   "article": "der",
+   "plural": "die Familiennamen",
+   "pos": "noun",
+   "en": "surname",
+   "fa": "نام خانوادگی",
+   "example_de": "Wie ist Ihr Familienname?",
+   "example_en": "What is your surname?",
+   "austrian": "ÖSD forms use Familienname; Nachname means the same."
+  },
+  {
+   "de": "Herr",
+   "article": "der",
+   "plural": "die Herren",
+   "pos": "noun",
+   "en": "Mr. / gentleman",
+   "fa": "آقا",
+   "example_de": "Guten Tag, Herr Weber!",
+   "example_en": "Good day, Mr. Weber!",
+   "austrian": ""
+  },
+  {
+   "de": "Frau",
+   "article": "die",
+   "plural": "die Frauen",
+   "pos": "noun",
+   "en": "Mrs. / Ms. / woman",
+   "fa": "خانم، زن",
+   "example_de": "Das ist Frau Pichler.",
+   "example_en": "This is Ms. Pichler.",
+   "austrian": ""
+  },
+  {
+   "de": "Alphabet",
+   "article": "das",
+   "plural": "die Alphabete",
+   "pos": "noun",
+   "en": "alphabet",
+   "fa": "الفبا",
+   "example_de": "Das Alphabet hat 26 Buchstaben.",
+   "example_en": "The alphabet has 26 letters.",
+   "austrian": ""
+  },
+  {
+   "de": "Buchstabe",
+   "article": "der",
+   "plural": "die Buchstaben",
+   "pos": "noun",
+   "en": "letter (of the alphabet)",
+   "fa": "حرف (الفبا)",
+   "example_de": "Wie heißt dieser Buchstabe?",
+   "example_en": "What is this letter called?",
+   "austrian": ""
+  },
+  {
+   "de": "buchstabieren",
+   "article": "-",
+   "plural": "-",
+   "pos": "verb",
+   "en": "to spell",
+   "fa": "هجی کردن",
+   "example_de": "Können Sie das bitte buchstabieren?",
+   "example_en": "Can you spell that, please?",
+   "austrian": ""
+  },
+  {
+   "de": "Wort",
+   "article": "das",
+   "plural": "die Wörter",
+   "pos": "noun",
+   "en": "word",
+   "fa": "کلمه",
+   "example_de": "Ich lerne ein neues Wort.",
+   "example_en": "I am learning a new word.",
+   "austrian": ""
+  },
+  {
+   "de": "Sprache",
+   "article": "die",
+   "plural": "die Sprachen",
+   "pos": "noun",
+   "en": "language",
+   "fa": "زبان",
+   "example_de": "Deutsch ist eine schöne Sprache.",
+   "example_en": "German is a beautiful language.",
+   "austrian": ""
+  },
+  {
+   "de": "Frage",
+   "article": "die",
+   "plural": "die Fragen",
+   "pos": "noun",
+   "en": "question",
+   "fa": "سؤال",
+   "example_de": "Ich habe eine Frage.",
+   "example_en": "I have a question.",
+   "austrian": ""
+  },
+  {
+   "de": "Antwort",
+   "article": "die",
+   "plural": "die Antworten",
+   "pos": "noun",
+   "en": "answer",
+   "fa": "جواب",
+   "example_de": "Die Antwort ist richtig.",
+   "example_en": "The answer is correct.",
+   "austrian": ""
+  },
+  {
+   "de": "Beispiel",
+   "article": "das",
+   "plural": "die Beispiele",
+   "pos": "noun",
+   "en": "example",
+   "fa": "مثال",
+   "example_de": "Hier ist ein Beispiel.",
+   "example_en": "Here is an example.",
+   "austrian": ""
+  },
+  {
+   "de": "Übung",
+   "article": "die",
+   "plural": "die Übungen",
+   "pos": "noun",
+   "en": "exercise",
+   "fa": "تمرین",
+   "example_de": "Die Übung ist einfach.",
+   "example_en": "The exercise is easy.",
+   "austrian": ""
+  },
+  {
+   "de": "Kurs",
+   "article": "der",
+   "plural": "die Kurse",
+   "pos": "noun",
+   "en": "course, class",
+   "fa": "دوره، کلاس",
+   "example_de": "Der Kurs ist in Raum 3.",
+   "example_en": "The course is in room 3.",
+   "austrian": ""
+  },
+  {
+   "de": "Tag",
+   "article": "der",
+   "plural": "die Tage",
+   "pos": "noun",
+   "en": "day",
+   "fa": "روز",
+   "example_de": "Schönen Tag noch!",
+   "example_en": "Have a nice day!",
+   "austrian": ""
+  },
+  {
+   "de": "Morgen",
+   "article": "der",
+   "plural": "die Morgen",
+   "pos": "noun",
+   "en": "morning",
+   "fa": "صبح",
+   "example_de": "Guten Morgen, Frau Gruber!",
+   "example_en": "Good morning, Ms. Gruber!",
+   "austrian": ""
+  },
+  {
+   "de": "Abend",
+   "article": "der",
+   "plural": "die Abende",
+   "pos": "noun",
+   "en": "evening",
+   "fa": "عصر، شب",
+   "example_de": "Guten Abend, Herr Huber!",
+   "example_en": "Good evening, Mr. Huber!",
+   "austrian": ""
+  },
+  {
+   "de": "Nacht",
+   "article": "die",
+   "plural": "die Nächte",
+   "pos": "noun",
+   "en": "night",
+   "fa": "شب",
+   "example_de": "Gute Nacht!",
+   "example_en": "Good night!",
+   "austrian": ""
+  },
+  {
+   "de": "heißen",
+   "article": "-",
+   "plural": "-",
+   "pos": "verb",
+   "en": "to be called",
+   "fa": "نام داشتن",
+   "example_de": "Ich heiße Raam.",
+   "example_en": "My name is Raam.",
+   "austrian": ""
+  },
+  {
+   "de": "sein",
+   "article": "-",
+   "plural": "-",
+   "pos": "verb",
+   "en": "to be",
+   "fa": "بودن",
+   "example_de": "Mein Name ist Raam.",
+   "example_en": "My name is Raam.",
+   "austrian": ""
+  },
+  {
+   "de": "du",
+   "article": "-",
+   "plural": "-",
+   "pos": "pronoun",
+   "en": "you (informal)",
+   "fa": "تو",
+   "example_de": "Wie heißt du?",
+   "example_en": "What's your name?",
+   "austrian": ""
+  },
+  {
+   "de": "Sie",
+   "article": "-",
+   "plural": "-",
+   "pos": "pronoun",
+   "en": "you (formal), always capital S",
+   "fa": "شما (رسمی)",
+   "example_de": "Wie heißen Sie?",
+   "example_en": "What is your name?",
+   "austrian": ""
+  },
+  {
+   "de": "ich",
+   "article": "-",
+   "plural": "-",
+   "pos": "pronoun",
+   "en": "I",
+   "fa": "من",
+   "example_de": "Ich heiße Anna.",
+   "example_en": "My name is Anna.",
+   "austrian": ""
+  }
+ ],
+ "phrases": [
+  {
+   "de": "Guten Morgen!",
+   "en": "Good morning!",
+   "fa": "صبح بخیر!",
+   "register": "both"
+  },
+  {
+   "de": "Guten Tag!",
+   "en": "Hello / good day",
+   "fa": "روز بخیر، سلام",
+   "register": "formal"
+  },
+  {
+   "de": "Guten Abend!",
+   "en": "Good evening!",
+   "fa": "عصر بخیر!",
+   "register": "both"
+  },
+  {
+   "de": "Gute Nacht!",
+   "en": "Good night (going to bed)",
+   "fa": "شب بخیر (موقع خواب)",
+   "register": "both"
+  },
+  {
+   "de": "Grüß Gott!",
+   "en": "Hello (Austria, polite)",
+   "fa": "سلام (مؤدبانه، اتریش)",
+   "register": "formal",
+   "austrian": true
+  },
+  {
+   "de": "Hallo!",
+   "en": "Hi!",
+   "fa": "سلام!",
+   "register": "informal"
+  },
+  {
+   "de": "Servus!",
+   "en": "Hi! / Bye! (Austria, friends)",
+   "fa": "سلام / خداحافظ (اتریش، دوستانه)",
+   "register": "informal",
+   "austrian": true
+  },
+  {
+   "de": "Auf Wiedersehen!",
+   "en": "Goodbye (polite)",
+   "fa": "خداحافظ (رسمی)",
+   "register": "formal"
+  },
+  {
+   "de": "Auf Wiederhören!",
+   "en": "Goodbye (on the phone)",
+   "fa": "خداحافظ (پشت تلفن)",
+   "register": "formal"
+  },
+  {
+   "de": "Tschüss!",
+   "en": "Bye!",
+   "fa": "خداحافظ!",
+   "register": "informal"
+  },
+  {
+   "de": "Baba!",
+   "en": "Bye! (Vienna, very casual)",
+   "fa": "خداحافظ (وین، خیلی خودمانی)",
+   "register": "informal",
+   "austrian": true
+  },
+  {
+   "de": "Bis morgen!",
+   "en": "See you tomorrow!",
+   "fa": "تا فردا!",
+   "register": "informal"
+  },
+  {
+   "de": "Wie geht es Ihnen?",
+   "en": "How are you? (formal)",
+   "fa": "حال شما چطور است؟",
+   "register": "formal"
+  },
+  {
+   "de": "Wie geht's dir?",
+   "en": "How are you? (informal)",
+   "fa": "حالت چطوره؟",
+   "register": "informal"
+  },
+  {
+   "de": "Gut, danke. Und Ihnen?",
+   "en": "Fine, thanks. And you? (formal)",
+   "fa": "خوبم، ممنون. شما چطور؟",
+   "register": "formal"
+  },
+  {
+   "de": "Danke schön!",
+   "en": "Thank you very much!",
+   "fa": "خیلی ممنون!",
+   "register": "both"
+  },
+  {
+   "de": "Bitte schön!",
+   "en": "You're welcome / here you are",
+   "fa": "خواهش می‌کنم / بفرمایید",
+   "register": "both"
+  },
+  {
+   "de": "Entschuldigung!",
+   "en": "Excuse me / sorry",
+   "fa": "ببخشید!",
+   "register": "both"
+  },
+  {
+   "de": "Wie bitte?",
+   "en": "Pardon? (didn't understand)",
+   "fa": "ببخشید، چی گفتید؟",
+   "register": "both"
+  },
+  {
+   "de": "Wie heißen Sie?",
+   "en": "What is your name? (formal)",
+   "fa": "اسم شما چیست؟",
+   "register": "formal"
+  },
+  {
+   "de": "Wie heißt du?",
+   "en": "What's your name? (informal)",
+   "fa": "اسمت چیه؟",
+   "register": "informal"
+  },
+  {
+   "de": "Wie schreibt man das?",
+   "en": "How do you write that?",
+   "fa": "این را چطور می‌نویسند؟",
+   "register": "both"
+  },
+  {
+   "de": "Können Sie das bitte buchstabieren?",
+   "en": "Could you spell that, please?",
+   "fa": "لطفاً می‌توانید هجی کنید؟",
+   "register": "formal"
+  },
+  {
+   "de": "Freut mich!",
+   "en": "Nice to meet you!",
+   "fa": "خوشبختم!",
+   "register": "both"
+  }
+ ],
+ "pronunciation": [
+  {
+   "focus": "Umlauts Ä, Ö, Ü",
+   "words": [
+    "Käse",
+    "Mädchen",
+    "schön",
+    "Österreich",
+    "Übung",
+    "Grüß Gott"
+   ],
+   "tip_en": "Ä ≈ 'e' in 'bed'. Ö: say 'e' and round your lips. Ü: say 'i' (ee) and round your lips. The tongue stays where it is; only the lips change.",
+   "tip_fa": "Ä تقریباً مثل «اِ». برای Ö بگو «اِ» و لب‌ها را گرد کن. برای Ü بگو «ای» و لب‌ها را گرد کن. زبان تکان نمی‌خورد، فقط لب‌ها گرد می‌شوند."
+  },
+  {
+   "focus": "EI vs IE",
+   "words": [
+    "mein",
+    "heißen",
+    "Sie",
+    "wie",
+    "Wien"
+   ],
+   "tip_en": "EI = 'eye' (mein = 'mine'). IE = long 'ee' (Sie = 'zee'). Trick: say the SECOND letter's English name.",
+   "tip_fa": "EI مثل «آی» (mein ≈ ماین). IE مثل «ای» کشیده (Sie ≈ زی). ترفند: اسم انگلیسیِ حرف دوم را بگو."
+  },
+  {
+   "focus": "ß and ss",
+   "words": [
+    "Straße",
+    "groß",
+    "heißen",
+    "Fluss",
+    "Klasse"
+   ],
+   "tip_en": "ß and ss both sound like a sharp 's'. ß comes after a long vowel (Straße), ss after a short one (Fluss).",
+   "tip_fa": "ß و ss هر دو «س» تیز هستند. ß بعد از مصوت کشیده می‌آید (Straße) و ss بعد از مصوت کوتاه (Fluss)."
+  },
+  {
+   "focus": "CH: two sounds",
+   "words": [
+    "ich",
+    "nicht",
+    "Mädchen",
+    "Buch",
+    "acht",
+    "Nacht"
+   ],
+   "tip_en": "After e, i, ä, ö, ü and consonants: soft, like a cat's hiss (ich). After a, o, u, au: from the throat, exactly like Persian «خ» (Buch, Nacht).",
+   "tip_fa": "بعد از e، i، ä، ö، ü: نرم، مثل فیس گربه (ich). بعد از a، o، u: دقیقاً مثل «خ» فارسی (Buch ≈ بوخ، Nacht ≈ ناخت)."
+  },
+  {
+   "focus": "SCH, SP, ST, Z, W, V",
+   "words": [
+    "Schule",
+    "sprechen",
+    "Straße",
+    "Zahl",
+    "Wien",
+    "Vater"
+   ],
+   "tip_en": "SCH = 'sh'. SP / ST at the start of a word = 'shp' / 'sht'. Z = 'ts'. W = English 'v'. V usually = 'f'.",
+   "tip_fa": "SCH = «ش». SP و ST در اول کلمه = «شپ» و «شت». Z = «تس». W = «و» (مثل v). V معمولاً = «ف»."
+  }
+ ],
+ "grammar": [
+  {
+   "topic": "du or Sie (informal vs formal 'you')",
+   "explain_en": "German has two words for 'you', exactly like Persian تو and شما. Use du with friends, family, children and classmates. Use Sie with adults you don't know, at the office, in shops, and always with the examiner. Sie is always written with a capital S. The verb changes too: du heißt, Sie heißen.",
+   "explain_fa": "آلمانی دو کلمه برای «تو/شما» دارد، دقیقاً مثل فارسی. du = «تو» برای دوست، خانواده، بچه‌ها و هم‌کلاسی‌ها. Sie = «شما» برای بزرگسالِ غریبه، اداره، مغازه و همیشه با ممتحن. Sie همیشه با S بزرگ نوشته می‌شود. فعل هم عوض می‌شود: du heißt ولی Sie heißen.",
+   "table": [
+    [
+     "",
+     "informal (du) · تو",
+     "formal (Sie) · شما"
+    ],
+    [
+     "What's your name?",
+     "Wie heißt du?",
+     "Wie heißen Sie?"
+    ],
+    [
+     "How are you?",
+     "Wie geht's dir?",
+     "Wie geht es Ihnen?"
+    ],
+    [
+     "your name",
+     "dein Name",
+     "Ihr Name"
+    ],
+    [
+     "Hello",
+     "Hallo! / Servus!",
+     "Guten Tag! / Grüß Gott!"
+    ],
+    [
+     "Goodbye",
+     "Tschüss! / Servus!",
+     "Auf Wiedersehen!"
+    ]
+   ],
+   "examples": [
+    {
+     "de": "Hallo, ich heiße Max. Wie heißt du?",
+     "en": "Hi, I'm Max. What's your name?"
+    },
+    {
+     "de": "Guten Tag, mein Name ist Gruber. Wie heißen Sie?",
+     "en": "Good day, my name is Gruber. What is your name?"
+    }
+   ],
+   "common_mistakes": [
+    "Writing 'sie' (she/they) when you mean 'Sie' (formal you).",
+    "Mixing du and Sie in one email or conversation.",
+    "Using du with the examiner. In the exam, use Sie unless the role-play tells you otherwise."
+   ]
+  },
+  {
+   "topic": "Introducing yourself: Ich heiße … / Mein Name ist …",
+   "explain_en": "Two ways to say your name, both correct: 'Ich heiße Raam.' and 'Mein Name ist Raam.' The verb is always the second element of the sentence. This is the most important rule in German word order, and you'll meet it every day.",
+   "explain_fa": "دو روش برای گفتن اسم، هر دو درست: «Ich heiße Raam» و «Mein Name ist Raam». فعل همیشه جزء دوم جمله است. این مهم‌ترین قانون ترتیب کلمات در آلمانی است و هر روز با آن سروکار داری.",
+   "table": [
+    [
+     "1",
+     "2 (verb)",
+     "rest"
+    ],
+    [
+     "Ich",
+     "heiße",
+     "Raam."
+    ],
+    [
+     "Mein Name",
+     "ist",
+     "Raam."
+    ],
+    [
+     "Wie",
+     "heißen",
+     "Sie?"
+    ]
+   ],
+   "examples": [
+    {
+     "de": "Ich heiße Raam. Ich buchstabiere: R – A – A – M.",
+     "en": "My name is Raam. I'll spell it: R – A – A – M."
+    }
+   ],
+   "common_mistakes": [
+    "'Ich bin heiße Raam': use either heiße or bin, never both.",
+    "Forgetting the capital letter on nouns: der Name, not der name."
+   ]
+  }
+ ],
+ "exercises": [
+  {
+   "type": "mcq",
+   "prompt": "Which greeting is typically Austrian and polite?",
+   "options": [
+    "Moin",
+    "Grüß Gott",
+    "Tschüss",
+    "Servus"
+   ],
+   "answer": "Grüß Gott",
+   "explain_en": "Grüß Gott is the polite everyday greeting in Austria. Servus is Austrian too, but informal.",
+   "explain_fa": "Grüß Gott سلامِ مؤدبانه در اتریش است. Servus هم اتریشی است ولی خودمانی."
+  },
+  {
+   "type": "gap",
+   "prompt": "Guten Tag, Frau Müller! Wie heißen ___?",
+   "options": [
+    "du",
+    "Sie",
+    "sie",
+    "ihr"
+   ],
+   "answer": "Sie",
+   "explain_en": "Title + surname (Frau Müller) means formal address: Sie with a capital S.",
+   "explain_fa": "وقتی با «خانم/آقا + نام خانوادگی» صحبت می‌کنی، Sie با S بزرگ."
+  },
+  {
+   "type": "gap",
+   "prompt": "Hallo Peter, wie geht's ___?",
+   "options": [
+    "Ihnen",
+    "dir",
+    "du",
+    "Sie"
+   ],
+   "answer": "dir",
+   "explain_en": "Informal (Peter, Hallo) needs dir.",
+   "explain_fa": "خودمانی است (Peter و Hallo)، پس dir."
+  },
+  {
+   "type": "gap",
+   "prompt": "Guten Abend, Herr Gruber! Wie geht es ___?",
+   "options": [
+    "dir",
+    "du",
+    "Ihnen",
+    "Sie"
+   ],
+   "answer": "Ihnen",
+   "explain_en": "Formal address needs Ihnen in 'Wie geht es …?'.",
+   "explain_fa": "حالت رسمی: «Wie geht es Ihnen».",
+   "_note": "Ihnen capital I"
+  },
+  {
+   "type": "gap",
+   "prompt": "Entschuldigung, wie ist ___ Name?",
+   "options": [
+    "dein",
+    "Ihr",
+    "du",
+    "Sie"
+   ],
+   "answer": "Ihr",
+   "explain_en": "Formal 'your' is Ihr, with a capital I.",
+   "explain_fa": "«مالِ شما» در حالت رسمی Ihr با I بزرگ است."
+  },
+  {
+   "type": "article",
+   "prompt": "___ Buchstabe",
+   "options": [
+    "der",
+    "die",
+    "das"
+   ],
+   "answer": "der",
+   "explain_en": "der Buchstabe, die Buchstaben.",
+   "explain_fa": "der Buchstabe — مذکر."
+  },
+  {
+   "type": "article",
+   "prompt": "___ Sprache",
+   "options": [
+    "der",
+    "die",
+    "das"
+   ],
+   "answer": "die",
+   "explain_en": "die Sprache, die Sprachen. Most nouns ending in -e are feminine.",
+   "explain_fa": "die Sprache — بیشتر اسم‌هایی که به ‎-e‎ ختم می‌شوند مؤنث‌اند."
+  },
+  {
+   "type": "article",
+   "prompt": "___ Alphabet",
+   "options": [
+    "der",
+    "die",
+    "das"
+   ],
+   "answer": "das",
+   "explain_en": "das Alphabet, die Alphabete.",
+   "explain_fa": "das Alphabet — خنثی."
+  },
+  {
+   "type": "article",
+   "prompt": "___ Übung",
+   "options": [
+    "der",
+    "die",
+    "das"
+   ],
+   "answer": "die",
+   "explain_en": "Nouns ending in -ung are always feminine.",
+   "explain_fa": "اسم‌هایی که به ‎-ung‎ ختم می‌شوند همیشه مؤنث‌اند."
+  },
+  {
+   "type": "article",
+   "prompt": "___ Wort",
+   "options": [
+    "der",
+    "die",
+    "das"
+   ],
+   "answer": "das",
+   "explain_en": "das Wort, die Wörter.",
+   "explain_fa": "das Wort — خنثی."
+  },
+  {
+   "type": "mcq",
+   "prompt": "How is 'ei' in 'heißen' pronounced?",
+   "options": [
+    "like 'ee' in 'see'",
+    "like 'eye'",
+    "like 'ay' in 'say'"
+   ],
+   "answer": "like 'eye'",
+   "explain_en": "EI is always 'eye'.",
+   "explain_fa": "EI همیشه «آی» خوانده می‌شود."
+  },
+  {
+   "type": "mcq",
+   "prompt": "How is 'ie' in 'Sie' pronounced?",
+   "options": [
+    "like 'eye'",
+    "like 'ee' in 'see'",
+    "like 'i' in 'sit'"
+   ],
+   "answer": "like 'ee' in 'see'",
+   "explain_en": "IE is a long 'ee'.",
+   "explain_fa": "IE یعنی «ای» کشیده."
+  },
+  {
+   "type": "mcq",
+   "prompt": "'St' at the start of 'Straße' sounds like …",
+   "options": [
+    "'st' in 'stone'",
+    "'sht'",
+    "'ts'"
+   ],
+   "answer": "'sht'",
+   "explain_en": "St / Sp at the start of a word = sht / shp.",
+   "explain_fa": "St و Sp در اول کلمه = «شت» و «شپ»."
+  },
+  {
+   "type": "mcq",
+   "prompt": "German 'Z' (Zahl, Zug) sounds like …",
+   "options": [
+    "'z' in 'zoo'",
+    "'ts' in 'cats'",
+    "'s' in 'sun'"
+   ],
+   "answer": "'ts' in 'cats'",
+   "explain_en": "Z is always 'ts'.",
+   "explain_fa": "Z همیشه «تس» است."
+  },
+  {
+   "type": "mcq",
+   "prompt": "'Servus' is …",
+   "options": [
+    "formal",
+    "informal, Austrian",
+    "only written"
+   ],
+   "answer": "informal, Austrian",
+   "explain_en": "Servus = hi/bye among friends in Austria.",
+   "explain_fa": "Servus = سلام/خداحافظِ دوستانه در اتریش."
+  },
+  {
+   "type": "mcq",
+   "prompt": "On the phone, the polite goodbye is …",
+   "options": [
+    "Auf Wiedersehen",
+    "Auf Wiederhören",
+    "Gute Nacht"
+   ],
+   "answer": "Auf Wiederhören",
+   "explain_en": "hören = hear. On the phone you don't 'see' again, you 'hear' again.",
+   "explain_fa": "hören یعنی «شنیدن». پشت تلفن «دیدار» نیست، «شنیدن دوباره» است."
+  },
+  {
+   "type": "mcq",
+   "prompt": "When do you say 'Gute Nacht'?",
+   "options": [
+    "when you arrive in the evening",
+    "when someone goes to bed",
+    "at noon"
+   ],
+   "answer": "when someone goes to bed",
+   "explain_en": "In the evening you arrive with 'Guten Abend'. 'Gute Nacht' is only for going to sleep or leaving very late.",
+   "explain_fa": "عصر که می‌رسی می‌گویی Guten Abend. Gute Nacht فقط موقع خواب یا رفتنِ خیلی دیروقت است."
+  },
+  {
+   "type": "word_order",
+   "prompt": "heiße · Thomas · ich",
+   "options": [],
+   "answer": "Ich heiße Thomas.",
+   "explain_en": "Subject first, verb in position 2.",
+   "explain_fa": "فاعل اول، فعل در جایگاه دوم."
+  },
+  {
+   "type": "word_order",
+   "prompt": "Sie · heißen · wie",
+   "options": [],
+   "answer": "Wie heißen Sie?",
+   "explain_en": "Question word, then verb, then subject.",
+   "explain_fa": "کلمه پرسشی، بعد فعل، بعد فاعل."
+  },
+  {
+   "type": "translate",
+   "prompt": "Translate: 'My name is Anna.'",
+   "options": [],
+   "answer": "Ich heiße Anna.",
+   "accept": [
+    "Ich heiße Anna.",
+    "Mein Name ist Anna.",
+    "Ich heisse Anna."
+   ],
+   "explain_en": "Both 'Ich heiße Anna' and 'Mein Name ist Anna' are correct.",
+   "explain_fa": "هر دو جمله درست‌اند."
+  },
+  {
+   "type": "translate",
+   "prompt": "Translate: 'Good evening, Mr. Pichler!'",
+   "options": [],
+   "answer": "Guten Abend, Herr Pichler!",
+   "accept": [
+    "Guten Abend, Herr Pichler!"
+   ],
+   "explain_en": "Guten Abend + Herr + surname.",
+   "explain_fa": "Guten Abend + Herr + نام خانوادگی."
+  }
+ ],
+ "lesen": {
+  "teil1": null,
+  "teil2": [
+   {
+    "title": "Schild an der Tür",
+    "text_de": "Deutschkurs A1\nRaum 3\nKursleiterin: Frau Gruber\nBitte leise sein!",
+    "items": [
+     {
+      "statement_de": "Der Deutschkurs ist in Raum 3.",
+      "answer": "ja",
+      "explain_en": "The sign says 'Raum 3'.",
+      "explain_fa": "روی تابلو نوشته Raum 3."
+     },
+     {
+      "statement_de": "Der Kursleiter heißt Herr Gruber.",
+      "answer": "nein",
+      "explain_en": "Kursleiterin + Frau Gruber: the teacher is a woman. Exam trick: the name is right, the person is wrong.",
+      "explain_fa": "Kursleiterin و Frau یعنی معلم زن است. ترفند آزمون: اسم درست است ولی شخص اشتباه."
+     }
+    ]
+   },
+   {
+    "title": "Nachricht von Lukas",
+    "text_de": "Servus Anna!\nIch heiße Lukas. Ich bin neu im Kurs.\nIch komme aus Graz und spreche Deutsch und Englisch.\nBis morgen!\nLukas",
+    "items": [
+     {
+      "statement_de": "Lukas kommt aus Wien.",
+      "answer": "nein",
+      "explain_en": "He comes from Graz ('aus Graz').",
+      "explain_fa": "او اهل Graz است."
+     },
+     {
+      "statement_de": "Lukas spricht Englisch.",
+      "answer": "ja",
+      "explain_en": "'spreche Deutsch und Englisch'.",
+      "explain_fa": "می‌گوید آلمانی و انگلیسی صحبت می‌کند."
+     }
+    ]
+   },
+   {
+    "title": "Sprachschule",
+    "text_de": "Herzlich willkommen in der Sprachschule Donau!\nDas Büro ist links.\nDie Toiletten sind rechts.",
+    "items": [
+     {
+      "statement_de": "Das Büro ist links.",
+      "answer": "ja",
+      "explain_en": "'Das Büro ist links.' links = left.",
+      "explain_fa": "links یعنی چپ."
+     },
+     {
+      "statement_de": "Die Toiletten sind links.",
+      "answer": "nein",
+      "explain_en": "rechts = right.",
+      "explain_fa": "rechts یعنی راست."
+     }
+    ]
+   }
+  ],
+  "teil3": {
+   "texts": [
+    {
+     "n": 1,
+     "text_de": "Gute Nacht! Schlaf gut!"
+    },
+    {
+     "n": 2,
+     "text_de": "Auf Wiederhören, Frau Berger!"
+    },
+    {
+     "n": 3,
+     "text_de": "Guten Morgen! Ein Kaffee, bitte."
+    },
+    {
+     "n": 4,
+     "text_de": "Grüß Gott, Herr Doktor!"
+    },
+    {
+     "n": 5,
+     "text_de": "Servus Max! Tschüss, bis morgen!"
+    }
+   ],
+   "pictures": [
+    {
+     "id": "A",
+     "emoji": "☕",
+     "label_en": "café in the morning"
+    },
+    {
+     "id": "B",
+     "emoji": "🩺",
+     "label_en": "at the doctor's"
+    },
+    {
+     "id": "C",
+     "emoji": "🚆",
+     "label_en": "train station"
+    },
+    {
+     "id": "D",
+     "emoji": "🛏️",
+     "label_en": "bedtime"
+    },
+    {
+     "id": "E",
+     "emoji": "📞",
+     "label_en": "phone call"
+    },
+    {
+     "id": "F",
+     "emoji": "👋",
+     "label_en": "two friends say bye"
+    }
+   ],
+   "answers": {
+    "1": "D",
+    "2": "E",
+    "3": "A",
+    "4": "B",
+    "5": "F"
+   }
+  }
+ },
+ "hoeren": {
+  "teil1": {
+   "pictures": [
+    {
+     "id": "A",
+     "emoji": "🛏️",
+     "label_en": "bedtime"
+    },
+    {
+     "id": "B",
+     "emoji": "📞",
+     "label_en": "phone call"
+    },
+    {
+     "id": "C",
+     "emoji": "☕",
+     "label_en": "café in the morning"
+    },
+    {
+     "id": "D",
+     "emoji": "🩺",
+     "label_en": "doctor's office"
+    },
+    {
+     "id": "E",
+     "emoji": "👋",
+     "label_en": "friends say bye"
+    },
+    {
+     "id": "F",
+     "emoji": "🏫",
+     "label_en": "classroom"
+    }
+   ],
+   "texts": [
+    {
+     "n": 1,
+     "answer": "C",
+     "script": [
+      {
+       "voice": "m",
+       "text_de": "Guten Morgen! Einen Kaffee, bitte."
+      },
+      {
+       "voice": "f",
+       "text_de": "Guten Morgen! Bitte schön."
+      }
+     ]
+    },
+    {
+     "n": 2,
+     "answer": "D",
+     "script": [
+      {
+       "voice": "f",
+       "text_de": "Grüß Gott, Herr Huber. Wie geht es Ihnen?"
+      },
+      {
+       "voice": "m",
+       "text_de": "Grüß Gott, Frau Doktor. Nicht so gut."
+      }
+     ]
+    },
+    {
+     "n": 3,
+     "answer": "A",
+     "script": [
+      {
+       "voice": "f",
+       "text_de": "Gute Nacht, Paul. Schlaf gut!"
+      },
+      {
+       "voice": "m",
+       "text_de": "Gute Nacht, Mama!"
+      }
+     ]
+    },
+    {
+     "n": 4,
+     "answer": "E",
+     "script": [
+      {
+       "voice": "m",
+       "text_de": "Servus, Lisa! Bis morgen!"
+      },
+      {
+       "voice": "f",
+       "text_de": "Baba, Max!"
+      }
+     ]
+    },
+    {
+     "n": 5,
+     "answer": "B",
+     "script": [
+      {
+       "voice": "f",
+       "text_de": "Gut, Herr Weber. Danke für den Anruf. Auf Wiederhören!"
+      }
+     ]
+    }
+   ]
+  },
+  "teil2": {
+   "intro_de": "Sie hören eine Nachricht auf dem Anrufbeantworter.",
+   "script": [
+    {
+     "voice": "f",
+     "text_de": "Grüß Gott, hier spricht Katharina Pölzl. Ich buchstabiere: P – Ö – L – Z – L. Ich bin neu im Deutschkurs A1. Meine Sprachen sind Englisch und Persisch. Auf Wiederhören!",
+     "tts": "Grüß Gott, hier spricht Katharina Pölzl. Ich buchstabiere: Pe. Ö. El. Tsett. El. Ich bin neu im Deutschkurs A1. Meine Sprachen sind Englisch und Persisch. Auf Wiederhören!"
+    }
+   ],
+   "note_fields": [
+    {
+     "label_de": "Vorname",
+     "answer": "Katharina",
+     "accept": [
+      "Katharina"
+     ],
+     "exact": false
+    },
+    {
+     "label_de": "Familienname",
+     "answer": "Pölzl",
+     "accept": [
+      "Pölzl",
+      "Poelzl"
+     ],
+     "exact": true
+    },
+    {
+     "label_de": "Kurs",
+     "answer": "Deutschkurs A1",
+     "accept": [
+      "Deutschkurs A1",
+      "A1",
+      "Deutsch A1",
+      "Deutschkurs"
+     ],
+     "exact": false
+    },
+    {
+     "label_de": "Sprache 1",
+     "answer": "Englisch",
+     "accept": [
+      "Englisch",
+      "Persisch"
+     ],
+     "exact": false
+    },
+    {
+     "label_de": "Sprache 2",
+     "answer": "Persisch",
+     "accept": [
+      "Persisch",
+      "Englisch"
+     ],
+     "exact": false
+    }
+   ]
+  },
+  "teil3": {
+   "question_de": "Wie sagen diese Personen „Hallo“?",
+   "options": [
+    "Hallo",
+    "Servus",
+    "Grüß Gott",
+    "Guten Morgen"
+   ],
+   "people": [
+    {
+     "name": "Person 1",
+     "voice": "m",
+     "text_de": "Ich bin aus Wien. Ich sage immer Servus.",
+     "answer": "Servus"
+    },
+    {
+     "name": "Person 2",
+     "voice": "f",
+     "text_de": "Meine Freunde? Da sage ich einfach Hallo.",
+     "answer": "Hallo"
+    },
+    {
+     "name": "Person 3",
+     "voice": "m",
+     "text_de": "Im Büro sage ich Grüß Gott. Das ist höflich.",
+     "answer": "Grüß Gott"
+    },
+    {
+     "name": "Person 4",
+     "voice": "f",
+     "text_de": "Ich arbeite am Morgen. Da sage ich Guten Morgen.",
+     "answer": "Guten Morgen"
+    },
+    {
+     "name": "Person 5",
+     "voice": "m",
+     "text_de": "Servus? Nein, das sage ich nicht. Ich sage Hallo.",
+     "answer": "Hallo"
+    }
+   ]
+  }
+ },
+ "diktat": [
+  "Guten Morgen, Frau Müller!",
+  "Mein Name ist Thomas Gruber.",
+  "Wie heißen Sie?",
+  "Ich heiße Anna.",
+  "Grüß Gott und auf Wiedersehen!",
+  "Wie geht es Ihnen?"
+ ],
+ "schreiben": {
+  "teil1": {
+   "situation_de": "Ihre Freundin Sara möchte einen Deutschkurs machen. Helfen Sie Sara und füllen Sie das Formular aus.",
+   "situation_en": "Your friend Sara wants to take a German course. Help her and fill in the form.",
+   "profile_de": "Sara Ahmadi kommt aus Teheran im Iran. Sie spricht Persisch und Englisch. Sie lernt am Abend.",
+   "fields": [
+    {
+     "id": "f1",
+     "label_de": "Vorname",
+     "type": "text",
+     "answer": "Sara"
+    },
+    {
+     "id": "f2",
+     "label_de": "Familienname",
+     "type": "text",
+     "answer": "Ahmadi"
+    },
+    {
+     "id": "f3",
+     "label_de": "Land",
+     "type": "text",
+     "answer": "Iran",
+     "accept": [
+      "Iran",
+      "der Iran"
+     ]
+    },
+    {
+     "id": "f4",
+     "label_de": "Stadt",
+     "type": "text",
+     "answer": "Teheran",
+     "accept": [
+      "Teheran",
+      "Tehran"
+     ]
+    },
+    {
+     "id": "f5",
+     "label_de": "Sprachen",
+     "type": "multi",
+     "options": [
+      "Deutsch",
+      "Englisch",
+      "Persisch",
+      "Arabisch"
+     ],
+     "answer": [
+      "Englisch",
+      "Persisch"
+     ]
+    },
+    {
+     "id": "f6",
+     "label_de": "Kurs",
+     "type": "choice",
+     "options": [
+      "Deutsch A1",
+      "Deutsch B1"
+     ],
+     "answer": "Deutsch A1"
+    },
+    {
+     "id": "f7",
+     "label_de": "Kurszeit",
+     "type": "choice",
+     "options": [
+      "am Morgen",
+      "am Abend"
+     ],
+     "answer": "am Abend"
+    }
+   ]
+  },
+  "teil2": {
+   "email_from": "Lukas",
+   "email_de": "Hallo!\nIch bin Lukas, dein neuer Tandempartner aus Graz.\nWie heißt du? Woher kommst du? Und welche Sprachen sprichst du?\nLiebe Grüße\nLukas",
+   "task_de": "Antworten Sie Lukas. Schreiben Sie circa 30 Wörter. Schreiben Sie zu allen drei Punkten. Vergessen Sie Anrede und Gruß nicht.",
+   "task_en": "Reply to Lukas in about 30 words. Cover all three points. Don't forget the greeting at the start and the sign-off at the end.",
+   "points_de": [
+    "Name",
+    "Land / Stadt",
+    "Sprachen"
+   ],
+   "word_target": 30,
+   "model_answer_de": "Hallo Lukas,\ndanke für deine E-Mail! Ich heiße Raam. Ich komme aus Teheran, das ist im Iran. Ich spreche Persisch und Englisch. Jetzt lerne ich Deutsch.\nLiebe Grüße\nRaam",
+   "useful_phrases": [
+    "Hallo …, / Liebe … / Lieber …,",
+    "danke für deine E-Mail!",
+    "Ich heiße …",
+    "Ich komme aus …",
+    "Ich spreche … und …",
+    "Jetzt lerne ich Deutsch.",
+    "Liebe Grüße / Viele Grüße"
+   ],
+   "notes_en": "After 'Hallo Lukas,' the next line starts with a small letter (danke …). There is no comma after 'Liebe Grüße'. In Austria, E-Mail is often neuter: das E-Mail.",
+   "notes_fa": "بعد از «Hallo Lukas,» خط بعد با حرف کوچک شروع می‌شود (danke …). بعد از «Liebe Grüße» ویرگول نمی‌گذاریم. در اتریش معمولاً می‌گویند das E-Mail."
+  }
+ },
+ "sprechen": {
+  "teil1": {
+   "topics": [
+    "Sprachen",
+    "Hobbys",
+    "Sport",
+    "Familie",
+    "Beruf",
+    "Lieblingsessen"
+   ],
+   "today_topics": [
+    "Name",
+    "Buchstabieren",
+    "Sprachen"
+   ],
+   "my_script": [
+    {
+     "de": "Guten Tag!",
+     "en": "Good day!"
+    },
+    {
+     "de": "Ich heiße Raam.",
+     "en": "My name is Raam."
+    },
+    {
+     "de": "Ich buchstabiere: R – A – A – M.",
+     "en": "I'll spell it: R – A – A – M.",
+     "tts": "Ich buchstabiere: Er. A. A. Em."
+    },
+    {
+     "de": "Ich komme aus dem Iran, aus Teheran.",
+     "en": "I come from Iran, from Tehran."
+    },
+    {
+     "de": "Ich spreche Persisch und Englisch. Ich lerne Deutsch.",
+     "en": "I speak Persian and English. I'm learning German."
+    }
+   ],
+   "examiner_questions_de": [
+    "Wie heißen Sie?",
+    "Wie schreibt man Ihren Namen?",
+    "Können Sie das bitte buchstabieren?",
+    "Welche Sprachen sprechen Sie?"
+   ]
+  },
+  "teil2": null,
+  "teil3": null,
+  "live_brief": "You are my ÖSD Zertifikat A1 oral examiner and coach. I am an absolute beginner (Day 1 of 34). Speak ONLY very slow, simple German, max 6 words per sentence. Today's topics: greetings, my name, spelling my name, my languages. 1) Greet me formally (Sie). 2) Ask my name, then ask me to spell it (\"Können Sie das bitte buchstabieren?\"). 3) Ask which languages I speak. 4) Switch to an informal greeting (du) and see if I switch too. When I make a mistake, say the correct sentence once in German, explain in one short English sentence, and make me repeat it. At the end, give feedback in English: 3 things I did well, 3 errors with corrections, and a score out of 25 using ÖSD criteria (task, vocabulary, grammar, pronunciation)."
+ },
+ "review_quiz": [
+  {
+   "q": "Polite goodbye (face to face)?",
+   "options": [
+    "Tschüss",
+    "Auf Wiedersehen",
+    "Servus",
+    "Hallo"
+   ],
+   "answer": "Auf Wiedersehen",
+   "explain_en": "Auf Wiedersehen is formal. Tschüss and Servus are informal."
+  },
+  {
+   "q": "Which is the formal 'you'?",
+   "options": [
+    "du",
+    "sie",
+    "Sie",
+    "ihr"
+   ],
+   "answer": "Sie",
+   "explain_en": "Capital S. Lower-case 'sie' means she or they."
+  },
+  {
+   "q": "'What is your name?' (formal)",
+   "options": [
+    "Wie heißt du?",
+    "Wie heißen Sie?",
+    "Wer bist du?",
+    "Wie ist du?"
+   ],
+   "answer": "Wie heißen Sie?",
+   "explain_en": "Sie + heißen."
+  },
+  {
+   "q": "Article: ___ Name",
+   "options": [
+    "der",
+    "die",
+    "das"
+   ],
+   "answer": "der",
+   "explain_en": "der Name, die Namen."
+  },
+  {
+   "q": "Article: ___ Frage",
+   "options": [
+    "der",
+    "die",
+    "das"
+   ],
+   "answer": "die",
+   "explain_en": "die Frage, die Fragen."
+  },
+  {
+   "q": "Article: ___ Beispiel",
+   "options": [
+    "der",
+    "die",
+    "das"
+   ],
+   "answer": "das",
+   "explain_en": "das Beispiel, die Beispiele."
+  },
+  {
+   "q": "German 'W' sounds like English …",
+   "options": [
+    "w",
+    "v",
+    "f"
+   ],
+   "answer": "v",
+   "explain_en": "Wien = 'Veen'."
+  },
+  {
+   "q": "'ch' in 'Nacht' sounds like Persian …",
+   "options": [
+    "ش",
+    "خ",
+    "چ"
+   ],
+   "answer": "خ",
+   "explain_en": "After a, o, u, ch sounds like خ."
+  },
+  {
+   "q": "In 'Ich heiße Thomas', the verb is in position …",
+   "options": [
+    "1",
+    "2",
+    "3",
+    "last"
+   ],
+   "answer": "2",
+   "explain_en": "Verb second, always."
+  },
+  {
+   "q": "You did not understand. You say …",
+   "options": [
+    "Wie bitte?",
+    "Bitte schön!",
+    "Gute Nacht!"
+   ],
+   "answer": "Wie bitte?",
+   "explain_en": "Wie bitte? = pardon? This is very useful in the speaking exam."
+  }
+ ],
+ "watch": [
+  {
+   "source_title": "Learn German A1 | The Alphabet | Deutsch Für Euch",
+   "why": "Full walkthrough of letters and vowel sounds."
+  },
+  {
+   "source_title": "Learn German A1 | Umlaute (Ä, Ö, Ü) | Deutsch Für Euch",
+   "why": "Mouth positions for Ä, Ö, Ü."
+  },
+  {
+   "source_title": "Learn German A1 | Greetings & Good-Byes | Deutsch Für Euch",
+   "why": "Greetings and farewells with context."
+  }
+ ]
+}

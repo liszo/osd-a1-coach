@@ -1,0 +1,6 @@
+{
+  "name": "osd-a1-coach",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" }
+}
