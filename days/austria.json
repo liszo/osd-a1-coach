@@ -1,0 +1,28 @@
+{
+  "title": "Austrian German (Austriazismen)",
+  "note_en": "Learn these to recognise them in ÖSD Hören and Lesen. You can use either word yourself.",
+  "cards": [
+    {"de": "Jänner", "article": "der", "plural": "", "en": "January (Germany: der Januar)", "fa": "ژانویه", "example_de": "Im Jänner ist es kalt."},
+    {"de": "Feber", "article": "der", "plural": "", "en": "February, regional (Germany: der Februar)", "fa": "فوریه", "example_de": "Der Feber hat 28 Tage."},
+    {"de": "Erdapfel", "article": "der", "plural": "die Erdäpfel", "en": "potato (Germany: die Kartoffel)", "fa": "سیب‌زمینی", "example_de": "Ich koche Erdäpfel."},
+    {"de": "Paradeiser", "article": "der", "plural": "die Paradeiser", "en": "tomato (Germany: die Tomate)", "fa": "گوجه‌فرنگی", "example_de": "Ein Kilo Paradeiser, bitte."},
+    {"de": "Marille", "article": "die", "plural": "die Marillen", "en": "apricot (Germany: die Aprikose)", "fa": "زردآلو", "example_de": "Die Marillen sind süß."},
+    {"de": "Semmel", "article": "die", "plural": "die Semmeln", "en": "bread roll (Germany: das Brötchen)", "fa": "نان گرد کوچک", "example_de": "Zwei Semmeln, bitte."},
+    {"de": "Sackerl", "article": "das", "plural": "die Sackerl", "en": "bag, carrier bag (Germany: die Tüte)", "fa": "کیسه", "example_de": "Brauchen Sie ein Sackerl?"},
+    {"de": "Topfen", "article": "der", "plural": "", "en": "curd cheese (Germany: der Quark)", "fa": "پنیر کوارک", "example_de": "Der Kuchen ist mit Topfen."},
+    {"de": "Schlagobers", "article": "das", "plural": "", "en": "whipped cream (Germany: die Sahne)", "fa": "خامه زده‌شده", "example_de": "Einen Kaffee mit Schlagobers, bitte."},
+    {"de": "Karfiol", "article": "der", "plural": "", "en": "cauliflower (Germany: der Blumenkohl)", "fa": "گل‌کلم", "example_de": "Ich esse gern Karfiol."},
+    {"de": "Fisolen", "article": "die", "plural": "die Fisolen", "en": "green beans (Germany: die grünen Bohnen)", "fa": "لوبیا سبز", "example_de": "Fisolen sind gesund."},
+    {"de": "Jause", "article": "die", "plural": "die Jausen", "en": "snack, light meal", "fa": "میان‌وعده", "example_de": "Um zehn Uhr mache ich Jause."},
+    {"de": "Sessel", "article": "der", "plural": "die Sessel", "en": "chair (Germany: der Stuhl)", "fa": "صندلی", "example_de": "Bitte nehmen Sie einen Sessel."},
+    {"de": "heuer", "article": "-", "plural": "", "en": "this year (Germany: dieses Jahr)", "fa": "امسال", "example_de": "Heuer fahre ich nach Wien."},
+    {"de": "Bankomat", "article": "der", "plural": "die Bankomaten", "en": "cash machine, ATM (Germany: der Geldautomat)", "fa": "دستگاه خودپرداز", "example_de": "Wo ist der Bankomat?"},
+    {"de": "Grüß Gott!", "article": "-", "plural": "", "en": "Hello (polite)", "fa": "سلام (رسمی)", "example_de": "Grüß Gott, Frau Huber!"},
+    {"de": "Servus!", "article": "-", "plural": "", "en": "Hi! / Bye! (friends)", "fa": "سلام / خداحافظ (دوستانه)", "example_de": "Servus, Max!"},
+    {"de": "Baba!", "article": "-", "plural": "", "en": "Bye! (Vienna, casual)", "fa": "خداحافظ (خودمانی)", "example_de": "Baba, bis morgen!"},
+    {"de": "Spital", "article": "das", "plural": "die Spitäler", "en": "hospital (Germany: das Krankenhaus)", "fa": "بیمارستان", "example_de": "Er ist im Spital."},
+    {"de": "Trafik", "article": "die", "plural": "die Trafiken", "en": "kiosk for newspapers and tickets", "fa": "دکه روزنامه‌فروشی", "example_de": "Ich kaufe die Fahrkarte in der Trafik."},
+    {"de": "Matura", "article": "die", "plural": "", "en": "school-leaving exam (Germany: das Abitur)", "fa": "دیپلم دبیرستان", "example_de": "Ich habe die Matura gemacht."},
+    {"de": "Stiege", "article": "die", "plural": "die Stiegen", "en": "staircase (Germany: die Treppe)", "fa": "راه‌پله", "example_de": "Wohnung 5, Stiege 2."}
+  ]
+}

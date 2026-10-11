@@ -1,0 +1,137 @@
+{
+  "id": "mock-a",
+  "title": "Übungstest A (original practice test in ÖSD ZA1 format)",
+  "note_en": "Written for this app in the exact ZA1 task format. Use it as Mock 3 if you don't have the ÖSD Übungsmaterialien, or as extra practice.",
+  "lesen": {
+    "teil1": {
+      "situations": [
+        {"id": "A", "text_de": "Sie möchten am Wochenende schwimmen gehen."},
+        {"id": "B", "text_de": "Ihr Kind ist sechs Jahre alt und möchte Klavier lernen."},
+        {"id": "C", "text_de": "Sie suchen eine kleine, billige Wohnung."},
+        {"id": "D", "text_de": "Ihr Fahrrad ist kaputt."},
+        {"id": "E", "text_de": "Sie möchten am Abend Deutsch lernen."}
+      ],
+      "ads": [
+        {"n": 1, "title": "Musikschule Do-Re-Mi", "text_de": "Klavier, Gitarre, Flöte. Kurse für Kinder ab 5 Jahren. Tel. 0664 223 45 67"},
+        {"n": 2, "title": "Babyschwimmen", "text_de": "Hallenbad Mitte: Montag bis Freitag, 9 bis 11 Uhr. Für Babys ab 4 Monaten."},
+        {"n": 3, "title": "Radwerkstatt Huber", "text_de": "Fahrrad kaputt? Wir reparieren schnell und billig. Mo–Sa 8–18 Uhr, Hauptstraße 12."},
+        {"n": 4, "title": "Volkshochschule Ottakring", "text_de": "Deutschkurse A1 und A2: Montag und Mittwoch, 18.30 bis 20.30 Uhr."},
+        {"n": 5, "title": "Wohnung zu vermieten", "text_de": "1 Zimmer, Küche, Bad, 32 m², nur 410 € im Monat. Ab 1. Dezember frei."},
+        {"n": 6, "title": "Hallenbad Floridsdorf", "text_de": "Samstag und Sonntag von 9 bis 20 Uhr geöffnet. Erwachsene 6 €, Kinder 3 €."}
+      ],
+      "answers": {"A": 6, "B": 1, "C": 5, "D": 3, "E": 4}
+    },
+    "teil2": [
+      {"title": "Aushang im Supermarkt", "text_de": "Liebe Kundinnen und Kunden!\nAm 8. Dezember (Feiertag) ist unser Markt von 10 bis 18 Uhr geöffnet.\nAm 24. Dezember schließen wir schon um 14 Uhr.", "items": [
+        {"statement_de": "Am 8. Dezember ist der Supermarkt geschlossen.", "answer": "nein", "explain_en": "It is open from 10 to 18.", "explain_fa": "از ساعت ۱۰ تا ۱۸ باز است."},
+        {"statement_de": "Am 24. Dezember kann man bis 14 Uhr einkaufen.", "answer": "ja", "explain_en": "It closes at 14:00.", "explain_fa": "ساعت ۱۴ می‌بندد."}
+      ]},
+      {"title": "E-Mail", "text_de": "Hallo Sandra,\nich bin krank und kann heute nicht in den Kurs kommen. Kannst du mir bitte die Hausaufgaben schicken?\nDanke! Liebe Grüße\nMehdi", "items": [
+        {"statement_de": "Mehdi kommt heute nicht in den Kurs.", "answer": "ja", "explain_en": "'kann heute nicht in den Kurs kommen'.", "explain_fa": "امروز نمی‌تواند به کلاس بیاید."},
+        {"statement_de": "Sandra ist krank.", "answer": "nein", "explain_en": "Mehdi is ill, not Sandra.", "explain_fa": "مهدی مریض است، نه ساندرا."}
+      ]},
+      {"title": "Anzeige", "text_de": "Verkaufe Kinderfahrrad, rot, 3 Jahre alt, sehr guter Zustand. 45 €.\nBitte nur am Wochenende anrufen: 0699 181 22 30", "items": [
+        {"statement_de": "Das Fahrrad ist neu.", "answer": "nein", "explain_en": "It is 3 years old.", "explain_fa": "سه سال کار کرده است."},
+        {"statement_de": "Man kann am Samstag anrufen.", "answer": "ja", "explain_en": "Saturday is part of the weekend.", "explain_fa": "شنبه جزو آخر هفته است."}
+      ]}
+    ],
+    "teil3": {
+      "texts": [
+        {"n": 1, "text_de": "Bitte hier nicht rauchen!"},
+        {"n": 2, "text_de": "Achtung! Der Aufzug ist heute kaputt. Bitte nehmen Sie die Treppe."},
+        {"n": 3, "text_de": "Hunde müssen hier an die Leine."},
+        {"n": 4, "text_de": "Fahrkarten bitte am Automaten kaufen."},
+        {"n": 5, "text_de": "Heute Mittagsmenü: Suppe und Schnitzel, 9,90 €"}
+      ],
+      "pictures": [
+        {"id": "A", "emoji": "🎫", "label_en": "ticket machine"},
+        {"id": "B", "emoji": "📵", "label_en": "no phones"},
+        {"id": "C", "emoji": "🚭", "label_en": "no smoking"},
+        {"id": "D", "emoji": "🍲", "label_en": "lunch menu"},
+        {"id": "E", "emoji": "🐕", "label_en": "dog on a lead"},
+        {"id": "F", "emoji": "🛗", "label_en": "lift / stairs"}
+      ],
+      "answers": {"1": "C", "2": "F", "3": "E", "4": "A", "5": "D"}
+    }
+  },
+  "hoeren": {
+    "teil1": {
+      "pictures": [
+        {"id": "A", "emoji": "☔", "label_en": "rain, umbrella"},
+        {"id": "B", "emoji": "🚌", "label_en": "bus stop"},
+        {"id": "C", "emoji": "🎂", "label_en": "birthday"},
+        {"id": "D", "emoji": "💊", "label_en": "doctor / tablets"},
+        {"id": "E", "emoji": "🛒", "label_en": "paying at the checkout"},
+        {"id": "F", "emoji": "⚽", "label_en": "football"}
+      ],
+      "texts": [
+        {"n": 1, "answer": "A", "script": [{"voice": "m", "text_de": "Oh, es regnet! Hast du einen Regenschirm?"}, {"voice": "f", "text_de": "Ja, hier, nimm meinen."}]},
+        {"n": 2, "answer": "E", "script": [{"voice": "f", "text_de": "Das macht zusammen zwölf Euro vierzig."}, {"voice": "m", "text_de": "Kann ich mit Karte zahlen?"}, {"voice": "f", "text_de": "Ja, natürlich."}]},
+        {"n": 3, "answer": "B", "script": [{"voice": "m", "text_de": "Entschuldigung, wann kommt der Bus 13A?"}, {"voice": "f", "text_de": "In fünf Minuten."}]},
+        {"n": 4, "answer": "C", "script": [{"voice": "f", "text_de": "Alles Gute zum Geburtstag, Lukas!"}, {"voice": "m", "text_de": "Danke! Kommt rein, es gibt Kuchen."}]},
+        {"n": 5, "answer": "D", "script": [{"voice": "m", "text_de": "Nehmen Sie die Tabletten dreimal am Tag, nach dem Essen."}, {"voice": "f", "text_de": "Danke, Herr Doktor. Auf Wiedersehen."}]}
+      ]
+    },
+    "teil2": {
+      "intro_de": "Sie hören eine Nachricht auf dem Anrufbeantworter.",
+      "script": [{"voice": "m", "text_de": "Grüß Gott, Frau Kaya, hier ist Thomas Wieser von der Autowerkstatt Wieser. Ihr Auto ist fertig. Sie können es am Donnerstag abholen, ab 15 Uhr. Unsere Adresse ist Linzer Straße 48. Mein Name ist Wieser, ich buchstabiere: W – I – E – S – E – R. Unsere Telefonnummer ist 0664 735 20 18. Auf Wiederhören!", "tts": "Grüß Gott, Frau Kaya, hier ist Thomas Wieser von der Autowerkstatt Wieser. Ihr Auto ist fertig. Sie können es am Donnerstag abholen, ab fünfzehn Uhr. Unsere Adresse ist Linzer Straße achtundvierzig. Mein Name ist Wieser, ich buchstabiere: We. I. E. Es. E. Err. Unsere Telefonnummer ist: null, sechs, sechs, vier. Sieben, drei, fünf. Zwei, null. Eins, acht. Auf Wiederhören!"}],
+      "note_fields": [
+        {"label_de": "Wann? (Tag)", "answer": "Donnerstag", "accept": ["Donnerstag", "Do", "am Donnerstag"], "exact": false},
+        {"label_de": "Uhrzeit", "answer": "ab 15 Uhr", "accept": ["15 Uhr", "ab 15 Uhr", "15", "15.00", "15:00"], "exact": false},
+        {"label_de": "Adresse", "answer": "Linzer Straße 48", "accept": ["Linzer Straße 48", "Linzerstraße 48", "Linzer Strasse 48"], "exact": false},
+        {"label_de": "Name (buchstabiert)", "answer": "Wieser", "accept": ["Wieser"], "exact": true},
+        {"label_de": "Telefonnummer", "answer": "0664 735 20 18", "accept": ["06647352018"], "exact": true, "digits": true}
+      ]
+    },
+    "teil3": {
+      "question_de": "Was machen Sie am Wochenende am liebsten?",
+      "options": ["Sport", "Kochen", "Lesen", "Freunde treffen"],
+      "people": [
+        {"name": "Person 1", "voice": "m", "text_de": "Am Wochenende? Ich gehe immer laufen oder schwimmen. Sport ist für mich sehr wichtig.", "answer": "Sport"},
+        {"name": "Person 2", "voice": "f", "text_de": "Ich lese gern, aber am liebsten treffe ich am Samstag meine Freundinnen im Café.", "answer": "Freunde treffen"},
+        {"name": "Person 3", "voice": "m", "text_de": "Ich koche gern für meine Familie. Am Sonntag mache ich immer Schnitzel.", "answer": "Kochen"},
+        {"name": "Person 4", "voice": "f", "text_de": "Ich bin am Wochenende zu Hause und lese Bücher. Das ist super.", "answer": "Lesen"},
+        {"name": "Person 5", "voice": "m", "text_de": "Sport? Nein, das mag ich nicht. Ich koche lieber, zum Beispiel Suppe oder Pizza.", "answer": "Kochen"}
+      ]
+    }
+  },
+  "schreiben": {
+    "teil1": {
+      "situation_de": "Ihr Freund Arash möchte im Fitnessstudio trainieren. Helfen Sie Arash und füllen Sie das Formular aus.",
+      "situation_en": "Your friend Arash wants to join a gym. Help him and fill in the form.",
+      "profile_de": "Arash Karimi ist am 14.03.1997 geboren. Er wohnt in der Gumpendorfer Straße 21, 1060 Wien. Er ist Ingenieur von Beruf. Er möchte am Abend trainieren, zweimal pro Woche. Er möchte schwimmen und Yoga machen. Er bezahlt mit Karte.",
+      "fields": [
+        {"id": "f1", "label_de": "Vorname", "type": "text", "answer": "Arash"},
+        {"id": "f2", "label_de": "Familienname", "type": "text", "answer": "Karimi"},
+        {"id": "f3", "label_de": "Geburtsdatum", "type": "text", "answer": "14.03.1997", "accept": ["14.03.1997", "14.3.1997", "14. März 1997", "14 März 1997", "14/03/1997"]},
+        {"id": "f4", "label_de": "Straße, Hausnummer", "type": "text", "answer": "Gumpendorfer Straße 21", "accept": ["Gumpendorfer Straße 21", "Gumpendorferstraße 21", "Gumpendorfer Strasse 21"]},
+        {"id": "f5", "label_de": "PLZ, Ort", "type": "text", "answer": "1060 Wien", "accept": ["1060 Wien", "1060, Wien"]},
+        {"id": "f6", "label_de": "Beruf", "type": "text", "answer": "Ingenieur"},
+        {"id": "f7", "label_de": "Trainingszeit", "type": "choice", "options": ["am Morgen", "am Nachmittag", "am Abend"], "answer": "am Abend"},
+        {"id": "f8", "label_de": "Wie oft?", "type": "choice", "options": ["einmal pro Woche", "zweimal pro Woche", "dreimal pro Woche"], "answer": "zweimal pro Woche"},
+        {"id": "f9", "label_de": "Sport", "type": "multi", "options": ["Schwimmen", "Yoga", "Tennis", "Fitness"], "answer": ["Schwimmen", "Yoga"]},
+        {"id": "f10", "label_de": "Bezahlung", "type": "choice", "options": ["bar", "mit Karte"], "answer": "mit Karte"}
+      ]
+    },
+    "teil2": {
+      "email_from": "Julia",
+      "email_de": "Hallo!\nIch habe am Samstag Geburtstag und mache eine kleine Party bei mir zu Hause. Sie beginnt um 19 Uhr. Kommst du?\nKannst du vielleicht etwas zu essen mitbringen? Und kommt dein Partner oder deine Partnerin auch mit?\nLiebe Grüße\nJulia",
+      "task_de": "Antworten Sie Julia. Schreiben Sie circa 30 Wörter. Schreiben Sie zu allen drei Punkten. Vergessen Sie Anrede und Gruß nicht.",
+      "task_en": "Reply to Julia in about 30 words. Cover all three points, with a greeting and a sign-off.",
+      "points_de": ["Kommen Sie?", "Was bringen Sie mit?", "Wer kommt mit?"],
+      "word_target": 30,
+      "model_answer_de": "Liebe Julia,\ndanke für die Einladung! Ich komme gern am Samstag. Ich bringe einen Salat und Obst mit. Meine Frau kommt auch mit. Wir freuen uns sehr!\nBis Samstag und liebe Grüße\nRaam",
+      "useful_phrases": ["Danke für die Einladung!", "Ich komme gern.", "Leider kann ich nicht kommen.", "Ich bringe … mit.", "… kommt auch mit.", "Bis Samstag!"],
+      "notes_en": "Each guiding point gets its own sentence. Count: at least 25 words.",
+      "notes_fa": "برای هر سؤال یک جمله جدا بنویس. حداقل ۲۵ کلمه."
+    }
+  },
+  "sprechen": {
+    "teil1": {"topics": ["Sprachen", "Hobbys", "Sport", "Familie", "Beruf", "Lieblingsessen"]},
+    "teil2": {"photos": [
+      {"emoji": "🍳👨‍👩‍👧", "scene_en": "A family is having breakfast in the kitchen.", "roleplay_en": "You are visiting a friend for breakfast. The examiner is your friend: accept food and drinks, ask for things politely.", "starter_de": "Möchtest du einen Kaffee?"},
+      {"emoji": "🍎🛍️", "scene_en": "Two people are buying fruit at a market.", "roleplay_en": "You buy fruit at the market. The examiner is the seller: ask for prices, say how much you want, pay.", "starter_de": "Grüß Gott! Was darf es sein?"},
+      {"emoji": "⚽🌳", "scene_en": "Three friends are playing football in a park.", "roleplay_en": "Your friend invites you to play football on Saturday. The examiner is your friend: agree on a day, time and place.", "starter_de": "Hast du am Samstag Zeit? Wir spielen Fußball."}
+    ], "questions_de": ["Was sehen Sie?", "Wie viele Personen sehen Sie?", "Wo sind diese Personen?", "Was machen diese Personen?"]}
+  }
+}

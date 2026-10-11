@@ -3,16 +3,17 @@
 import { requireUser, requireKey, gemini, onlyPost, TEXT_MODEL } from "./_lib.js";
 
 function gradePrompt(p) {
-  return `You are a certified ÖSD Zertifikat A1 examiner grading Schreiben Aufgabe 2 (reply to a personal email, about ${p.wordTarget || 30} words).
+  return `You are a certified ÖSD Zertifikat A1 examiner grading Schreiben Aufgabe 2 (reply to a personal email, about ${p.wordTarget || 30} words) with the OFFICIAL ÖSD ZA1 rubric (Auswertungsbogen).
 Prompt email from ${p.from}:
 """${p.email}"""
 Task: ${p.task}
-Guiding points: ${(p.points || []).join("; ")}
+Guiding points: ${(p.points || []).join("; ") || "(the three questions in the email)"}
 Learner's reply:
 """${p.text}"""
-Grade on the ÖSD A1 criteria: task fulfilment (all guiding points, greeting and sign-off), text structure and register (informal du), vocabulary, formal accuracy (grammar, word order, spelling, capital letters). Maximum 10 points; 4 are needed to pass. Be fair to an absolute beginner on day ${p.day} of 34, but strict about exam rules.
+Official criteria: Kommunikative Angemessenheit/Textsorte (0–1), Textaufbau (0–1: greeting, logical order, sign-off), Lexik (0–4), Formale Richtigkeit (0–4: grammar, word order, spelling, capital letters). Then deductions: 20–24 words −1, 15–19 words −2, under 15 words = not assessed (score 0); one guiding point answered too briefly or missing −1, only one point answered −2, off topic = 0. Score cannot go below 0. Maximum 10; at least 4 is required, otherwise the whole Schreiben module scores 0.
+Be fair to an absolute beginner (day ${p.day} of 34) but apply the rules exactly. Count words yourself.
 Reply with JSON only:
-{"score": number 0-10, "criteria":[{"name":"Task","score":"x/4","comment_en":""},{"name":"Structure & register","score":"x/2","comment_en":""},{"name":"Vocabulary","score":"x/2","comment_en":""},{"name":"Accuracy","score":"x/2","comment_en":""}], "errors":[{"wrong":"","right":"","why_en":"","why_fa":"short Persian explanation"}], "corrected_de":"the learner's text, minimally corrected", "tip_en":"one concrete tip", "tip_fa":"the same tip in Persian"}`;
+{"score": number 0-10 after deductions, "words": number, "criteria":[{"name":"Task & register","score":"x/1","comment_en":""},{"name":"Text structure","score":"x/1","comment_en":""},{"name":"Vocabulary","score":"x/4","comment_en":""},{"name":"Accuracy","score":"x/4","comment_en":""}], "deductions":["e.g. 22 words −1"], "errors":[{"wrong":"","right":"","why_en":"","why_fa":"short Persian explanation"}], "corrected_de":"the learner's text, minimally corrected", "tip_en":"one concrete tip", "tip_fa":"the same tip in Persian"}`;
 }
 
 function checkPrompt(p) {

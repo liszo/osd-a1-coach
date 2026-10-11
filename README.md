@@ -40,3 +40,13 @@ When you start a session, the app builds the tutor's instructions from: the day 
 ## Local development
 
 Any static server works for the UI (`npx serve .`); the `/api` functions need `npx vercel dev`.
+
+## v4 — research-based redesign (Oct 2026)
+
+- **Exam centre** (`Exam` tab): 4 scheduled mocks (Day 22 official ZA1 Modellsatz, Day 27 official ZA1/Österreich, Day 29 Übungsmaterialien Übungssatz 1, Day 31 Übungssatz 2 / Digital Test-Training) plus the in-app **Übungstest A** (`days/mock-a.json`, original content in exact ZA1 format). Timers 25/10/20 + 10 min Sprechen prep, test mode without feedback, flags, answer sheet, results against the real minimums (Lesen ≥6, Hören ≥6, Schreiben A2 ≥4, written ≥38/75, oral ≥12/25). Official PDFs are only linked, never hosted.
+- **Lessons** (Oxford Word Skills / Living Grammar pattern): "Ich kann…" goals, cover-and-check vocabulary, 3-item "check yourself" before practice, mastery at 80 % with "retry the wrong ones".
+- **Review tab**: spaced-repetition cards incl. every logged mistake, Austrian words deck (`days/austria.json`), mixed review across all days.
+- **Schreiben checker**: greeting/sign-off/length checks with the official ÖSD deductions; Gemini grades with the official Auswertungsbogen rubric.
+- **Sprechen**: record yourself and compare with the model voice.
+- **Progress tab**: streak, hours, latest mock vs minimums, accuracy by skill, 34-day map.
+- **Today**: steps grouped with breaks, extra resources per day (DW Nicos Weg, ÖIF Sprachportal, Hueber Schritte Österreich, ÖSD downloads).
