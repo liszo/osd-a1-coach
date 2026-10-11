@@ -41,6 +41,16 @@ When you start a session, the app builds the tutor's instructions from: the day 
 
 Any static server works for the UI (`npx serve .`); the `/api` functions need `npx vercel dev`.
 
+## v6 — more game (Oct 2026)
+
+- **Schilling coins** (top bar → Shop): earned for lessons (5, +5 perfect), exam-format steps (10), break chests (5–15), daily quests (10–20), achievements (20), level-ups (30) and finishing a whole day (50).
+- **Shop:** streak freeze (150, hold up to 2, used automatically for missed days; one free to start), Double XP for 15 minutes (100), lesson hints (10, removes one wrong answer).
+- **Levels** from total XP, with a level-up screen. **Combo bonus** XP for long right-answer streaks.
+- **Weekly leagues** named after Austrian cities, Bregenz → Innsbruck → Salzburg → Linz → Graz → Wien. Honest rules, no fake opponents: 800+ XP in a week moves you up, under 300 moves you down.
+- **24 achievements** (Progress tab), **rotating daily quests** you claim for coins, celebration screens for streaks, levels, badges and promotions.
+- **Wörter-Blitz** (Review tab): 60-second vocabulary speed round with a high score.
+- **Edi**, an original edelweiss mascot, greets you on the path and cheers on the celebration screens.
+
 ## v5 — game-style lessons (Oct 2026)
 
 - **Learn tab = a lesson path.** Each day is a winding path of round lesson buttons. Learn is split into short lessons (Alphabet, Sounds, Words 1–3, Phrases 1–3, Grammar), Practice into parts, then Hören, Dictation, Lesen, Schreiben, Sprechen and the Daily quiz. Tap a button for its card, then Start. Break chests sit at 60/120/180 minutes; a trophy waits at the end of the day.

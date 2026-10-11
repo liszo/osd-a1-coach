@@ -103,11 +103,11 @@ const ICONS = {
 };
 
 /* ---------- state ---------- */
-function defaultState(){ return {v:1, updatedAt:0, start:DEFAULT_START, lang:"both", strict:true, rate:0.9, voice:"", tutorVoice:"Kore", decks:{}, mocks:{}, xp:{}, sfx:true, goal:100, done:{}, results:{}, srs:{}, intro:{}, mistakes:[], drafts:{}, grades:{}, live:{}}; }
+function defaultState(){ return {v:1, updatedAt:0, start:DEFAULT_START, lang:"both", strict:true, rate:0.9, voice:"", tutorVoice:"Kore", decks:{}, mocks:{}, xp:{}, sfx:true, goal:100, coins:0, freezes:1, freezeDays:[], boostUntil:0, badges:{}, stats:{}, daily:{}, league:{tier:0,week:""}, blitzBest:0, done:{}, results:{}, srs:{}, intro:{}, mistakes:[], drafts:{}, grades:{}, live:{}}; }
 const S = { st: defaultState(), uid:null, email:"", sync:"local", ai:false, liveModel:"",
   published:new Set(), imported:{}, days:{}, view:"today", dayN:null, step:null,
   ans:{}, checked:{}, plays:{}, wo:{}, ex:{}, fc:null, timer:null, gradeBusy:false, checkBusy:false, importText:{},
-  authMode:"signin", authBusy:false, authMsg:"", offline:false, att:{}, attBusy:false, cardText:{}, pron:{}, live:null, liveMode:"coach", installEvt:null, confirmDel:null, mock:null, mockData:{}, austria:null, mix:null, rec:{}, recActive:null, testPrefix:"", les:null, fin:null, pop:null, brk:null, fcFrom:null, stepAt:0 };
+  authMode:"signin", authBusy:false, authMsg:"", offline:false, att:{}, attBusy:false, cardText:{}, pron:{}, live:null, liveMode:"coach", installEvt:null, confirmDel:null, mock:null, mockData:{}, austria:null, mix:null, rec:{}, recActive:null, testPrefix:"", les:null, fin:null, cel:[], blitz:null, pop:null, brk:null, fcFrom:null, stepAt:0 };
 
 const LS_KEY = "osd-a1-coach-state";
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
@@ -273,12 +273,13 @@ function logMistake(day, src, q, your, right){ S.st.mistakes.unshift({day,src,q,
 
 /* ---------- rendering: shell ---------- */
 const TABS=[["today","Learn","home"],["plan","Plan","plan"],["review","Review","review"],["exam","Exam","exam"],["progress","Progress","progress"]];
-function renderTabs(){ if(!S.uid && !S.offline){ $("#tabs").innerHTML=""; return; } $("#tabs").innerHTML = `<div class="brand">ÖSD <b>A1</b></div>`+TABS.map(([id,nm,ic])=>`<button data-act="tab" data-v="${id}" ${S.view===id?'aria-current="page"':""}>${ICONS[ic]}<span>${nm}</span></button>`).join("")+`<button data-act="tab" data-v="settings" class="side-only" ${S.view==="settings"?'aria-current="page"':""}>${ICONS.settings}<span>Settings</span></button>`; }
+function renderTabs(){ if(!S.uid && !S.offline){ $("#tabs").innerHTML=""; return; } $("#tabs").innerHTML = `<div class="brand">ÖSD <b>A1</b></div>`+TABS.map(([id,nm,ic])=>`<button data-act="tab" data-v="${id}" ${S.view===id?'aria-current="page"':""}>${ICONS[ic]}<span>${nm}</span></button>`).join("")+`<button data-act="tab" data-v="shop" class="side-only" ${S.view==="shop"?'aria-current="page"':""}>${COIN}<span>Shop</span></button>`+`<button data-act="tab" data-v="settings" class="side-only" ${S.view==="settings"?'aria-current="page"':""}>${ICONS.settings}<span>Settings</span></button>`; }
 function renderCountdown(){ const top=$("#top"); if(!top) return; top.hidden=!S.uid&&!S.offline; if(top.hidden) return;
   const n=daysLeft(), st=streak(), xp=xpToday(), studied=studiedToday();
-  top.innerHTML = `<button class="stat day" data-act="day" data-v="${currentDay()}" title="Day ${currentDay()} of ${PLAN.length}">${ICONS.flagAT}<span>Tag ${currentDay()}</span></button>
+  top.innerHTML = `<button class="stat day" data-act="day" data-v="${currentDay()}" title="Day ${currentDay()} of ${PLAN.length}">${ICONS.flagAT}<span><i class="tag">Tag </i>${currentDay()}</span></button>
     <button class="stat streak ${studied?"on":""}" data-act="tab" data-v="progress" title="${st}-day streak" aria-label="${st}-day streak">${ICONS.flame}<span class="tnum">${st}</span></button>
-    <button class="stat xp ${xp?"on":""}" data-act="tab" data-v="progress" title="XP today (goal ${goalXp()})" aria-label="${xp} XP today">${ICONS.bolt}<span class="tnum">${xp}</span></button>
+    <button class="stat xp ${xp?"on":""}" data-act="tab" data-v="progress" title="XP today (goal ${goalXp()})" aria-label="${xp} XP today">${ICONS.bolt}<span class="tnum">${xp}</span>${boostOn()?`<em class="boost">2×</em>`:""}</button>
+    <button class="stat coins" data-act="tab" data-v="shop" title="Schilling · open the shop" aria-label="${S.st.coins||0} Schilling, open shop">${COIN}<span class="tnum">${S.st.coins||0}</span></button>
     <button class="stat cd" data-act="tab" data-v="exam" title="Days to the exam, Sat 14 Nov · ۲۳ آبان" aria-label="${n} days to the exam">${ICONS.cal}<span class="tnum">${n>0?n:n===0?"Heute":"✓"}</span></button>
     <button class="stat gear" data-act="tab" data-v="settings" aria-label="Settings" title="Settings">${ICONS.settings}</button>`; }
 
@@ -287,13 +288,19 @@ async function render(){
   renderTabs(); renderCountdown();
   const app=$("#app");
   let html="";
-  const lesson = !!(S.uid||S.offline) && !S.live && !!(S.les || S.fin || (S.view==="today" && S.step) || (S.view==="review" && S.fc));
+  const authed=!!(S.uid||S.offline);
+  if(authed && !S.les && !S.blitz && !S.live && !(S.mock&&S.view==="exam")) checkBadges();
+  const showCel = authed && !S.live && !S.les && !S.blitz && !S.fin && S.cel && S.cel.length && !(S.mock&&S.view==="exam");
+  const lesson = authed && !S.live && !!(S.les || S.blitz || S.fin || showCel || (S.view==="today" && S.step) || (S.view==="review" && S.fc));
   document.body.classList.toggle("lesson-mode", lesson);
   try{
     if(!S.uid && !S.offline) html = vAuth();
     else if(S.live) html = vLive();
     else if(S.les) html = vLesson();
+    else if(S.blitz) html = vBlitz();
     else if(S.fin) html = vFinish();
+    else if(showCel) html = vCel();
+    else if(S.view==="shop") html = vShop();
     else if(S.view==="today") html = await vToday();
     else if(S.view==="plan") html = vPlan();
     else if(S.mock && S.view==="exam") html = await vMock();
@@ -325,7 +332,7 @@ async function vToday(){
     ${n!==currentDay()?`<div><button class="guide" data-act="day" data-v="${currentDay()}">Back to today</button></div>`:""}
   </section>`;
   if(!d) return banner + mockCta(n) + resCard(n) + pendingPanel(n);
-  return banner + pathHtml(n,d) + questsCard(n,d) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
+  return banner + (n===currentDay()?ediSays(n):"") + pathHtml(n,d) + questsCard(n,d) + leagueCard(true) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
 }
 function progressBar(n,d){ const pr=dayProgress(n,d); const pct=pr.minTotal?Math.round(pr.min/pr.minTotal*100):0;
   return `<div class="stack" style="gap:6px"><div class="row between small"><span>${pr.done}/${pr.total} steps</span><span class="tnum muted">${pr.min} / ${pr.minTotal} min</span></div><div class="meter" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>`; }
@@ -1149,7 +1156,8 @@ async function vReview(){
   if(S.mix) return `<div class="row between"><div><div class="label">Review</div><h1>Mixed review</h1></div><button class="btn sm" data-act="mix-end">Done</button></div>
     <p class="small muted">${ex("Questions from all your days, mixed. Mixing topics makes you choose the right rule, like in the exam.","سؤال‌ها از همه روزها، مخلوط. مخلوط کردن موضوع‌ها تو را مجبور می‌کند قانون درست را انتخاب کنی، مثل آزمون.")}</p>${stExercises("R", S.mix, "mix")}`;
   const deck = S.austria ? `<div class="card stack"><div class="row between"><h2>Austrian words</h2><button class="btn sm ${S.st.decks.austria?"":"primary"}" data-act="deck-austria">${S.st.decks.austria?"Remove from my cards":"Add to my cards"}</button></div><p class="small">${esc(S.austria.note_en)} ${S.austria.cards.length} words: ${S.austria.cards.slice(0,6).map(c=>esc(c.de)).join(", ")} …</p></div>` : "";
-  const mix = `<div class="card stack"><h2>Mixed review</h2><p class="small">${ex("15 random questions from every day you've studied. Best on Sundays and review days.","۱۵ سؤال تصادفی از همه روزهایی که خوانده‌ای. بهترین زمان: روزهای مرور.")}</p><div><button class="btn primary" data-act="mix-start">Start mixed review</button></div></div>`;
+  const blitz = `<div class="card row blitz-card" style="flex-wrap:nowrap;gap:14px"><div style="color:var(--gold);flex:none">${ICONS.bolt.replace('<svg','<svg width="44" height="44"')}</div><div class="grow"><h2>Wörter-Blitz</h2><p class="small muted">${ex("60 seconds, as many words as you can. Best: "+(S.st.blitzBest||0),"۶۰ ثانیه، هر چند کلمه که می‌توانی.")}</p></div><button class="btn gold" data-act="blitz-start">Play</button></div>`;
+  const mix = blitz + `<div class="card stack"><h2>Mixed review</h2><p class="small">${ex("15 random questions from every day you've studied. Best on Sundays and review days.","۱۵ سؤال تصادفی از همه روزهایی که خوانده‌ای. بهترین زمان: روزهای مرور.")}</p><div><button class="btn primary" data-act="mix-start">Start mixed review</button></div></div>`;
   return (await flashcardsView()) .replace('<div class="card stack"><div class="row between"><h2>My mistakes</h2>', mix + deck + '<div class="card stack"><div class="row between"><h2>My mistakes</h2>');
 }
 async function startMix(){ const items=[]; for(let n=1;n<=currentDay();n++){ if(!hasDay(n)) continue; const d=await getDay(n); if(!d) continue;
@@ -1161,8 +1169,8 @@ async function startMix(){ const items=[]; for(let n=1;n<=currentDay();n++){ if(
 /* ---------- Progress ---------- */
 function studyDates(){ const set=new Set(); Object.entries(S.st.done).forEach(([k,v])=>{ if(typeof v==="number" && !k.startsWith("prep:")){ const d=new Date(v); set.add(d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()); } });
   Object.entries(S.st.xp||{}).forEach(([k,v])=>{ if(v>0){ const [y,m,dd]=k.split("-").map(Number); set.add(y+"-"+m+"-"+dd); } }); return set; }
-function streak(){ const set=studyDates(); let s=0; const t=todayMid(); let i=set.has(t.getFullYear()+"-"+(t.getMonth()+1)+"-"+t.getDate())?0:1; let miss=0;
-  for(;i<60;i++){ const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i); if(set.has(d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate())) s++; else { miss++; if(miss>1) break; } } return s; }
+function streak(){ const set=studyDates(); const fz=new Set(S.st.freezeDays||[]); const t=todayMid(); let s=0; let i=set.has(sdKey(t))?0:1;
+  for(;i<400;i++){ const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i); const k=sdKey(d); if(set.has(k)) s++; else if(fz.has(k)) continue; else break; } return s; }
 async function vProgress(){
   const cur=currentDay(); for(let n=1;n<=cur;n++) if(hasDay(n)) await getDay(n);
   let daysDone=0, mins=0, stepsDone=0;
@@ -1180,10 +1188,12 @@ async function vProgress(){
   return `<div><h1>Fortschritt</h1><p class="muted">Day ${cur} of ${PLAN.length} · ${daysLeft()} days to the exam</p></div>
   <div class="card stack"><div class="meter"><i style="width:${pct}%"></i></div>
     <div class="tiles">${tile("flame","var(--orange)",streak(),"day streak")}${tile("bolt","var(--gold)",totalXp,"total XP")}${tile("trophy","var(--gold)",daysDone,"days complete")}${tile("clock","var(--blue)",Math.round(mins/60*10)/10+" h","studied")}${tile("cards","var(--purple)",c.learned+c.due,"cards in memory")}${tile("mic","var(--blue)",sessions.length,"tutor sessions")}</div></div>
+  ${levelCard()}${leagueCard(false)}
   <section class="card stack"><div class="row between"><h2>XP this week</h2><span class="chip gold tnum">${wk.reduce((a,x)=>a+x.v,0)} XP</span></div>
     <div class="xpchart">${wk.map(x=>`<div class="xpcol ${x.today?"today":""}"><span class="tnum">${x.v||""}</span><i style="height:${Math.round(x.v/mx*100)}%"></i><b>${x.lb}</b></div>`).join("")}</div>
     <p class="small muted">Daily goal: ${goalXp()} XP · change it in Settings</p></section>
   <section class="card stack"><h2>Latest mock</h2>${last?`<div class="small muted">${esc((MOCKS.find(m=>m.id===last[0])||{}).title||last[0])}</div>${resultBlock(last[1])}`:`<p class="small muted">${ex("No mock yet. Try Übungstest A in the Exam tab any time; the official mocks are on Days 22, 27, 29 and 31.","هنوز آزمون آزمایشی نداده‌ای. Übungstest A را هر وقت خواستی در تب Exam امتحان کن.")}</p><div><button class="btn sm" data-act="mock-open" data-id="ta">Start Übungstest A</button></div>`}</section>
+  ${badgesCard()}
   <section class="card stack"><h2>Accuracy by skill</h2>
     ${Object.entries(skill).map(([k,[a,t]])=>t?barRow(k, Math.round(a/t*100), 100, 60, "%"):`<div class="small muted">${k}: no data yet</div>`).join("")}
     ${grades.length?barRow("Schreiben (avg. email score)", Math.round(grades.reduce((x,y)=>x+y,0)/grades.length*10)/10, 10, 4):""}
@@ -1425,8 +1435,12 @@ function dk(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate
 function xpToday(){ return (S.st.xp||{})[dk(new Date())]||0; }
 function goalXp(){ return +S.st.goal||100; }
 function studiedToday(){ const t=new Date(); return studyDates().has(t.getFullYear()+"-"+(t.getMonth()+1)+"-"+t.getDate()); }
-function addXp(x){ const k=dk(new Date()); S.st.xp=S.st.xp||{}; const before=S.st.xp[k]||0; S.st.xp[k]=before+x;
-  if(before<goalXp() && before+x>=goalXp()) setTimeout(()=>toast("Daily goal reached: "+goalXp()+" XP!"), 900); }
+function addXp(x){ if(boostOn()) x*=2; const k=dk(new Date()); S.st.xp=S.st.xp||{}; const before=S.st.xp[k]||0; const lv0=levelInfo(totalXp()).lvl;
+  S.st.xp[k]=before+x; const lv1=levelInfo(totalXp()).lvl; const D=dayData();
+  if(!D.streakShown && x>0){ D.streakShown=1; queueCel({type:"streak"}); }
+  if(lv1>lv0){ addCoins(30); queueCel({type:"level", lvl:lv1, id:"l"+lv1}); }
+  if(before<goalXp() && before+x>=goalXp()) setTimeout(()=>toast("Daily goal reached: "+goalXp()+" XP!"), 900);
+  return x; }
 
 /* sound effects (synthesised, no files) */
 const SFX={ctx:null};
@@ -1511,10 +1525,6 @@ function popHtml(n,nd,i,o){
     <button class="btn" data-act="node-start" data-i="${i}">${label}</button>
     ${nd.step==="learn"?`<button class="btn link" data-act="step" data-v="guide">${ICONS.book}Guidebook</button>`:""}
   </div>`; }
-function questsCard(n,d){ const xp=xpToday(), g=goalXp(); const pr=dayProgress(n,d); const cards=(S.st.fcLog||{})[dk(new Date())]||0;
-  const q=(icon,color,title,val,max)=>`<div class="quest"><div class="qi" style="color:${color}">${ICONS[icon]}</div><div><b>${title}</b><div class="qbar"><i style="width:${max?Math.min(100,Math.round(val/max*100)):0}%"></i><span class="tnum">${Math.min(val,max)} / ${max}</span></div></div></div>`;
-  return `<section class="card"><div class="row between" style="margin-bottom:4px"><h2>Daily quests</h2><span class="small muted">reset at midnight</span></div>
-    ${q("bolt","var(--gold)",`Earn ${g} XP`,xp,g)}${q("cards","var(--purple)","Review 20 cards",cards,20)}${q("trophy","var(--orange)",`Finish every step of Day ${n}`,pr.done,pr.total)}</section>`; }
 function tutorMini(n){ return `<section class="card row" style="flex-wrap:nowrap;gap:14px"><div style="color:var(--blue);flex:none">${ICONS.mic.replace('<svg','<svg width="34" height="34"')}</div><div class="grow"><h3>Speak with your tutor</h3><p class="small muted">${ex("Gemini knows today's words, your script and your mistakes.","Gemini لغات، متن و اشتباهات امروزت را می‌داند.")}</p></div><button class="btn blue sm" data-act="live-start" data-n="${n}">Talk</button></section>`; }
 function breakSheet(){ const B=S.brk; const left=Math.max(0,B.endAt-Date.now());
   return `<div class="sheet-bg"><div class="sheet" role="dialog" aria-label="Break"><div style="color:var(--orange);display:grid;place-items:center">${ICONS.cup.replace('<svg','<svg width="64" height="64"')}</div><h2>${B.len}-minute break</h2>
@@ -1603,7 +1613,8 @@ function vLesson(){ const L=S.les, s=lesCur(); const pct=Math.round(L.pos/L.queu
 function screenHtml(s,L){ const chk=L.state==="chk";
   const tiles=(list,cls="")=>{ const lay=list.length===3&&list.every(o=>o.length<12)?"three":list.length===4&&list.every(o=>o.length<26)?"two":"";
     return `<div class="answers ${lay}">${list.map((o,i)=>{ let c=""; if(chk){ if(o===s.answer) c="right"; else if(i===L.pick) c="wrong"; } else if(i===L.pick) c="sel";
-      return `<button class="ans ${c} ${s.type==="article"?artClass(o):""} ${cls}" data-act="les-pick" data-v="${i}" ${chk?"disabled":""}><span class="kbd">${i+1}</span><span>${esc(o)}</span></button>`; }).join("")}</div>`; };
+      const gone=!chk&&(L.elim||[]).includes(i);
+      return `<button class="ans ${c} ${gone?"gone":""} ${s.type==="article"?artClass(o):""} ${cls}" data-act="les-pick" data-v="${i}" ${chk||gone?"disabled":""}><span class="kbd">${i+1}</span><span>${esc(o)}</span></button>`; }).join("")}</div>`; };
   switch(s.type){
   case "teach": { const v=s.v, word=s.kind==="word", art=word&&v.article&&v.article!=="-"?v.article:"";
     return `<div><span class="badge">${word?"New word":"New phrase"}</span></div>
@@ -1658,7 +1669,8 @@ function lesFoot(s,L){
   if(s.type==="match") return `<div class="les-foot"><div class="in"><span class="small muted">${ex("Tap a German word, then its meaning.","یک کلمه آلمانی و بعد معنی‌اش را بزن.")}</span><button class="btn big" disabled>Check</button></div></div>`;
   if(s.type==="speak") return `<div class="les-foot"><div class="in"><button class="btn" data-act="les-skip">Can't speak now</button>${srAvail()?"":`<button class="btn primary big" id="lesBtn" data-act="les-said">I said it</button>`}</div></div>`;
   const can = CHOICE.has(s.type) ? L.pick!=null : s.type==="word_order" ? L.wo.length>0 : !!L.text.trim();
-  const skip = (s.type==="listen"||s.type==="dictation"||s.type==="spell") ? `<button class="btn" data-act="les-skip">Can't listen now</button>` : `<span></span>`;
+  const hint = CHOICE.has(s.type) && (s.options||[]).length>2 ? `<button class="btn" data-act="les-hint" ${(S.st.coins||0)<10||(L.elim||[]).length?"disabled":""} title="Remove one wrong answer">${ICONS.bulb}Hint · ${COIN}10</button>` : "";
+  const skip = (s.type==="listen"||s.type==="dictation"||s.type==="spell") ? `<div class="row">${hint}<button class="btn" data-act="les-skip">Can't listen now</button></div>` : hint || `<span></span>`;
   return `<div class="les-foot"><div class="in">${skip}<button class="btn primary big" id="lesBtn" data-act="les-check" ${can?"":"disabled"}>Check</button></div></div>`; }
 function quitSheet(){ return `<div class="sheet-bg"><div class="sheet" role="dialog" aria-label="Quit lesson"><h2>Wait, don't go!</h2><p class="muted">${ex("You'll lose your progress in this lesson.","پیشرفتت در این درس از بین می‌رود.")}</p>
   <button class="btn primary big" data-act="les-quit-no">Keep learning</button><button class="btn ghost" data-act="les-quit-yes" style="color:var(--red-ink)">End session</button></div></div>`; }
@@ -1679,7 +1691,7 @@ function gradeScreen(ok, your, extra){ const L=S.les; const idx=L.queue[L.pos], 
   if(ok){ L.combo++; L.maxCombo=Math.max(L.maxCombo,L.combo); sfx("ok"); const g=germanOf(s); if(g) setTimeout(()=>{ if(S.les===L){ stopSpeech(); speak(g); } },280); }
   else { L.combo=0; sfx("bad"); vib(); }
   render(); }
-function lesNext(){ const L=S.les; if(!L) return; stopSpeech(); L.pos++; Object.assign(L,{state:"ans",pick:null,wo:[],text:"",res:null,match:null,sp:null});
+function lesNext(){ const L=S.les; if(!L) return; stopSpeech(); L.pos++; Object.assign(L,{state:"ans",pick:null,wo:[],text:"",res:null,match:null,sp:null,elim:[]});
   if(L.pos>=L.queue.length) return finishLesson(); render(); window.scrollTo(0,0); }
 function lesAfterRender(){ const L=S.les; if(!L) return; const s=lesCur(); if(!s) return;
   if(L.state==="ans" && L.spoken!==L.pos){ L.spoken=L.pos;
@@ -1693,13 +1705,16 @@ function lesMic(){ const SR=window.SpeechRecognition||window.webkitSpeechRecogni
   r.onerror=e=>{ L.sp={error:e.error==="not-allowed"?"Allow the microphone for this site, or tap “Can't speak now”.":e.error==="no-speech"?"I didn't hear anything. Try again.":String(e.error)}; render(); };
   r.onend=()=>{ if(L.sp&&L.sp.listening){ L.sp={error:"I didn't hear anything. Try again."}; render(); } };
   try{ r.start(); }catch(e){ L.sp={error:e.message}; render(); } }
-function finishLesson(){ const L=S.les; const acc=L.graded?Math.round(L.right/L.graded*100):null; const ms=Date.now()-L.startAt; const xp=10+(acc===100&&L.graded>=3?5:0);
-  let dayDone=false;
+function finishLesson(){ const L=S.les; const acc=L.graded?Math.round(L.right/L.graded*100):null; const ms=Date.now()-L.startAt; const perfect=acc===100&&L.graded>=3;
+  const comboBonus=Math.min(10, Math.floor((L.maxCombo||0)/5)*2); let dayDone=false;
   if(L.key){ const wasAll=dayAllDone(L.n); S.st.done[L.key]=Date.now(); if(L.graded) S.st.results[L.key]={score:L.right,total:L.graded,at:Date.now()};
     if(L.parts>1 && [...Array(L.parts).keys()].every(pi=>S.st.done[`${L.n}:${L.step}#${pi}`])) S.st.done[`${L.n}:${L.step}`]=S.st.done[`${L.n}:${L.step}`]||Date.now();
     dayDone=!wasAll && dayAllDone(L.n); }
-  addXp(xp); save(); sfx("done");
-  S.fin={title: dayDone?`Day ${L.n} complete!`:L.src==="mix"?"Review complete!":"Lesson complete!", xp, acc, ms, dayDone, n:L.n, node:L.node, combo:L.maxCombo};
+  bump("lessons"); dbump("lessons"); if(perfect){ bump("perfect"); dbump("perfect"); } dmax("maxCombo", L.maxCombo||0);
+  if(L.step==="diktat"){ dbump("listen"); if(perfect) bump("dictPerfect"); }
+  let coins=addCoins(5+(perfect?5:0)); if(dayDone){ coins+=addCoins(50); bump("daysDone"); }
+  const xp=addXp(10+(perfect?5:0)+comboBonus); checkBadges(); save(); sfx("done");
+  S.fin={title: dayDone?`Day ${L.n} complete!`:L.src==="mix"?"Review complete!":perfect?"Perfect lesson!":"Lesson complete!", xp, acc, ms, dayDone, n:L.n, node:L.node, combo:L.maxCombo, coins, comboBonus, boost:boostOn()};
   S.les=null; render(); window.scrollTo(0,0); }
 function mockCta(n){ const m=MOCKS.find(x=>x.day===n); if(!m) return ""; const r=(S.st.mocks||{})[m.id];
   return `<section class="card stack" style="border-color:var(--orange)"><div class="row" style="flex-wrap:nowrap;gap:14px"><div style="color:var(--orange);flex:none">${ICONS.exam.replace('<svg','<svg width="38" height="38"')}</div>
@@ -1712,37 +1727,204 @@ function vFinish(){ const F=S.fin; const cols=["#58c322","#1db0f0","#ffc61a","#f
   const conf=Array.from({length:44},(_,i)=>`<i style="left:${(i*37+11)%100}%;background:${cols[i%6]};animation-delay:${((i*7)%10)*0.09}s;animation-duration:${2.2+(i%5)*0.25}s"></i>`).join("");
   const accLbl = F.acc>=95?"Amazing":F.acc>=80?"Good":"Accuracy";
   const msg = F.dayDone ? ex("You finished every step today. Rest well and come back tomorrow.","همه مراحل امروز را تمام کردی. خوب استراحت کن و فردا برگرد.")
-    : F.acc!=null&&F.acc<80 ? ex("Below 80%. Practise this once more to lock it in.","زیر ۸۰٪ است. یک بار دیگر تمرین کن تا جا بیفتد.")
-    : `<div>${["Weiter so!","Sehr gut gemacht!","Du schaffst das!","Prima!"][F.xp%4]}${F.combo>=5?` · ${F.combo} in a row`:""}</div>`;
-  return `<div class="les"><div class="confetti" aria-hidden="true">${conf}</div><div class="fin">
-    <div class="fin-art">${medalSvg()}</div><h1>${esc(F.title)}</h1><div class="muted">${msg}</div>
+    : F.extra ? `<div>${esc(F.extra)}</div>`
+    : F.acc!=null&&F.acc<80 ? ex("Below 80%. Practise this once more to lock it in.","زیر ۸۰٪ است. یک بار دیگر تمرین کن تا جا بیفتد.") : `<div>${["Weiter so!","Sehr gut gemacht!","Du schaffst das!","Prima!"][F.xp%4]}${F.combo>=5?` · ${F.combo} in a row`:""}</div>`;
+  return `<div class="les">${F.acc!=null&&F.acc<80?"":`<div class="confetti" aria-hidden="true">${conf}</div>`}<div class="fin">
+    <div class="fin-art">${F.acc!=null&&F.acc<80?edi(130,"happy"):medalSvg()}</div><h1>${esc(F.title)}</h1><div class="muted">${msg}</div>
     <div class="fin-stats">
       <div class="fstat" style="--c:var(--gold)"><div class="h">Total XP</div><div class="b">${ICONS.bolt}${F.xp}</div></div>
       ${F.acc!=null?`<div class="fstat" style="--c:var(--green)"><div class="h">${accLbl}</div><div class="b">${ICONS.target}${F.acc}%</div></div>`:""}
-      <div class="fstat" style="--c:var(--blue)"><div class="h">Time</div><div class="b">${ICONS.clock}${fmtMs(F.ms||0)}</div></div></div>
+      <div class="fstat" style="--c:var(--blue)"><div class="h">Time</div><div class="b">${ICONS.clock}${fmtMs(F.ms||0)}</div></div>
+      ${F.coins?`<div class="fstat" style="--c:var(--orange)"><div class="h">Schilling</div><div class="b">${COIN}+${F.coins}</div></div>`:""}</div>
+    ${F.comboBonus||F.boost?`<div class="row" style="justify-content:center">${F.comboBonus?`<span class="chip warn">${ICONS.flame.replace('<svg','<svg width="14" height="14"')} combo bonus +${F.comboBonus} XP</span>`:""}${F.boost?`<span class="chip gold">${ICONS.bolt.replace('<svg','<svg width="14" height="14"')} double XP</span>`:""}</div>`:""}
     <div class="small muted tnum">Today: ${xpToday()} / ${goalXp()} XP${xpToday()>=goalXp()?" · daily goal reached":""}</div></div>
     <div class="les-foot"><div class="in">${F.acc!=null&&F.acc<80&&F.node!=null?`<button class="btn" data-act="fin-again">Practise again</button>`:"<span></span>"}<button class="btn primary big" id="lesBtn" data-act="fin-continue">Continue</button></div></div></div>`; }
-function finishFc(){ const f=S.fc; S.fc=null; const xp=5+Math.min(20,f.seen); addXp(xp); const n=S.fcFrom; let dayDone=false;
+function finishFc(){ const f=S.fc; S.fc=null; const n=S.fcFrom; let dayDone=false;
   if(n){ const wasAll=dayAllDone(n); S.st.done[n+":review"]=S.st.done[n+":review"]||Date.now(); dayDone=!wasAll&&dayAllDone(n); S.view="today"; }
+  let coins=addCoins(5); if(dayDone){ coins+=addCoins(50); bump("daysDone"); } const xp=addXp(5+Math.min(20,f.seen)); checkBadges();
   S.fcFrom=null; save(); sfx("done");
-  S.fin={title:dayDone?`Day ${n} complete!`:"Cards reviewed!", xp, acc:f.seen?Math.round((f.good||0)/f.seen*100):null, ms:Date.now()-(f.at||Date.now()), dayDone, n};
+  S.fin={title:dayDone?`Day ${n} complete!`:"Cards reviewed!", xp, coins, acc:f.seen?Math.round((f.good||0)/f.seen*100):null, ms:Date.now()-(f.at||Date.now()), dayDone, n, boost:boostOn()};
   render(); window.scrollTo(0,0); }
 function guideShell(n,d){ return `<div class="les"><div class="les-top"><button class="xbtn" data-act="back" aria-label="Close guidebook">${ICONS.x}</button><div class="grow"><div class="label">Day ${n} · Guidebook</div><h2>${esc(d.title||PLAN[n-1].t)}</h2></div></div>
   <div class="les-body">${stLearn(n,d)}</div>
   <div class="les-foot"><div class="in"><span class="small muted">${ex("All of today's words, phrases and grammar on one page.","همه لغات، جمله‌ها و دستور امروز در یک صفحه.")}</span><button class="btn primary big" id="lesBtn" data-act="back">Got it</button></div></div></div>`; }
 
+/* ====================== v6: gamification layer ====================== */
+/* Economy: Schilling (the old Austrian currency) earned by learning, spent in the shop. */
+const COIN='<svg viewBox="0 0 24 24" class="coin"><circle cx="12" cy="12" r="10" fill="#ffc61a" stroke="#e0a800" stroke-width="2"/><circle cx="12" cy="12" r="6.6" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.4"/><text x="12" y="16.3" text-anchor="middle" font-size="11" font-weight="900" fill="#a86f00" font-family="Nunito,Segoe UI,sans-serif">S</text></svg>';
+function shield(col){ return `<svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z" fill="${col}" stroke="rgba(0,0,0,.18)" stroke-width="1.2"/><path d="M12 6.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L12 14.7l-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="#fff" fill-opacity=".9"/></svg>`; }
+function sdKey(d){ return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function dayData(){ const k=dk(new Date()); S.st.daily=S.st.daily||{}; if(!S.st.daily[k]){ S.st.daily[k]={}; const keys=Object.keys(S.st.daily).sort(); while(keys.length>21) delete S.st.daily[keys.shift()]; } return S.st.daily[k]; }
+function bump(k,n=1){ S.st.stats=S.st.stats||{}; S.st.stats[k]=(S.st.stats[k]||0)+n; }
+function stat(k){ return (S.st.stats||{})[k]||0; }
+function dbump(k,n=1){ const D=dayData(); D[k]=(D[k]||0)+n; }
+function dmax(k,v){ const D=dayData(); D[k]=Math.max(D[k]||0,v); S.st.stats=S.st.stats||{}; S.st.stats[k]=Math.max(S.st.stats[k]||0,v); }
+function addCoins(n){ S.st.coins=(S.st.coins||0)+n; S.st.coinsEarned=(S.st.coinsEarned||0)+n; return n; }
+function totalXp(){ return Object.values(S.st.xp||{}).reduce((a,b)=>a+b,0); }
+function levelInfo(x){ let l=1, need=100, rest=x; while(rest>=need){ rest-=need; l++; need=100+50*(l-1); } return {lvl:l, into:rest, need}; }
+function boostOn(){ return (S.st.boostUntil||0)>Date.now(); }
+function queueCel(c){ S.cel=S.cel||[]; if(!S.cel.some(x=>x.type===c.type&&x.id===c.id)) S.cel.push(c); }
+function daysComplete(){ let k=0; for(let n=1;n<=PLAN.length;n++) if(S.days[n]&&dayAllDone(n)) k++; return Math.max(k, stat("daysDone")); }
+function cardsKnown(){ const c=srsCounts(); return c.learned+c.due; }
+
+/* streak freezes: bought in the shop, used automatically for missed days */
+function applyFreezes(){ if(!(S.st.freezes>0)) return; const set=studyDates(); const fz=new Set(S.st.freezeDays||[]); const t=todayMid(); const gap=[]; let i=1;
+  for(;i<60;i++){ const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i); const k=sdKey(d); if(set.has(k)||fz.has(k)) break; gap.push(k); }
+  if(i>=60||!gap.length||gap.length>S.st.freezes) return;
+  gap.forEach(k=>fz.add(k)); S.st.freezes-=gap.length; S.st.freezeDays=[...fz].slice(-40); save();
+  setTimeout(()=>toast(`Streak freeze used for ${gap.length} missed day${gap.length>1?"s":""}. Your streak is safe!`),1600); }
+
+/* leagues: honest weekly XP tiers (no fake opponents). Promote with 800+ XP in a week, drop below 300. */
+const LEAGUES=[["Bregenz","#d08a4a"],["Innsbruck","#9aa8b4"],["Salzburg","#ffc61a"],["Linz","#1db0f0"],["Graz","#ff6fae"],["Wien","#ce82ff"]];
+const PROMOTE=800, KEEP=300;
+function weekStart(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
+function weekXp(ws){ let s=0; for(let i=0;i<7;i++){ const d=new Date(ws.getFullYear(),ws.getMonth(),ws.getDate()+i); s+=(S.st.xp||{})[dk(d)]||0; } return s; }
+function updateLeague(){ const L=S.st.league=S.st.league||{tier:0,week:""}; const ws=weekStart(new Date()), cur=dk(ws);
+  if(!L.week){ L.week=cur; return; } if(L.week===cur) return;
+  const [y,m,d]=L.week.split("-").map(Number); let w=new Date(y,m-1,d);
+  while(w<ws){ const x=weekXp(w), before=L.tier; if(x>=PROMOTE) L.tier=Math.min(LEAGUES.length-1,L.tier+1); else if(x<KEEP) L.tier=Math.max(0,L.tier-1);
+    if(L.tier>before) queueCel({type:"league", tier:L.tier, xp:x}); else if(L.tier<before) setTimeout(()=>toast(`Back to the ${LEAGUES[L.tier][0]} league. Earn ${PROMOTE} XP this week to move up!`),1800);
+    w=new Date(w.getFullYear(),w.getMonth(),w.getDate()+7); }
+  L.week=cur; save(); }
+function leagueCard(compact){ const L=S.st.league||{tier:0}; const [name,col]=LEAGUES[L.tier]; const x=weekXp(weekStart(new Date())); const top=L.tier>=LEAGUES.length-1;
+  const left=7-((new Date().getDay()+6)%7); const pct=Math.min(100,Math.round(x/PROMOTE*100));
+  return `<section class="card stack league"><div class="row" style="flex-wrap:nowrap;gap:14px"><div class="lg-shield">${shield(col)}</div>
+    <div class="grow"><div class="label">Weekly league · ${left} day${left>1?"s":""} left</div><h2>${name} league</h2>
+    <div class="small muted">${top?ex(`Top league! Keep ${KEEP}+ XP a week to stay in Wien.`,"بالاترین لیگ! هفته‌ای حداقل "+KEEP+" امتیاز تا در وین بمانی."):x>=PROMOTE?ex(`Promotion secured: you move to ${LEAGUES[L.tier+1][0]} on Monday.`,"صعود قطعی شد."):ex(`${PROMOTE-x} XP more this week to move up to ${LEAGUES[L.tier+1][0]}.`,`${PROMOTE-x} امتیاز دیگر تا صعود.`)}</div></div></div>
+    <div class="qbar"><i style="width:${pct}%;background:${col}"></i><span class="tnum">${x} / ${PROMOTE} XP</span></div>
+    ${compact?"":`<div class="ladder">${LEAGUES.map(([nm,c],i)=>`<div class="rung ${i===L.tier?"cur":i<L.tier?"past":""}" title="${nm}"><span style="color:${i<=L.tier?c:"var(--faint)"}">${shield(i<=L.tier?c:"var(--line)")}</span><b>${nm}</b></div>`).join("")}</div>
+    <p class="small muted">${ex(`Leagues are you against the clock, not other people: ${PROMOTE}+ XP in a week (Mon–Sun) moves you up, under ${KEEP} moves you down. Reach Wien before the exam!`,`لیگ‌ها رقابت با خودت است: ${PROMOTE}+ امتیاز در هفته صعود، زیر ${KEEP} سقوط. قبل از آزمون به وین برس!`)}</p>`}</section>`; }
+
+/* achievements */
+const BADGES=[
+ ["first","Erste Schritte","Finish your first lesson","star",()=>stat("lessons")>=1],
+ ["lessons25","Fleißig","Finish 25 lessons","star",()=>stat("lessons")>=25],
+ ["lessons100","Unermüdlich","Finish 100 lessons","star",()=>stat("lessons")>=100],
+ ["perfect","Perfekt!","Get 100% in a lesson","target",()=>stat("perfect")>=1],
+ ["perfect10","Fehlerfrei","Get 100% in 10 lessons","target",()=>stat("perfect")>=10],
+ ["combo10","In Fahrt","10 right answers in a row","flame",()=>stat("maxCombo")>=10],
+ ["combo25","Unaufhaltsam","25 right answers in a row","flame",()=>stat("maxCombo")>=25],
+ ["streak3","Drei Tage","Reach a 3-day streak","flame",()=>streak()>=3],
+ ["streak7","Eine Woche","Reach a 7-day streak","flame",()=>streak()>=7],
+ ["streak14","Zwei Wochen","Reach a 14-day streak","flame",()=>streak()>=14],
+ ["streak30","Bis zur Prüfung","Reach a 30-day streak","flame",()=>streak()>=30],
+ ["xp1000","Tausend","Earn 1,000 XP","bolt",()=>totalXp()>=1000],
+ ["xp5000","Fünftausend","Earn 5,000 XP","bolt",()=>totalXp()>=5000],
+ ["words100","Wortschatz","Have 100 cards in memory","cards",()=>cardsKnown()>=100],
+ ["words300","Lexikon","Have 300 cards in memory","cards",()=>cardsKnown()>=300],
+ ["day1","Tagessieger","Finish every step of a day","trophy",()=>daysComplete()>=1],
+ ["day7","Wochensieger","Finish 7 full days","trophy",()=>daysComplete()>=7],
+ ["dict","Diktat-Profi","Finish a dictation with 100%","pencil",()=>stat("dictPerfect")>=1],
+ ["blitz20","Blitzschnell","Score 20 in Wörter-Blitz","bolt",()=>(S.st.blitzBest||0)>=20],
+ ["quests10","Abenteurer","Claim 10 daily quests","chest",()=>stat("quests")>=10],
+ ["mock","Probe bestanden","Pass the written part of a mock","exam",()=>Object.values(S.st.mocks||{}).some(r=>r&&r.wPass)],
+ ["tutor","Gesprächig","Finish a session with the tutor","mic",()=>Object.values(S.st.live||{}).flat().length>=1],
+ ["austria","Österreich-Fan","Add the Austrian words deck","flagAT",()=>!!(S.st.decks&&S.st.decks.austria)],
+ ["wien","Ab nach Wien","Reach the Wien league","trophy",()=>((S.st.league||{}).tier||0)>=LEAGUES.length-1]];
+function checkBadges(){ S.st.badges=S.st.badges||{}; let changed=false;
+  BADGES.forEach(([id,,,,test])=>{ if(S.st.badges[id]) return; let ok=false; try{ ok=test(); }catch(e){} if(ok){ S.st.badges[id]=Date.now(); addCoins(20); queueCel({type:"badge", id}); changed=true; } });
+  if(changed) save(); }
+function badgesCard(){ const got=S.st.badges||{}; const n=Object.keys(got).length;
+  return `<section class="card stack"><div class="row between"><h2>Achievements</h2><span class="chip gold tnum">${n} / ${BADGES.length}</span></div>
+    <div class="bgrid">${BADGES.map(([id,t,d,ic])=>`<div class="bdg ${got[id]?"on":""}" title="${attr(d)}"><div class="bi">${ICONS[ic]}</div><b>${esc(t)}</b><span>${esc(d)}</span></div>`).join("")}</div>
+    <p class="small muted">Each achievement pays 20 Schilling.</p></section>`; }
+function levelCard(){ const L=levelInfo(totalXp()); const pct=Math.round(L.into/L.need*100);
+  return `<section class="card row lvl" style="flex-wrap:nowrap;gap:16px"><div class="lvl-ring" style="--p:${pct}"><span>${L.lvl}</span></div>
+    <div class="grow"><div class="label">Level ${L.lvl}</div><h2>${["Anfänger","Lernender","Entdecker","Sprecher","Kenner","Profi","Meister","Champion"][Math.min(7,Math.floor((L.lvl-1)/2))]}</h2>
+    <div class="qbar"><i style="width:${pct}%"></i><span class="tnum">${L.into} / ${L.need} XP</span></div><div class="small muted">${L.need-L.into} XP to level ${L.lvl+1} · level-ups pay 30 Schilling</div></div></section>`; }
+
+/* daily quests: one fixed + two that rotate every day */
+const QPOOL=[
+ {id:"lessons3",t:"Finish 3 lessons",max:3,val:D=>D.lessons||0,r:15,ic:"star"},
+ {id:"perfect",t:"Get 100% in a lesson",max:1,val:D=>D.perfect||0,r:20,ic:"target"},
+ {id:"combo10",t:"Get 10 right in a row",max:10,val:D=>D.maxCombo||0,r:20,ic:"flame"},
+ {id:"cards20",t:"Review 20 cards",max:20,val:()=>(S.st.fcLog||{})[dk(new Date())]||0,r:15,ic:"cards"},
+ {id:"listen",t:"Finish a Hören or Dictation step",max:1,val:D=>D.listen||0,r:20,ic:"headph"},
+ {id:"blitz",t:"Play a Wörter-Blitz round",max:1,val:D=>D.blitz||0,r:15,ic:"bolt"},
+ {id:"break",t:"Take a planned break",max:1,val:D=>D.breaks||0,r:10,ic:"cup"}];
+function quests(){ const h=hashStr(dk(new Date())); const a=QPOOL[h%QPOOL.length]; let b=QPOOL[(h>>>5)%QPOOL.length]; if(b===a) b=QPOOL[(QPOOL.indexOf(a)+3)%QPOOL.length];
+  return [{id:"xp",t:`Earn ${goalXp()} XP`,max:goalXp(),val:()=>xpToday(),r:20,ic:"bolt"}, a, b]; }
+function questsCard(n,d){ const D=dayData(), cl=D.claimed||{};
+  const rows=quests().map(q=>{ const v=Math.min(q.val(D),q.max), done=v>=q.max, claimed=cl[q.id];
+    return `<div class="quest"><div class="qi" style="color:var(--${q.ic==="bolt"?"gold":q.ic==="flame"?"orange":q.ic==="cards"?"purple":"blue"})">${ICONS[q.ic]}</div><div class="stack" style="gap:4px"><div class="row between" style="flex-wrap:nowrap"><b>${esc(q.t)}</b>${claimed?`<span class="chip ok">${ICONS.check.replace('<svg','<svg width="12" height="12"')} claimed</span>`:done?`<button class="btn gold sm" data-act="quest-claim" data-q="${q.id}" data-r="${q.r}">${COIN} Claim ${q.r}</button>`:`<span class="chip gold">${COIN} ${q.r}</span>`}</div>
+      <div class="qbar"><i style="width:${Math.round(v/q.max*100)}%"></i><span class="tnum">${v} / ${q.max}</span></div></div></div>`; }).join("");
+  return `<section class="card"><div class="row between" style="margin-bottom:4px"><h2>Daily quests</h2><span class="small muted">new quests at midnight</span></div>${rows}</section>`; }
+
+/* mascot: Edi the edelweiss (original character) */
+function edi(size=96, mood="happy"){ const mouth = mood==="wow" ? '<ellipse cx="0" cy="9" rx="5" ry="6" fill="#3c3c3c"/><ellipse cx="0" cy="11.5" rx="3" ry="2.4" fill="#ff7b86"/>' : mood==="wink" ? '<path d="M-8 6 Q0 15 8 6" stroke="#3c3c3c" stroke-width="2.8" fill="none" stroke-linecap="round"/>' : '<path d="M-8 5 Q0 15 8 5Z" fill="#3c3c3c"/><path d="M-4.5 9.6 Q0 12.6 4.5 9.6" stroke="#ff7b86" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+  const eyes = mood==="wink" ? '<ellipse cx="-8" cy="-4" rx="3.4" ry="4.4" fill="#3c3c3c"/><circle cx="-7" cy="-5.5" r="1.3" fill="#fff"/><path d="M4 -4 Q8 -8 12 -4" stroke="#3c3c3c" stroke-width="2.6" fill="none" stroke-linecap="round"/>' : '<ellipse cx="-8" cy="-4" rx="3.4" ry="4.4" fill="#3c3c3c"/><ellipse cx="8" cy="-4" rx="3.4" ry="4.4" fill="#3c3c3c"/><circle cx="-7" cy="-5.6" r="1.3" fill="#fff"/><circle cx="9" cy="-5.6" r="1.3" fill="#fff"/>';
+  return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" class="edi" aria-hidden="true"><g transform="translate(60 61)">
+    ${[0,45,90,135,180,225,270,315].map(a=>`<path d="M0 -14 C 12 -24 10 -46 0 -57 C -10 -46 -12 -24 0 -14Z" transform="rotate(${a+22.5})" fill="#ffffff" stroke="#cfd8de" stroke-width="2.2" stroke-linejoin="round"/>`).join("")}
+    ${[0,60,120,180,240,300].map(a=>`<path d="M0 -12 C 7 -18 6 -32 0 -38 C -6 -32 -7 -18 0 -12Z" transform="rotate(${a})" fill="#f4f7f8" stroke="#dfe6ea" stroke-width="1.6"/>`).join("")}
+    <circle r="22" fill="#ffd84d" stroke="#e5b300" stroke-width="2.5"/>${eyes}<circle cx="-14" cy="5" r="3.6" fill="#ff9aa2" opacity=".75"/><circle cx="14" cy="5" r="3.6" fill="#ff9aa2" opacity=".75"/>${mouth}</g></svg>`; }
+function ediSays(n){ const xp=xpToday(), g=goalXp(), dl=daysLeft();
+  const [de,en] = !xp ? [`Servus! Bereit für Tag ${n}?`, `Ready for today? ${dl} days to the exam.`] : xp>=g ? ["Tagesziel geschafft!", "Daily goal done. Every extra lesson is a bonus."] : [`Noch ${g-xp} XP!`, `${g-xp} XP to your daily goal. Weiter so!`];
+  return `<div class="edi-row">${edi(76, xp>=g?"wink":"happy")}<div class="speech"><b>${esc(de)}</b><span>${esc(en)}</span></div></div>`; }
+
+/* celebration screens (streak, level, badge, league) */
+function weekDots(){ const set=studyDates(); const fz=new Set(S.st.freezeDays||[]); const ws=weekStart(new Date()); const t=todayMid();
+  return `<div class="wdots">${["Mo","Di","Mi","Do","Fr","Sa","So"].map((nm,i)=>{ const d=new Date(ws.getFullYear(),ws.getMonth(),ws.getDate()+i); const k=sdKey(d); const on=set.has(k), f=fz.has(k), today=+d===+t;
+    return `<div class="wd ${on?"on":f?"frz":""} ${today?"today":""}"><span>${nm}</span><i>${on?ICONS.check:f?"❄":""}</i></div>`; }).join("")}</div>`; }
+function vCel(){ const c=S.cel[0]; let art="", h="", p="";
+  if(c.type==="streak"){ const s=streak(); art=`<div class="cel-flame">${ICONS.flame}<b class="tnum">${s}</b></div>`; h=`${s}-day streak!`;
+    p=ex(s<=1?"Your streak starts today. Come back tomorrow to keep it going.":"You studied again today. Keep the flame alive until the exam!", s<=1?"زنجیره امروز شروع شد. فردا برگرد تا ادامه پیدا کند.":"امروز هم خواندی. شعله را تا روز آزمون روشن نگه دار!")
+      + weekDots() + `<div class="small muted">${S.st.freezes?`${S.st.freezes} streak freeze${S.st.freezes>1?"s":""} ready`:`No streak freeze yet · buy one in the shop`}</div>`; }
+  else if(c.type==="level"){ art=`<div class="lvl-ring big" style="--p:100"><span>${c.lvl}</span></div>`; h=`Level ${c.lvl}!`; p=`<div class="chip gold" style="font-size:.95rem">${COIN} +30 Schilling</div>`; }
+  else if(c.type==="badge"){ const B=BADGES.find(b=>b[0]===c.id)||["","Achievement","","star"]; art=`<div class="bdg on big"><div class="bi">${ICONS[B[3]]}</div></div>`; h=B[1]; p=`<div>${esc(B[2])}</div><div class="chip gold" style="font-size:.95rem">${COIN} +20 Schilling</div>`; }
+  else if(c.type==="league"){ const [nm,col]=LEAGUES[c.tier]; art=`<div class="lg-shield big">${shield(col)}</div>`; h=`Welcome to ${nm}!`; p=ex(`${c.xp} XP last week moved you up a league. ${c.tier>=LEAGUES.length-1?"You made it to Wien!":"Next stop: "+LEAGUES[c.tier+1][0]+"."}`,"به لیگ بالاتر صعود کردی!"); }
+  return `<div class="les"><div class="fin cel">${c.type==="streak"||c.type==="level"?"":`<div class="confetti" aria-hidden="true">${confetti()}</div>`}
+    <div class="cel-art">${art}</div><div class="row" style="justify-content:center;gap:10px;flex-wrap:nowrap">${edi(56,c.type==="streak"?"happy":"wow")}<h1>${esc(h)}</h1></div><div class="stack" style="align-items:center">${p}</div></div>
+    <div class="les-foot"><div class="in"><span class="small muted tnum">${S.cel.length>1?`${S.cel.length-1} more`:""}</span><button class="btn primary big" id="lesBtn" data-act="cel-next">Continue</button></div></div></div>`; }
+function confetti(){ const cols=["#58c322","#1db0f0","#ffc61a","#ff6fae","#ce82ff","#ff9a1f"]; return Array.from({length:44},(_,i)=>`<i style="left:${(i*37+11)%100}%;background:${cols[i%6]};animation-delay:${((i*7)%10)*0.09}s;animation-duration:${2.2+(i%5)*0.25}s"></i>`).join(""); }
+
+/* shop */
+function vShop(){ const c=S.st.coins||0; const bl=boostOn()?Math.ceil((S.st.boostUntil-Date.now())/60000):0;
+  const item=(ic,col,t,d,price,act,dis,note)=>`<div class="shop-item"><div class="si" style="color:${col}">${ic}</div><div class="grow stack" style="gap:6px"><h3>${t}</h3><div class="small muted">${d}</div>
+    <div class="row between">${note?`<span class="small">${note}</span>`:"<span></span>"}${act?`<button class="btn ${dis?"":"gold"}" data-act="shop-buy" data-v="${act}" ${dis?"disabled":""}>${COIN}${price}</button>`:`<span class="chip gold">${COIN} ${price} each</span>`}</div></div></div>`;
+  return `<div class="row between"><h1>Shop</h1><div class="wallet">${COIN}<b class="tnum">${c}</b></div></div>
+    <div class="edi-row">${edi(70,"wink")}<div class="speech"><b>Schilling!</b><span>${ex("The old Austrian money is back. Earn it by learning, spend it here.","پول قدیمی اتریش برگشته! با یادگیری جمعش کن و اینجا خرج کن.")}</span></div></div>
+    <section class="card stack" style="gap:0">
+    ${item(`<span style="font-size:2rem;line-height:1">❄</span>`,"var(--blue)","Streak freeze",ex("Protects your streak if you miss a day. Used automatically. You can hold 2.","اگر یک روز نخوانی، زنجیره‌ات حفظ می‌شود. خودکار استفاده می‌شود. حداکثر ۲ تا."),150,"freeze",c<150||(S.st.freezes||0)>=2,`Owned: <b>${S.st.freezes||0} / 2</b>`)}
+    ${item(ICONS.bolt,"var(--gold)","Double XP · 15 minutes",ex("Every XP you earn counts twice for 15 minutes. Start it right before a lesson block.","تا ۱۵ دقیقه همه امتیازها دو برابر می‌شوند. درست قبل از شروع درس بخر."),100,"boost",c<100||bl>0,bl?`<b style="color:var(--orange)">Active · ${bl} min left</b>`:"")}
+    ${item(ICONS.bulb,"var(--purple)","Lesson hint",ex("Inside a lesson, tap Hint to remove one wrong answer.","داخل درس، Hint را بزن تا یک گزینه غلط حذف شود."),10,null)}
+    </section>
+    <section class="card stack"><h2>How to earn Schilling</h2>
+      <div class="earn">${[["Finish a lesson","5"],["Perfect lesson (100%)","+5"],["Finish an exam-format step","10"],["Open a break chest","5–15"],["Claim a daily quest","10–20"],["Unlock an achievement","20"],["Level up","30"],["Finish a whole day","50"],["Wörter-Blitz","1 per word"]].map(([a,b])=>`<div class="row between"><span>${a}</span><span class="chip gold">${COIN} ${b}</span></div>`).join("")}</div></section>`; }
+
+/* Wörter-Blitz: 60-second vocabulary speed round */
+function blitzPool(){ return allCards().filter(c=>c.en&&c.de&&c.kind!=="m"&&String(c.en).length<60); }
+async function startBlitz(){ for(const k of Object.keys(S.st.intro)) await getDay(+k); const pool=blitzPool();
+  if(pool.length<6){ toast("Learn a few words first: finish a Words lesson."); return; }
+  S.blitz={pool, endAt:Date.now()+60000, score:0, wrong:0, combo:0, q:null, flash:null, startAt:Date.now()}; nextBlitz(); render(); window.scrollTo(0,0); tickBlitz(); }
+function nextBlitz(){ const B=S.blitz; let c; do{ c=B.pool[Math.floor(Math.random()*B.pool.length)]; } while(B.q&&B.pool.length>1&&vfull(c)===B.q.de);
+  const rev=Math.random()<0.3; B.q = rev ? {de:c.en, answer:vfull(c), rev:true, options:opts(vfull(c), B.pool.map(vfull), 4, String(Math.random()))} : {de:vfull(c), answer:c.en, options:opts(c.en, B.pool.map(x=>x.en), 4, String(Math.random()))};
+  if(!rev) setTimeout(()=>{ if(S.blitz===B){ stopSpeech(); speak(B.q.de); } },120); }
+function tickBlitz(){ clearInterval(tickBlitz._i); tickBlitz._i=setInterval(()=>{ const B=S.blitz; if(!B){ clearInterval(tickBlitz._i); return; } const left=B.endAt-Date.now();
+  const bar=$("#blitzBar"), t=$("#blitzT"); if(bar) bar.style.width=Math.max(0,left/600)+"%"; if(t) t.textContent=Math.max(0,Math.ceil(left/1000));
+  if(left<=0){ clearInterval(tickBlitz._i); endBlitz(); } },200); }
+function endBlitz(){ const B=S.blitz; if(!B) return; S.blitz=null; stopSpeech(); const best=Math.max(S.st.blitzBest||0, B.score); const rec=B.score>(S.st.blitzBest||0)&&B.score>0; S.st.blitzBest=best;
+  dbump("blitz"); const coins=addCoins(Math.min(40,B.score)); const xp=B.score?addXp(Math.min(30,B.score)):0; checkBadges(); save(); sfx("done");
+  S.fin={title:rec?"New high score!":"Wörter-Blitz", xp, acc:B.score+B.wrong?Math.round(B.score/(B.score+B.wrong)*100):null, ms:60000, coins, extra:`${B.score} word${B.score===1?"":"s"} · best ${best}`, n:null}; render(); }
+function vBlitz(){ const B=S.blitz, q=B.q, left=Math.max(0,B.endAt-Date.now());
+  return `<div class="les"><div class="les-top"><button class="xbtn" data-act="blitz-quit" aria-label="Stop">${ICONS.x}</button>
+    <div class="grow"><div class="lbar blitzbar"><i id="blitzBar" style="width:${left/600}%"></i></div></div><span class="blitz-t tnum" id="blitzT">${Math.ceil(left/1000)}</span></div>
+    <div class="les-body"><div class="row between"><span class="badge blue">Wörter-Blitz</span><span class="chip gold tnum">${ICONS.bolt.replace('<svg','<svg width="14" height="14"')} ${B.score}${B.combo>=3?` · ${B.combo} in a row`:""}</span></div>
+    <h1 class="les-h">${q.rev?"Which German word?":"What does it mean?"}</h1><div class="big-prompt" style="font-size:2rem;text-align:center;padding:10px 0">${q.rev?esc(q.de):artHtml(q.de)}</div>
+    <div class="answers two">${q.options.map((o,i)=>{ let c=""; if(B.flash){ if(o===q.answer) c="right"; else if(i===B.flash.i) c="wrong"; } return `<button class="ans c ${c}" data-act="blitz-pick" data-v="${i}" ${B.flash?"disabled":""}><span class="kbd">${i+1}</span><span>${q.rev?artHtml(o):esc(o)}</span></button>`; }).join("")}</div>
+    <p class="small muted" style="text-align:center">As many as you can in 60 seconds · best ${S.st.blitzBest||0}</p></div></div>`; }
+
 /* ---------- events ---------- */
 document.addEventListener("click", async e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   const a=b.dataset.act;
-  if(a==="tab"){ S.view=b.dataset.v; S.step=null; S.fc=null; S.mix=null; S.pop=null; S.fcFrom=null; if(S.view==="today") S.dayN=S.dayN||currentDay(); render(); window.scrollTo(0,0); }
+  if(a==="tab"){ S.view=b.dataset.v; S.step=null; S.fc=null; S.mix=null; S.pop=null; S.fcFrom=null; if(S.blitz){ clearInterval(tickBlitz._i); S.blitz=null; } if(S.view==="today") S.dayN=S.dayN||currentDay(); render(); window.scrollTo(0,0); }
   else if(a==="day"){ const n=+b.dataset.v; if(n<1||n>PLAN.length) return; S.dayN=n; S.view="today"; S.step=null; S.pop=null; render(); window.scrollTo(0,0); }
   else if(a==="step"){ S.step=b.dataset.v; S.stepAt=Date.now(); S.pop=null; render(); window.scrollTo(0,0); }
   else if(a==="node"){ const i=+b.dataset.i; S.pop=S.pop===i?null:i; sfx("tap"); render(); const pp=$(".pop"); if(pp) pp.scrollIntoView({block:"nearest",behavior:"smooth"}); }
   else if(a==="node-start"){ startNode(S.dayN||currentDay(), +b.dataset.i); }
   else if(a==="node-trophy"){ const n=S.dayN||currentDay(); toast(dayAllDone(n)?`Day ${n} complete. Toll gemacht!`:"Finish every step on the path to win today's trophy."); }
   else if(a==="brk"){ S.brk={n:S.dayN||currentDay(), m:+b.dataset.m, len:+b.dataset.len, endAt:Date.now()+(+b.dataset.len)*60000}; render(); }
-  else if(a==="brk-end"){ const B=S.brk; if(B){ const k=`${B.n}:brk${B.m}`; if(!S.st.done[k]){ S.st.done[k]=Date.now(); addXp(5); save(); toast("Break bonus +5 XP"); } } S.brk=null; render(); }
+  else if(a==="brk-end"){ const B=S.brk; if(B){ const k=`${B.n}:brk${B.m}`; if(!S.st.done[k]){ S.st.done[k]=Date.now(); const c=addCoins(5+Math.floor(Math.random()*11)); const x=addXp(5); dbump("breaks"); checkBadges(); save(); sfx("done"); toast(`Chest opened: +${c} Schilling, +${x} XP`); } } S.brk=null; render(); }
   else if(a==="les-pick"){ const L=S.les; if(!L||L.state!=="ans") return; L.pick=+b.dataset.v; const s=lesCur(); if(s.sayOpts||s.type==="listen"&&/^[A-Za-zÄÖÜäöüß ]{3,}$/.test(s.options[L.pick])&&s.options[L.pick].length>2){ stopSpeech(); speak(s.options[L.pick]); } else sfx("tap"); render(); }
   else if(a==="les-check"){ lesCheck(); }
   else if(a==="les-next"){ lesNext(); }
@@ -1763,11 +1945,25 @@ document.addEventListener("click", async e=>{
   else if(a==="les-quit-yes"){ S.les=null; stopSpeech(); render(); window.scrollTo(0,0); }
   else if(a==="fin-continue"){ S.fin=null; render(); window.scrollTo(0,0); if(S.view==="today") setTimeout(()=>{ const c=$("#curNode"); if(c) c.scrollIntoView({block:"center",behavior:"smooth"}); },60); }
   else if(a==="fin-again"){ const F=S.fin; S.fin=null; startNode(F.n, F.node); }
-  else if(a==="task-done"){ const k=b.dataset.key, step=b.dataset.step, n=+k.split(":")[0]; const wasAll=dayAllDone(n); S.st.done[k]=Date.now(); addXp(15);
+  else if(a==="task-done"){ const k=b.dataset.key, step=b.dataset.step, n=+k.split(":")[0]; const wasAll=dayAllDone(n); S.st.done[k]=Date.now(); const gx=addXp(15); let coins=addCoins(10); if(step==="hoeren") dbump("listen");
     let sc=0,tot=0; Object.entries(S.st.results).forEach(([rk,r])=>{ if(rk.startsWith(n+":"+step)&&r&&r.total){ sc+=r.score; tot+=r.total; } });
-    const dayDone=!wasAll&&dayAllDone(n); save(); sfx("done"); stopSpeech();
-    S.fin={title:dayDone?`Day ${n} complete!`:`${(NODE_INFO[step]||[step])[0]} complete!`, xp:15, acc:tot?Math.round(sc/tot*100):null, ms:S.stepAt?Date.now()-S.stepAt:0, dayDone, n}; S.step=null; S.timer=null; render(); window.scrollTo(0,0); }
+    const dayDone=!wasAll&&dayAllDone(n); if(dayDone){ coins+=addCoins(50); bump("daysDone"); } checkBadges(); save(); sfx("done"); stopSpeech();
+    S.fin={title:dayDone?`Day ${n} complete!`:`${(NODE_INFO[step]||[step])[0]} complete!`, xp:gx, coins, boost:boostOn(), acc:tot?Math.round(sc/tot*100):null, ms:S.stepAt?Date.now()-S.stepAt:0, dayDone, n}; S.step=null; S.timer=null; render(); window.scrollTo(0,0); }
   else if(a==="goal"){ S.st.goal=+b.dataset.v; save(); render(); }
+  else if(a==="quest-claim"){ const D=dayData(); D.claimed=D.claimed||{}; if(D.claimed[b.dataset.q]) return; D.claimed[b.dataset.q]=1; const r=addCoins(+b.dataset.r); bump("quests"); checkBadges(); save(); sfx("done"); toast(`Quest complete: +${r} Schilling`); render(); }
+  else if(a==="shop-buy"){ const v=b.dataset.v, c=S.st.coins||0;
+    if(v==="freeze"&&c>=150&&(S.st.freezes||0)<2){ S.st.coins-=150; S.st.freezes=(S.st.freezes||0)+1; sfx("done"); toast("Streak freeze ready. Your streak is protected for one missed day."); }
+    else if(v==="boost"&&c>=100&&!boostOn()){ S.st.coins-=100; S.st.boostUntil=Date.now()+15*60000; sfx("done"); toast("Double XP for 15 minutes. Go!"); }
+    save(); render(); }
+  else if(a==="les-hint"){ const L=S.les, s=lesCur(); if(!L||L.state!=="ans"||(S.st.coins||0)<10||(L.elim||[]).length) return;
+    const wrong=s.options.map((o,i)=>i).filter(i=>s.options[i]!==s.answer&&i!==L.pick); if(!wrong.length) return; const i=wrong[Math.floor(Math.random()*wrong.length)];
+    L.elim=[i]; S.st.coins-=10; save(); sfx("tap"); render(); }
+  else if(a==="cel-next"){ S.cel.shift(); render(); window.scrollTo(0,0); }
+  else if(a==="blitz-start"){ startBlitz(); }
+  else if(a==="blitz-quit"){ clearInterval(tickBlitz._i); S.blitz=null; stopSpeech(); render(); }
+  else if(a==="blitz-pick"){ const B=S.blitz; if(!B||B.flash) return; const i=+b.dataset.v; const ok=B.q.options[i]===B.q.answer; B.flash={i,ok};
+    if(ok){ B.score++; B.combo++; sfx("ok"); } else { B.wrong++; B.combo=0; sfx("bad"); vib(60); }
+    render(); setTimeout(()=>{ if(S.blitz===B){ B.flash=null; nextBlitz(); render(); } }, ok?260:800); }
   else if(a==="back"){ S.step=null; stopSpeech(); render(); window.scrollTo(0,0); }
   else if(a==="done"){ const k=b.dataset.key; if(S.st.done[k]) delete S.st.done[k]; else S.st.done[k]=Date.now(); save(); if(S.st.done[k]){ S.step=null; toast("Step done. Weiter so!"); window.scrollTo(0,0); } render(); }
   else if(a==="timer"){ const k=b.dataset.key; const min=+b.dataset.min; if(!S.timer||S.timer.key!==k) S.timer={key:k,running:false,left:min*60000};
@@ -1859,12 +2055,13 @@ document.addEventListener("input", e=>{
   if(t.dataset.set==="rate"){ S.st.rate=+t.value; const l=t.previousElementSibling; if(l) l.querySelector("span").textContent=(+t.value).toFixed(2)+"×"; clearTimeout(t._s); t._s=setTimeout(save,500); }
 });
 document.addEventListener("keydown", e=>{
-  if(!S.les && !S.fin && !S.fc) return; if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(!S.les && !S.fin && !S.fc && !S.blitz && !(S.cel&&S.cel.length)) return; if(e.ctrlKey||e.metaKey||e.altKey) return;
   const tag=e.target.tagName;
   if(S.les && S.les.quit) return;
   if(e.key==="Enter" && !e.shiftKey){ const b=$("#lesBtn"); if(b && !b.disabled){ e.preventDefault(); b.click(); } return; }
   if(tag==="INPUT"||tag==="TEXTAREA") return;
   if(S.les && /^[1-9]$/.test(e.key)){ const t=document.querySelector(`[data-act="les-pick"][data-v="${+e.key-1}"]`); if(t&&!t.disabled){ e.preventDefault(); t.click(); } }
+  if(S.blitz && /^[1-4]$/.test(e.key)){ const t=document.querySelector(`[data-act="blitz-pick"][data-v="${+e.key-1}"]`); if(t&&!t.disabled){ e.preventDefault(); t.click(); } return; }
   if(S.fc && S.fc.show && /^[1-4]$/.test(e.key)){ const t=document.querySelectorAll('[data-act="fc-grade"]')[+e.key-1]; if(t){ e.preventDefault(); t.click(); } }
   if(S.fc && !S.fc.show && e.key===" "){ const t=$("#lesBtn"); if(t){ e.preventDefault(); t.click(); } }
 });
@@ -1896,6 +2093,8 @@ document.addEventListener("change", e=>{
   render();
   await Promise.all([loadIndex(), initHealth(), loadExtras()]);
   await initAuth();
+  if(S.st.freezes==null) S.st.freezes=1;
+  applyFreezes(); updateLeague();
   for(const n of S.published) if(n<=currentDay()+1) getDay(n);
   await getDay(S.dayN);
   render();
