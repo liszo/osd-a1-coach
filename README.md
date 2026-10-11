@@ -21,7 +21,7 @@ Static front end + Vercel functions + Supabase (auth, sync, file storage) + Gemi
 
 | Key | Value |
 |---|---|
-| `SUPABASE_URL` | `https://bnltfspyvssygfysqlpy.supabase.co` |
+| `SUPABASE_URL` | `https://jadzhgtnefezrlhapqwj.supabase.co` |
 | `SUPABASE_ANON_KEY` | the anon key from `config.js` |
 | `GEMINI_API_KEY` | your key from https://aistudio.google.com/apikey |
 | `LIVE_MODEL` (optional) | defaults to `gemini-3.8-live` |

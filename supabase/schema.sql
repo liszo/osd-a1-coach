@@ -1,4 +1,4 @@
--- ÖSD A1 Coach — database schema (already applied to project bnltfspyvssygfysqlpy)
+-- ÖSD A1 Coach — database schema (already applied to project jadzhgtnefezrlhapqwj)
 create table if not exists public.progress (
   user_id uuid primary key references auth.users(id) on delete cascade,
   state jsonb not null default '{}'::jsonb,

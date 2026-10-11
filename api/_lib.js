@@ -2,8 +2,8 @@
 const GEMINI = "https://generativelanguage.googleapis.com";
 
 // Public values (also in config.js); env vars override them if set.
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://bnltfspyvssygfysqlpy.supabase.co";
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJubHRmc3B5dnNzeWdmeXNxbHB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3MjA0MTMsImV4cCI6MjEwNzI5NjQxM30.dZboZvp4IB9EFD6MHTnB_mpH06ibBzD4mw3a0xIuXFc";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://jadzhgtnefezrlhapqwj.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphZHpoZ3RuZWZlenJsaGFwcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3MzQzNTgsImV4cCI6MjEwNzMxMDM1OH0.BrGK2s9T33lPsz6ZdWeaY_AGytm-mIouccPmkbmM0qw";
 
 export const LIVE_MODEL = process.env.LIVE_MODEL || "gemini-3.8-live";
 export const TEXT_MODEL = process.env.TEXT_MODEL || "gemini-flash-latest";
