@@ -1,6 +1,10 @@
 // Shared helpers for the Vercel functions.
 const GEMINI = "https://generativelanguage.googleapis.com";
 
+// Public values (also in config.js); env vars override them if set.
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://bnltfspyvssygfysqlpy.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJubHRmc3B5dnNzeWdmeXNxbHB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3MjA0MTMsImV4cCI6MjEwNzI5NjQxM30.dZboZvp4IB9EFD6MHTnB_mpH06ibBzD4mw3a0xIuXFc";
+
 export const LIVE_MODEL = process.env.LIVE_MODEL || "gemini-3.8-live";
 export const TEXT_MODEL = process.env.TEXT_MODEL || "gemini-flash-latest";
 
@@ -9,8 +13,8 @@ export async function requireUser(req, res) {
   const auth = req.headers.authorization || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token) { res.status(401).json({ error: "Sign in first." }); return null; }
-  const r = await fetch(`${process.env.SUPABASE_URL}/auth/v1/user`, {
-    headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` },
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` },
   });
   if (!r.ok) { res.status(401).json({ error: "Your session expired. Sign in again." }); return null; }
   return r.json();
