@@ -5,27 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ÖSD A1 Coach</title>
 <meta name="description" content="34-day study plan for the ÖSD Zertifikat A1 exam">
-<meta name="theme-color" content="#0d6070">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131f24" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Vazirmatn:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Vazirmatn:wght@400;600&display=swap">
 <link rel="stylesheet" href="/styles.css">
 <style>:root{padding-top:env(safe-area-inset-top,0px)} body{margin:0} [hidden]{display:none!important} img{max-width:100%}</style>
 </head>
 <body>
-<div class="flagband" aria-hidden="true"></div>
 <nav class="tabs" id="tabs" aria-label="Sections"></nav>
 <div class="wrap">
-  <header class="top">
-    <div>
-      <div class="brand">ÖSD <b>A1</b> Coach</div>
-      <div class="small muted" id="hdrSub">Zertifikat A1 · Divan Institute, Tehran</div>
-    </div>
-    <div class="row" style="gap:10px;align-items:flex-end"><div class="count" id="countdown"></div><button class="btn ghost sm" id="gearBtn" data-act="tab" data-v="settings" aria-label="Settings" title="Settings" hidden></button></div>
-  </header>
+  <header class="top" id="top" hidden></header>
   <main id="app" class="stack-lg" aria-live="polite"><p class="muted">Loading…</p></main>
 </div>
 <div class="toast" id="toast" hidden></div>

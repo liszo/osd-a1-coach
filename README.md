@@ -41,6 +41,15 @@ When you start a session, the app builds the tutor's instructions from: the day 
 
 Any static server works for the UI (`npx serve .`); the `/api` functions need `npx vercel dev`.
 
+## v5 — game-style lessons (Oct 2026)
+
+- **Learn tab = a lesson path.** Each day is a winding path of round lesson buttons. Learn is split into short lessons (Alphabet, Sounds, Words 1–3, Phrases 1–3, Grammar), Practice into parts, then Hören, Dictation, Lesen, Schreiben, Sprechen and the Daily quiz. Tap a button for its card, then Start. Break chests sit at 60/120/180 minutes; a trophy waits at the end of the day.
+- **One question per screen.** Progress bar, big Check button, green/red feedback bar with the right answer and EN/FA explanation, then Continue. Wrong answers come back once at the end of the lesson. Exercise types: new-word cards, meaning, listen and pick (with slow button), match pairs, der/die/das, word bank, typing with ä ö ü ß keys, dictation, spelled names, speak (speech recognition in Chrome/Edge).
+- **XP, streak, daily goal.** Lessons give 10 XP (+5 for 100 %), exam-format steps 15, breaks 5. Top bar: day, streak, XP today, days to the exam. Daily goal and sound effects in Settings. Daily quests on the Learn tab, weekly XP chart on Progress.
+- **Lesson complete screen** with XP, accuracy and time; below 80 % it offers Practise again.
+- **Guidebook** (button on the day banner) holds the full reference page: goals, alphabet, vocabulary with cover-and-check, phrases, grammar.
+- Plan tab is grouped into five colour-coded units; flashcards and exam-format steps use the same full-screen lesson layout. Keyboard: Enter = Check/Continue, 1–9 = pick an answer, 1–4 = grade a flashcard.
+
 ## v4 — research-based redesign (Oct 2026)
 
 - **Exam centre** (`Exam` tab): 4 scheduled mocks (Day 22 official ZA1 Modellsatz, Day 27 official ZA1/Österreich, Day 29 Übungsmaterialien Übungssatz 1, Day 31 Übungssatz 2 / Digital Test-Training) plus the in-app **Übungstest A** (`days/mock-a.json`, original content in exact ZA1 format). Timers 25/10/20 + 10 min Sprechen prep, test mode without feedback, flags, answer sheet, results against the real minimums (Lesen ≥6, Hören ≥6, Schreiben A2 ≥4, written ≥38/75, oral ≥12/25). Official PDFs are only linked, never hosted.

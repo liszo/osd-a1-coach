@@ -76,15 +76,38 @@ const ICONS = {
  review:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
  rec:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>',
  flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4M4 4h13l-2 4 2 4H4"/></svg>',
- check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>'
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>',
+ x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+ flame:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2c.6 3.2 2.5 4.8 4.2 6.6C18 10.5 19 12.6 19 15a7 7 0 0 1-14 0c0-2.4 1.1-4.2 2.6-5.6.3 1.6 1 2.8 2.2 3.4C9.3 9.3 10.4 5.2 12 2z"/><path fill="#fff" fill-opacity=".55" d="M12 13c.4 1.4 1.4 2.1 2.1 3a3 3 0 0 1-2.1 5 3 3 0 0 1-3-3c0-1.6 1-2.7 3-5z"/></svg>',
+ bolt:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M13.5 2 4.5 13.5H11L9.8 22l9.7-12.3H13z"/></svg>',
+ cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+ flagAT:'<svg viewBox="0 0 30 20"><rect width="30" height="20" rx="3" fill="#c8102e"/><rect y="6.67" width="30" height="6.67" fill="#fff"/></svg>',
+ book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v14H6.5A2.5 2.5 0 0 0 4 19.5zm0 0A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>',
+ star:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="m12 2.5 2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
+ headph:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path fill="currentColor" d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>',
+ pencil:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+ bookopen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>',
+ mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+ trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4"/><path fill="currentColor" d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a4 4 0 0 1-4 4M7 5H4v2a4 4 0 0 0 4 4"/></svg>',
+ chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+ bulb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>',
+ cup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2M10 2v2M14 2v2"/></svg>',
+ turtle:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 15c0-4 3.6-7 8-7s8 3 8 7z"/><circle cx="20.5" cy="12.5" r="2.2" fill="currentColor"/><rect x="4.5" y="15" width="3.2" height="3.6" rx="1.2" fill="currentColor"/><rect x="13.5" y="15" width="3.2" height="3.6" rx="1.2" fill="currentColor"/><path d="M7 11.5h8M9 9l-1 5M13 9l1 5" stroke="#fff" stroke-opacity=".45" stroke-width="1.3"/></svg>',
+ target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+ clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+ lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+ pause:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+ abc:'<span class="glyph">Aa</span>',
+ chest:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path fill="currentColor" fill-opacity=".25" d="M3 10h18v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 10V8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v2zM3 10h18"/><rect x="10" y="9" width="4" height="5" rx="1" fill="currentColor"/></svg>'
 };
 
 /* ---------- state ---------- */
-function defaultState(){ return {v:1, updatedAt:0, start:DEFAULT_START, lang:"both", strict:true, rate:0.9, voice:"", tutorVoice:"Kore", decks:{}, mocks:{}, done:{}, results:{}, srs:{}, intro:{}, mistakes:[], drafts:{}, grades:{}, live:{}}; }
+function defaultState(){ return {v:1, updatedAt:0, start:DEFAULT_START, lang:"both", strict:true, rate:0.9, voice:"", tutorVoice:"Kore", decks:{}, mocks:{}, xp:{}, sfx:true, goal:100, done:{}, results:{}, srs:{}, intro:{}, mistakes:[], drafts:{}, grades:{}, live:{}}; }
 const S = { st: defaultState(), uid:null, email:"", sync:"local", ai:false, liveModel:"",
   published:new Set(), imported:{}, days:{}, view:"today", dayN:null, step:null,
   ans:{}, checked:{}, plays:{}, wo:{}, ex:{}, fc:null, timer:null, gradeBusy:false, checkBusy:false, importText:{},
-  authMode:"signin", authBusy:false, authMsg:"", offline:false, att:{}, attBusy:false, cardText:{}, pron:{}, live:null, liveMode:"coach", installEvt:null, confirmDel:null, mock:null, mockData:{}, austria:null, mix:null, rec:{}, recActive:null, testPrefix:"" };
+  authMode:"signin", authBusy:false, authMsg:"", offline:false, att:{}, attBusy:false, cardText:{}, pron:{}, live:null, liveMode:"coach", installEvt:null, confirmDel:null, mock:null, mockData:{}, austria:null, mix:null, rec:{}, recActive:null, testPrefix:"", les:null, fin:null, pop:null, brk:null, fcFrom:null, stepAt:0 };
 
 const LS_KEY = "osd-a1-coach-state";
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
@@ -227,7 +250,9 @@ async function getDay(n){
 }
 function stepsFor(d){ return STEPS.filter(s=>s.has(d)); }
 function dayProgress(n, d){ if(!d) return {done:0,total:0,min:0,minTotal:0};
-  const st=stepsFor(d); let done=0,min=0,minT=0; st.forEach(s=>{ minT+=s.min; if(S.st.done[n+":"+s.id]){ done++; min+=s.min; } }); return {done,total:st.length,min,minTotal:minT}; }
+  const st=stepsFor(d); let done=0,min=0,minT=0; st.forEach(s=>{ minT+=s.min; if(S.st.done[n+":"+s.id]){ done++; min+=s.min; }
+    else if(s.id==="learn"||s.id==="practice"){ const parts=s.id==="learn"?learnParts(d):practiceParts(d); if(parts.length>1){ const k=parts.filter((p,pi)=>S.st.done[`${n}:${s.id}#${pi}`]).length; min+=Math.round(s.min*k/parts.length); } } });
+  return {done,total:st.length,min,minTotal:minT}; }
 
 /* ---------- SRS ---------- */
 function cardsForDay(n, d){ const out=[]; (d.vocab||[]).forEach(v=>out.push({id:"v:"+v.de, day:n, kind:"v", ...v})); (d.phrases||[]).forEach(p=>out.push({id:"p:"+p.de, day:n, kind:"p", ...p}));
@@ -247,18 +272,28 @@ function nextLabel(card,q){ const r=S.st.srs[card.id]; if(q<3) return "10 min"; 
 function logMistake(day, src, q, your, right){ S.st.mistakes.unshift({day,src,q,your,right,at:Date.now()}); if(S.st.mistakes.length>300) S.st.mistakes.length=300; save(); }
 
 /* ---------- rendering: shell ---------- */
-const TABS=[["today","Today"],["plan","Plan"],["review","Review"],["exam","Exam"],["progress","Progress"]];
-function renderTabs(){ if(!S.uid && !S.offline){ $("#tabs").innerHTML=""; return; } $("#tabs").innerHTML = TABS.map(([id,nm])=>`<button data-act="tab" data-v="${id}" ${S.view===id?'aria-current="page"':""}>${ICONS[id]}<span>${nm}</span></button>`).join(""); }
-function renderCountdown(){ const gb=$("#gearBtn"); if(gb){ gb.innerHTML=ICONS.settings; gb.hidden=!S.uid&&!S.offline; } const n=daysLeft(); $("#countdown").innerHTML = n>0 ? `<span class="n tnum">${n}</span><span class="t">days to the exam<br>Sat 14 Nov · <span class="fa">۲۳ آبان</span></span>` : n===0 ? `<span class="n">Heute!</span><span class="t">Exam day. Viel Glück!</span>` : `<span class="t">Exam done. Gratuliere!</span>`; }
+const TABS=[["today","Learn","home"],["plan","Plan","plan"],["review","Review","review"],["exam","Exam","exam"],["progress","Progress","progress"]];
+function renderTabs(){ if(!S.uid && !S.offline){ $("#tabs").innerHTML=""; return; } $("#tabs").innerHTML = `<div class="brand">ÖSD <b>A1</b></div>`+TABS.map(([id,nm,ic])=>`<button data-act="tab" data-v="${id}" ${S.view===id?'aria-current="page"':""}>${ICONS[ic]}<span>${nm}</span></button>`).join("")+`<button data-act="tab" data-v="settings" class="side-only" ${S.view==="settings"?'aria-current="page"':""}>${ICONS.settings}<span>Settings</span></button>`; }
+function renderCountdown(){ const top=$("#top"); if(!top) return; top.hidden=!S.uid&&!S.offline; if(top.hidden) return;
+  const n=daysLeft(), st=streak(), xp=xpToday(), studied=studiedToday();
+  top.innerHTML = `<button class="stat day" data-act="day" data-v="${currentDay()}" title="Day ${currentDay()} of ${PLAN.length}">${ICONS.flagAT}<span>Tag ${currentDay()}</span></button>
+    <button class="stat streak ${studied?"on":""}" data-act="tab" data-v="progress" title="${st}-day streak" aria-label="${st}-day streak">${ICONS.flame}<span class="tnum">${st}</span></button>
+    <button class="stat xp ${xp?"on":""}" data-act="tab" data-v="progress" title="XP today (goal ${goalXp()})" aria-label="${xp} XP today">${ICONS.bolt}<span class="tnum">${xp}</span></button>
+    <button class="stat cd" data-act="tab" data-v="exam" title="Days to the exam, Sat 14 Nov · ۲۳ آبان" aria-label="${n} days to the exam">${ICONS.cal}<span class="tnum">${n>0?n:n===0?"Heute":"✓"}</span></button>
+    <button class="stat gear" data-act="tab" data-v="settings" aria-label="Settings" title="Settings">${ICONS.settings}</button>`; }
 
 async function render(){
   SAY_BANK.length=0;
   renderTabs(); renderCountdown();
   const app=$("#app");
   let html="";
+  const lesson = !!(S.uid||S.offline) && !S.live && !!(S.les || S.fin || (S.view==="today" && S.step) || (S.view==="review" && S.fc));
+  document.body.classList.toggle("lesson-mode", lesson);
   try{
     if(!S.uid && !S.offline) html = vAuth();
     else if(S.live) html = vLive();
+    else if(S.les) html = vLesson();
+    else if(S.fin) html = vFinish();
     else if(S.view==="today") html = await vToday();
     else if(S.view==="plan") html = vPlan();
     else if(S.mock && S.view==="exam") html = await vMock();
@@ -267,8 +302,10 @@ async function render(){
     else if(S.view==="progress") html = await vProgress();
     else if(S.view==="settings") html = vSettings();
   }catch(e){ html = `<div class="banner">Something went wrong while drawing this page: ${esc(e.message)}</div>`; }
-  app.innerHTML = html;
+  app.innerHTML = html + (S.brk ? breakSheet() : "");
   if(S.live) drawLiveLog();
+  if(S.les) lesAfterRender();
+  if(S.brk) tickBreak();
   tickTimer(); tickMock();
 }
 
@@ -277,32 +314,18 @@ async function vToday(){
   const n = S.dayN || currentDay();
   const p = PLAN[n-1];
   const d = await getDay(n);
-  if(d) { if(S.step) return vStep(n,d,S.step); }
-  const nav = `<div class="row between">
-    <button class="btn sm" data-act="day" data-v="${n-1}" ${n<=1?"disabled":""}>${ICONS.back}${n>1?"Day "+(n-1):"Previous"}</button>
-    ${n!==currentDay()?`<button class="btn sm ghost" data-act="day" data-v="${currentDay()}">Back to today</button>`:""}
-    <button class="btn sm" data-act="day" data-v="${n+1}" ${n>=PLAN.length?"disabled":""}>${n<PLAN.length?"Day "+(n+1):"Next"}${ICONS.next}</button></div>`;
-  const date=dateOf(n);
-  const head = `<div class="hero">
-    <div class="dayline"><span class="chip ${n===currentDay()?"acc":""}">Day ${n} of ${PLAN.length}</span><span>${fmtDate(date)}</span><span class="fa">${fmtFa(date)}</span>${p.k!=="lesson"?`<span class="chip ${p.k==="mock"?"at":"warn"}">${p.k}</span>`:""}</div>
-    <h1>${esc(d&&d.title||p.t)}</h1>
-    <p class="fa muted">${esc(d&&d.title_fa||p.fa)}</p>
-    ${p.g?`<p class="small muted"><b>Grammar:</b> ${esc(p.g)}</p>`:""}
-    ${d?progressBar(n,d):""}
-    <div class="row"><button class="btn sm" data-act="live-start" data-n="${n}">${ICONS.mic}Talk to tutor</button>${installHint()}</div>
-  </div>`;
-  if(!d) return nav + head + mockCta(n) + resCard(n) + pendingPanel(n);
-  const pr=dayProgress(n,d);
-  const obj = d.objectives&&d.objectives.length ? `<details class="acc"><summary>Today's goals</summary><div class="in stack">${d.objectives.map(o=>`<div class="stack" style="gap:2px">${ex(o.en,o.fa)}</div>`).join("")}</div></details>` : "";
-  let cum=0; const breaks={60:["Short break","5 min · stand up, drink water"],120:["Long break","15 min · eat something, walk"],180:["Short break","5 min"]};
-  const steps = `<div class="steps">${stepsFor(d).map((s,i)=>{ const done=S.st.done[n+":"+s.id]; const res=S.st.results[n+":"+s.id];
-    let br=""; const before=cum; cum+=s.min; Object.keys(breaks).forEach(m=>{ if(before<+m && cum>=+m && i<stepsFor(d).length-1) br=`<div class="brk"><b>${breaks[m][0]}</b> · ${breaks[m][1]}</div>`; });
-    return `<button class="step ${done?"done":""}" data-act="step" data-v="${s.id}">
-      <span class="num">${done?ICONS.check.replace('<svg','<svg width="16" height="16"'):i+1}</span>
-      <span><span class="nm">${s.en}</span> <span class="muted small">· ${s.de}</span><br><span class="sub">${s.min} min${res?` · last score ${res.score}/${res.total}`:""}</span></span>
-      ${ICONS.next.replace('<svg','<svg width="18" height="18" style="color:var(--muted)"')}</button>${br}`; }).join("")}</div>`;
-  const tip = pr.done===pr.total && pr.total ? `<div class="banner info">All steps done for Day ${n}. Finish your due cards, then rest. Morgen geht's weiter!</div>` : "";
-  return nav + head + tip + obj + steps + resCard(n);
+  if(d && S.step) return vStep(n,d,S.step);
+  const date=dateOf(n); const pr=d?dayProgress(n,d):null; const pct=pr&&pr.minTotal?Math.round(pr.min/pr.minTotal*100):0;
+  const banner = `<section class="unit" style="${uStyle(n)}">
+    <div class="unit-row"><button class="navb" data-act="day" data-v="${n-1}" ${n<=1?"disabled":""} aria-label="Previous day">${ICONS.back}</button>
+      <div class="grow"><div class="ul">Unit ${unitOf(n).i} · Day ${n} of ${PLAN.length} · ${fmtDate(date)}${n===currentDay()?" · today":""}</div><h1>${esc(d&&d.title||p.t)}</h1>${S.st.lang!=="en"?`<div class="fa">${esc(d&&d.title_fa||p.fa)} · ${fmtFa(date)}</div>`:""}</div>
+      <button class="navb" data-act="day" data-v="${n+1}" ${n>=PLAN.length?"disabled":""} aria-label="Next day">${ICONS.next}</button></div>
+    ${d?`<div class="row" style="gap:12px;flex-wrap:nowrap"><div class="grow"><div class="ubar" role="progressbar" aria-label="Day progress" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><div class="small tnum" style="margin-top:4px;opacity:.92">${pr.done}/${pr.total} steps · ${pr.min} / ${pr.minTotal} min</div></div><button class="guide" data-act="step" data-v="guide">${ICONS.book}Guidebook</button></div>`:""}
+    ${p.g?`<div class="ug"><b>${p.k==="lesson"?"Grammar":"Focus"}:</b> ${esc(p.g)}</div>`:""}
+    ${n!==currentDay()?`<div><button class="guide" data-act="day" data-v="${currentDay()}">Back to today</button></div>`:""}
+  </section>`;
+  if(!d) return banner + mockCta(n) + resCard(n) + pendingPanel(n);
+  return banner + pathHtml(n,d) + questsCard(n,d) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
 }
 function progressBar(n,d){ const pr=dayProgress(n,d); const pct=pr.minTotal?Math.round(pr.min/pr.minTotal*100):0;
   return `<div class="stack" style="gap:6px"><div class="row between small"><span>${pr.done}/${pr.total} steps</span><span class="tnum muted">${pr.min} / ${pr.minTotal} min</span></div><div class="meter" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>`; }
@@ -311,13 +334,13 @@ function stepShell(n, d, s, body){
   const key=n+":"+s.id, done=S.st.done[key];
   const t=S.timer&&S.timer.key===key?S.timer:null;
   const remaining = t ? (t.running? Math.max(0,t.endAt-Date.now()) : t.left) : s.min*60000;
-  return `<div class="row between"><button class="btn sm" data-act="back">${ICONS.back}Day ${n}</button>
-      <div class="row"><span class="timer tnum" id="timerTxt" data-key="${key}">${fmtMs(remaining)}</span>
-      <button class="btn sm" data-act="timer" data-key="${key}" data-min="${s.min}">${t&&t.running?"Pause":"Start timer"}</button></div></div>
-    <div><div class="label">Day ${n} · ${s.min} min</div><h1>${s.en} <span class="muted" style="font-weight:500">· ${s.de}</span></h1></div>
-    ${body}
-    <div class="row between"><button class="btn" data-act="back">${ICONS.back}Back</button>
-      <button class="btn ${done?"":"primary"}" data-act="done" data-key="${key}">${done?"Done ✓ (tap to undo)":"Mark step done"}</button></div>`;
+  const I=NODE_INFO[s.id]||[s.en];
+  return `<div class="les"><div class="les-top"><button class="xbtn" data-act="back" aria-label="Close">${ICONS.x}</button>
+      <div class="grow"><div class="label">Day ${n} · ${s.de}</div><h2>${esc(I[0])}</h2></div>
+      <button class="tpill" data-act="timer" data-key="${key}" data-min="${s.min}" aria-label="${t&&t.running?"Pause timer":"Start timer"}">${t&&t.running?ICONS.pause:ICONS.play}<span id="timerTxt" data-key="${key}">${fmtMs(remaining)}</span></button></div>
+    <div class="les-body">${body}</div>
+    <div class="les-foot"><div class="in">${done?`<button class="btn" data-act="done" data-key="${key}">Mark as not done</button><button class="btn primary big" id="lesBtn" data-act="back">Continue</button>`
+      :`<span class="small muted">${ex("Work through every part, then complete the step.","همه بخش‌ها را انجام بده و بعد مرحله را تمام کن.")}</span><button class="btn primary big" data-act="task-done" data-key="${key}" data-step="${s.id}">Complete +15 XP</button>`}</div></div></div>`;
 }
 function fmtMs(ms){ const t=Math.ceil(ms/1000); return pad(Math.floor(t/60))+":"+pad(t%60); }
 function tickTimer(){ clearInterval(tickTimer._i); if(!S.timer||!S.timer.running) return; tickTimer._i=setInterval(()=>{ const el=$("#timerTxt"); if(!S.timer||!S.timer.running){ clearInterval(tickTimer._i); return; } const left=S.timer.endAt-Date.now();
@@ -325,7 +348,8 @@ function tickTimer(){ clearInterval(tickTimer._i); if(!S.timer||!S.timer.running
   if(left<=0){ S.timer.running=false; S.timer.left=0; clearInterval(tickTimer._i); toast("Time's up for this step"); } }, 500); }
 
 async function vStep(n, d, id){
-  const s=STEPS.find(x=>x.id===id);
+  if(id==="guide") return guideShell(n,d);
+  const s=STEPS.find(x=>x.id===id); if(!s){ S.step=null; return vToday(); }
   let body="";
   if(id==="review") body=await stReview(n,d);
   if(id==="media") body=stMedia(n,d);
@@ -470,7 +494,6 @@ function stLearn(n,d){
       ${(g.examples||[]).map(e=>`<div class="row" style="flex-wrap:nowrap;align-items:flex-start">${sayBtn(e.de)}<div><b>${esc(e.de)}</b><br><span class="small muted">${esc(e.en)}</span></div></div>`).join("")}
       ${g.common_mistakes&&g.common_mistakes.length?`<div class="sunk small"><b>Common mistakes</b><ul style="margin:6px 0 0;padding-left:18px">${g.common_mistakes.map(m=>`<li>${esc(m)}</li>`).join("")}</ul></div>`:""}</section>`).join("");
   }
-  if(d.exercises&&d.exercises.length>=3) h+=`<section class="stack"><div><div class="label">Check yourself</div><h2>3 quick questions before Practice</h2></div>${stExercises(n, d.exercises.slice(0,3), "check")}</section>`;
   return h;
 }
 
@@ -814,13 +837,15 @@ function setPath(obj, path, val){ try{ const parts=String(path).replace(/\[(\d+)
 /* ---------- Plan ---------- */
 function vPlan(){
   const cur=currentDay();
-  return `<div><h1>34 days to A1</h1><p class="muted">${ex("31 lesson and mock days plus 3 buffer days. Tap a day to study it, or to get its prompts if the content isn't ready yet.","۳۱ روز درس و آزمون آزمایشی + ۳ روز جبرانی. روی هر روز بزن تا مطالعه کنی یا پرامپت‌هایش را بگیری.")}</p></div>
-  <div class="card tight plan" style="padding:0">${PLAN.map((p,i)=>{ const n=i+1; const d=S.days[n]; const av=hasDay(n); const pr=d?dayProgress(n,d):null; const dt=dateOf(n);
-    let chip = p.k==="buffer"||p.k==="rest" ? `<span class="chip warn">${p.k}</span>` : av ? (pr&&pr.total&&pr.done===pr.total?`<span class="chip ok">done</span>`:pr&&pr.done?`<span class="chip acc tnum">${pr.done}/${pr.total}</span>`:`<span class="chip acc">ready</span>`) : `<span class="chip">prompts</span>`;
-    return `<button class="pday ${n===cur?"today":""} kind-${p.k}" data-act="day" data-v="${n}"><span><span class="dn tnum">${n}</span><br><span class="dt">${dt.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</span></span>
-      <span style="min-width:0"><b>${esc(p.t)}</b><br><span class="small muted">${esc(p.g||"")}</span>${S.st.lang!=="en"?`<br><span class="fa small muted">${esc(p.fa)} · ${fmtFa(dt)}</span>`:""}</span>${chip}</button>`; }).join("")}
-    <div class="pday exam" style="cursor:default"><span><span class="dn">✱</span><br><span class="dt">14 Nov</span></span><span><b>ÖSD Zertifikat A1</b><br><span class="small muted">Saturday · Divan Institute, Tehran</span>${S.st.lang!=="en"?`<br><span class="fa small muted">شنبه ۲۳ آبان ۱۴۰۵</span>`:""}</span><span class="chip at">exam</span></div>
-  </div>`;
+  const row=(p,n)=>{ const d=S.days[n]; const av=hasDay(n); const pr=d?dayProgress(n,d):null; const dt=dateOf(n);
+    const isDone=!!(pr&&pr.total&&pr.done===pr.total), part=!!(pr&&pr.done&&!isDone); const pct=pr&&pr.minTotal?Math.round(pr.min/pr.minTotal*100):0;
+    const chip = p.k==="mock" ? `<span class="chip at">mock</span>` : p.k==="buffer"||p.k==="rest" ? `<span class="chip warn">${p.k}</span>` : av ? (isDone?`<span class="chip gold">done</span>`:part?`<span class="chip acc tnum">${pct}%</span>`:`<span class="chip ok">ready</span>`) : `<span class="chip">prompts</span>`;
+    return `<button class="pday ${n===cur?"today":""} ${isDone?"isdone":part?"part":""} kind-${p.k}" data-act="day" data-v="${n}"><span class="dn tnum">${isDone?ICONS.check.replace('<svg','<svg width="22" height="22"'):n}</span>
+      <span style="min-width:0"><span class="dt">${dt.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}${n===cur?" · TODAY":""}${S.st.lang!=="en"?` · <span class="fa">${fmtFa(dt)}</span>`:""}</span><br><b>${esc(p.t)}</b>${p.g?`<br><span class="small muted">${esc(p.g)}</span>`:""}</span>${chip}</button>`; };
+  return `<div><h1>34 days to A1</h1><p class="muted">${ex("Five units, 31 lesson and mock days plus 3 buffer days. Tap a day to open its path.","پنج بخش: ۳۱ روز درس و آزمون + ۳ روز جبرانی. روی هر روز بزن تا مسیرش باز شود.")}</p></div>
+  ${UNITS.map(u=>`<section class="stack" style="--u:${u.c};--ud:${u.cd}"><div class="unit"><div class="ul">Unit ${u.i} · Days ${u.a}–${u.b}</div><h2>${esc(u.t)}</h2><div class="small" style="opacity:.92">${esc(u.d)}</div></div>
+    <div class="plan">${PLAN.slice(u.a-1,u.b).map((p,j)=>row(p,u.a+j)).join("")}</div></section>`).join("")}
+  <div class="pday exam"><span class="dn">${ICONS.trophy.replace('<svg','<svg width="24" height="24"')}</span><span><span class="dt">Sat 14 Nov${S.st.lang!=="en"?` · <span class="fa">شنبه ۲۳ آبان ۱۴۰۵</span>`:""}</span><br><b>ÖSD Zertifikat A1</b><br><span class="small muted">Divan Institute, Tehran</span></span><span class="chip at">exam</span></div>`;
 }
 
 /* ---------- Cards ---------- */
@@ -841,14 +866,17 @@ async function flashcardsView(){
   const front = f.mode==="de" ? `<div class="big">${art?`<span class="${artClass(art)}">${esc(art)}</span> `:""}${esc(card.de)}</div>` : `<div class="big" style="font-size:1.5rem">${esc(card.en)}</div>${S.st.lang!=="en"&&card.fa?`<div class="fa">${esc(card.fa)}</div>`:""}`;
   const back = `<hr class="soft" style="width:100%">${f.mode==="de"?`<div style="font-size:1.2rem;font-weight:700">${esc(card.en)}</div>${S.st.lang!=="en"&&card.fa?`<div class="fa">${esc(card.fa)}</div>`:""}`:`<div class="big">${art?`<span class="${artClass(art)}">${esc(art)}</span> `:""}${esc(card.de)}</div>`}
     ${card.plural&&card.plural!=="-"?`<div class="muted">${esc(card.plural)}</div>`:""}${card.example_de?`<div class="row" style="justify-content:center">${sayBtn(card.example_de)}<span>${esc(card.example_de)}</span></div>`:""}`;
-  return `<div class="row between"><button class="btn sm" data-act="fc-end">${ICONS.back}End session</button><span class="small muted tnum">${f.queue.length} left · ${f.seen} done</span></div>
+  const pct=Math.round(f.seen/(f.seen+f.queue.length)*100);
+  return `<div class="les"><div class="les-top"><button class="xbtn" data-act="fc-end" aria-label="End session">${ICONS.x}</button><div class="grow"><div class="lbar"><i style="width:${Math.max(3,pct)}%"></i></div></div><span class="small muted tnum">${f.queue.length} left</span></div>
+    <div class="les-body"><h1 class="les-h">${f.mode==="de"?"Do you know this?":"How do you say this in German?"}</h1>
     <div class="card fcard">${f.mode==="de"||f.show?`<div>${sayBtn(deFull,{slow:true})}</div>`:""}${front}${f.show?back:""}</div>
-    ${f.show?`<div class="grades">${[["Again",1],["Hard",3],["Good",4],["Easy",5]].map(([nm,q])=>`<button class="btn" data-act="fc-grade" data-q="${q}">${nm}<small>${nextLabel(card,q)}</small></button>`).join("")}</div>`
-      :`<button class="btn primary" data-act="fc-show" style="justify-content:center;width:100%">Show answer</button>`}`;
+    ${card.kind==="m"?`<p class="small muted">${ex("From your mistakes list.","از فهرست اشتباهاتت.")}</p>`:""}</div>
+    <div class="les-foot"><div class="in">${f.show?`<div class="grades">${[["Again",1],["Hard",3],["Good",4],["Easy",5]].map(([nm,q])=>`<button class="btn q${q}" data-act="fc-grade" data-q="${q}">${nm}<small>${nextLabel(card,q)}</small></button>`).join("")}</div>`
+      :`<span class="small muted">${ex("Say the answer out loud first.","اول جواب را بلند بگو.")}</span><button class="btn blue big" id="lesBtn" data-act="fc-show">Show answer</button>`}</div></div></div>`;
 }
 function mistakesView(){ const m=S.st.mistakes; return `<div class="card stack"><div class="row between"><h2>My mistakes</h2>${m.length?`<button class="btn sm" data-act="clear-mist">Clear</button>`:""}</div>
   ${m.length?m.slice(0,40).map(x=>`<div class="sunk small"><span class="label">Day ${x.day} · ${esc(x.src)}</span><br><b>${esc(x.q)}</b><br><span style="color:var(--bad)">${esc(x.your||"–")}</span> → <span style="color:var(--ok)">${esc(x.right)}</span></div>`).join(""):`<p class="small muted">Wrong answers from Practice, Quiz and Mixed review collect here and become flashcards automatically.</p>`}</div>`; }
-function startFc(mode){ const now=Date.now(); const all=allCards(); const due=all.filter(c=>S.st.srs[c.id]&&S.st.srs[c.id].due<=now).sort((a,b)=>S.st.srs[a.id].due-S.st.srs[b.id].due); const fresh=all.filter(c=>!S.st.srs[c.id]).slice(0,25); S.fc={mode, queue:[...due,...fresh], show:false, seen:0}; }
+function startFc(mode){ const now=Date.now(); const all=allCards(); const due=all.filter(c=>S.st.srs[c.id]&&S.st.srs[c.id].due<=now).sort((a,b)=>S.st.srs[a.id].due-S.st.srs[b.id].due); const fresh=all.filter(c=>!S.st.srs[c.id]).slice(0,25); S.fc={mode, queue:[...due,...fresh], show:false, seen:0, good:0, at:Date.now()}; }
 
 /* ---------- resources from the research ---------- */
 const LINKS={
@@ -1128,11 +1156,11 @@ async function startMix(){ const items=[]; for(let n=1;n<=currentDay();n++){ if(
     (d.exercises||[]).forEach(e=>items.push(Object.assign({},e)));
     (d.review_quiz||[]).forEach(q=>items.push({type:"mcq",prompt:q.q,options:q.options,answer:q.answer,explain_en:q.explain_en})); }
   if(!items.length){ toast("Study at least one day first"); return; }
-  Object.keys(S.ex).forEach(k=>{ if(k.startsWith("R:mix:")) delete S.ex[k]; }); Object.keys(S.wo).forEach(k=>{ if(k.startsWith("R:mix:")) delete S.wo[k]; });
-  S.mix=shuffled(items, "mix"+Date.now()).slice(0,15); render(); window.scrollTo(0,0); }
+  const seed="mix"+Date.now(); startLesson({src:"mix", n:null, title:"Mixed review", screens:shuffled(items,seed).slice(0,15).map((it,i)=>exScreen(it,seed+i))}); }
 
 /* ---------- Progress ---------- */
-function studyDates(){ const set=new Set(); Object.entries(S.st.done).forEach(([k,v])=>{ if(typeof v==="number" && !k.startsWith("prep:")){ const d=new Date(v); set.add(d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()); } }); return set; }
+function studyDates(){ const set=new Set(); Object.entries(S.st.done).forEach(([k,v])=>{ if(typeof v==="number" && !k.startsWith("prep:")){ const d=new Date(v); set.add(d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()); } });
+  Object.entries(S.st.xp||{}).forEach(([k,v])=>{ if(v>0){ const [y,m,dd]=k.split("-").map(Number); set.add(y+"-"+m+"-"+dd); } }); return set; }
 function streak(){ const set=studyDates(); let s=0; const t=todayMid(); let i=set.has(t.getFullYear()+"-"+(t.getMonth()+1)+"-"+t.getDate())?0:1; let miss=0;
   for(;i<60;i++){ const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i); if(set.has(d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate())) s++; else { miss++; if(miss>1) break; } } return s; }
 async function vProgress(){
@@ -1145,10 +1173,16 @@ async function vProgress(){
   const sessions=Object.values(S.st.live||{}).flat(); const sc=sessions.filter(x=>x.score_25!=null).map(x=>+x.score_25);
   const mocks=Object.entries(S.st.mocks||{}).sort((a,b)=>b[1].at-a[1].at); const last=mocks[0];
   const c=srsCounts(); const pct=Math.round(Math.min(cur,PLAN.length)/PLAN.length*100);
-  const tile=(v,l)=>`<div class="tile"><b class="tnum">${v}</b><span>${l}</span></div>`;
+  const tile=(ic,col,v,l)=>`<div class="tile"><div class="ti" style="color:${col}">${ICONS[ic]}</div><b class="tnum">${v}</b><span>${l}</span></div>`;
+  const totalXp=Object.values(S.st.xp||{}).reduce((a,b)=>a+b,0);
+  const wk=[...Array(7)].map((_,i)=>{ const t=new Date(); const dd=new Date(t.getFullYear(),t.getMonth(),t.getDate()-6+i); return {lb:dd.toLocaleDateString("en-GB",{weekday:"short"}), v:(S.st.xp||{})[dk(dd)]||0, today:i===6}; });
+  const mx=Math.max(goalXp(), ...wk.map(x=>x.v));
   return `<div><h1>Fortschritt</h1><p class="muted">Day ${cur} of ${PLAN.length} · ${daysLeft()} days to the exam</p></div>
   <div class="card stack"><div class="meter"><i style="width:${pct}%"></i></div>
-    <div class="tiles">${tile(streak(),"day streak")}${tile(daysDone,"days complete")}${tile(Math.round(mins/60*10)/10+" h","studied")}${tile(c.learned+c.due,"cards in memory")}${tile((S.st.mistakes||[]).length,"mistakes logged")}${tile(sessions.length,"tutor sessions")}</div></div>
+    <div class="tiles">${tile("flame","var(--orange)",streak(),"day streak")}${tile("bolt","var(--gold)",totalXp,"total XP")}${tile("trophy","var(--gold)",daysDone,"days complete")}${tile("clock","var(--blue)",Math.round(mins/60*10)/10+" h","studied")}${tile("cards","var(--purple)",c.learned+c.due,"cards in memory")}${tile("mic","var(--blue)",sessions.length,"tutor sessions")}</div></div>
+  <section class="card stack"><div class="row between"><h2>XP this week</h2><span class="chip gold tnum">${wk.reduce((a,x)=>a+x.v,0)} XP</span></div>
+    <div class="xpchart">${wk.map(x=>`<div class="xpcol ${x.today?"today":""}"><span class="tnum">${x.v||""}</span><i style="height:${Math.round(x.v/mx*100)}%"></i><b>${x.lb}</b></div>`).join("")}</div>
+    <p class="small muted">Daily goal: ${goalXp()} XP · change it in Settings</p></section>
   <section class="card stack"><h2>Latest mock</h2>${last?`<div class="small muted">${esc((MOCKS.find(m=>m.id===last[0])||{}).title||last[0])}</div>${resultBlock(last[1])}`:`<p class="small muted">${ex("No mock yet. Try Übungstest A in the Exam tab any time; the official mocks are on Days 22, 27, 29 and 31.","هنوز آزمون آزمایشی نداده‌ای. Übungstest A را هر وقت خواستی در تب Exam امتحان کن.")}</p><div><button class="btn sm" data-act="mock-open" data-id="ta">Start Übungstest A</button></div>`}</section>
   <section class="card stack"><h2>Accuracy by skill</h2>
     ${Object.entries(skill).map(([k,[a,t]])=>t?barRow(k, Math.round(a/t*100), 100, 60, "%"):`<div class="small muted">${k}: no data yet</div>`).join("")}
@@ -1371,6 +1405,9 @@ function vSettings(){
     <div class="row"><button class="btn sm" data-act="sayw" data-v="Grüß Gott! Ich heiße Raam. Ich lerne Deutsch.">${ICONS.speaker}Test voice</button></div>
     <p class="small muted">${ex("Tip: on Windows, open this page in Edge for the best Austrian voices. On Android, Chrome with Google's German voice works well.","نکته: در ویندوز برای بهترین صدای اتریشی از Edge استفاده کن. در اندروید Chrome با صدای آلمانی گوگل خوب است.")}</p></section>
   <section class="card stack"><h2>Explanations</h2><div class="row">${[["both","English + فارسی"],["en","English"],["fa","فارسی"]].map(([v,l])=>`<button class="opt ${S.st.lang===v?"sel":""}" data-act="lang" data-v="${v}">${l}</button>`).join("")}</div></section>
+  <section class="card stack"><h2>Lessons</h2><label class="row"><input type="checkbox" data-set="sfx" ${S.st.sfx!==false?"checked":""}> Sound effects for right and wrong answers</label>
+    <div class="field"><span class="lb">Daily XP goal</span><div class="row">${[[50,"Casual"],[100,"Regular"],[150,"Serious"],[200,"Intense"]].map(([v,l])=>`<button class="opt ${goalXp()===v?"sel":""}" data-act="goal" data-v="${v}">${l} · ${v} XP</button>`).join("")}</div>
+    <p class="small muted">${ex("A full study day on the path earns about 150–200 XP.","یک روز کامل مطالعه حدود ۱۵۰ تا ۲۰۰ امتیاز می‌دهد.")}</p></div></section>
   <section class="card stack"><h2>Exam mode for Hören</h2><label class="row"><input type="checkbox" data-set="strict" ${S.st.strict?"checked":""}> Limit audio plays like the real exam</label></section>
   <section class="card stack"><h2>Plan</h2><div class="field"><label for="startIn">Day 1 date</label><input type="text" id="startIn" value="${attr(S.st.start)}" data-set="start" placeholder="YYYY-MM-DD" inputmode="numeric"></div><p class="small muted">Exam: Saturday 14 November 2026 (23 Aban 1405).</p></section>
   <section class="card stack"><h2>Account &amp; sync</h2><p class="small">${syncTxt}</p>
@@ -1383,13 +1420,354 @@ function vSettings(){
   <section class="card stack"><h2>Reset</h2>${S.confirmReset?`<p class="small">This deletes all progress, cards and mistakes. Are you sure?</p><div class="row"><button class="btn" data-act="reset-no">Keep my progress</button><button class="btn primary" style="background:var(--bad);border-color:var(--bad)" data-act="reset-yes">Delete everything</button></div>`:`<div><button class="btn sm" data-act="reset">Reset progress…</button></div>`}</section>`;
 }
 
+/* ====================== v5: game-style path, lesson player, XP ====================== */
+function dk(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function xpToday(){ return (S.st.xp||{})[dk(new Date())]||0; }
+function goalXp(){ return +S.st.goal||100; }
+function studiedToday(){ const t=new Date(); return studyDates().has(t.getFullYear()+"-"+(t.getMonth()+1)+"-"+t.getDate()); }
+function addXp(x){ const k=dk(new Date()); S.st.xp=S.st.xp||{}; const before=S.st.xp[k]||0; S.st.xp[k]=before+x;
+  if(before<goalXp() && before+x>=goalXp()) setTimeout(()=>toast("Daily goal reached: "+goalXp()+" XP!"), 900); }
+
+/* sound effects (synthesised, no files) */
+const SFX={ctx:null};
+function sfx(kind){ if(S.st.sfx===false) return; try{
+  const C=SFX.ctx||(SFX.ctx=new (window.AudioContext||window.webkitAudioContext)()); if(C.state==="suspended") C.resume(); const t=C.currentTime;
+  const tone=(f,st,dur,type="triangle",vol=.16)=>{ const o=C.createOscillator(), g=C.createGain(); o.type=type; o.frequency.setValueAtTime(f,t+st);
+    g.gain.setValueAtTime(0.0001,t+st); g.gain.exponentialRampToValueAtTime(vol,t+st+.015); g.gain.exponentialRampToValueAtTime(0.0001,t+st+dur); o.connect(g).connect(C.destination); o.start(t+st); o.stop(t+st+dur+.05); };
+  if(kind==="ok"){ tone(880,0,.14); tone(1318,.08,.28); }
+  else if(kind==="pair"){ tone(988,0,.12,"sine",.12); }
+  else if(kind==="bad"){ tone(196,0,.2,"square",.05); tone(165,.11,.28,"square",.05); }
+  else if(kind==="done"){ [523,659,784,1047,1319].forEach((f,i)=>tone(f,i*.09,.32)); }
+  else if(kind==="tap"){ tone(700,0,.05,"sine",.05); }
+}catch(e){} }
+function vib(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms||90); }catch(e){} }
+
+/* units = weeks; each has its own colour like a game world */
+const UNITS=[
+ {i:1,a:1,b:7,t:"Hallo! First steps",d:"Alphabet, introductions, numbers, verbs, family, jobs",c:"#58c322",cd:"#46a302"},
+ {i:2,a:8,b:14,t:"Daily life",d:"Food, shopping, clock time, dates, free time, home",c:"#ce82ff",cd:"#a568cc"},
+ {i:3,a:15,b:21,t:"Out and about",d:"City, health, clothes and weather, travel, Perfekt, forms",c:"#1db0f0",cd:"#1590cc"},
+ {i:4,a:22,b:28,t:"Exam training",d:"Mock 1 and 2, strategies for every exam part",c:"#ff9a1f",cd:"#e07c00"},
+ {i:5,a:29,b:34,t:"Final sprint",d:"Mock 3, the final mock, repair and rest",c:"#ff6fae",cd:"#e0498c"}];
+function unitOf(n){ return UNITS.find(u=>n>=u.a&&n<=u.b)||UNITS[0]; }
+function uStyle(n){ const u=unitOf(n); return `--u:${u.c};--ud:${u.cd}`; }
+
+const NODE_INFO={
+ review:["Review cards","Clear the flashcards that are due before anything new.","اول کارت‌هایی را که موعدشان رسیده مرور کن.","review"],
+ media:["Listen & watch","Today's audio, video and NotebookLM files.","فایل‌های صوتی، ویدیو و NotebookLM امروز.","play"],
+ hoeren:["Hören","Listening in the exact ÖSD exam format.","شنیدن دقیقاً با قالب آزمون ÖSD.","headph"],
+ diktat:["Dictation","Listen and type each sentence.","گوش کن و هر جمله را بنویس.","pencil"],
+ lesen:["Lesen","Reading in the exact ÖSD exam format.","خواندن دقیقاً با قالب آزمون ÖSD.","bookopen"],
+ schreiben:["Schreiben","Fill in the form and write the email.","فرم را پر کن و ایمیل را بنویس.","mail"],
+ sprechen:["Sprechen","Practise all three speaking parts out loud.","هر سه بخش صحبت را بلند تمرین کن.","mic"],
+ quiz:["Daily quiz","Ten questions on everything from today.","ده سؤال از همه مطالب امروز.","trophy"]
+};
+const PLAYER_STEPS=new Set(["learn","practice","quiz","diktat"]);
+function chunk(arr, max){ if(!arr||!arr.length) return []; const k=Math.ceil(arr.length/max), size=Math.ceil(arr.length/k); const out=[]; for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size)); return out; }
+function learnParts(d){ const P=[];
+  if(d.alphabet&&d.alphabet.length) P.push({id:"abc",title:"Alphabet",icon:"abc",desc:["Hear every letter, then spell names like in Hören Teil 2.","حروف را بشنو و بعد اسم‌ها را هجی کن، مثل بخش ۲ شنیدن."]});
+  if(d.pronunciation&&d.pronunciation.length) P.push({id:"sounds",title:"Sounds",icon:"speaker",desc:["The German sounds that are new for Persian speakers.","صداهای آلمانی که برای فارسی‌زبان‌ها تازه‌اند."]});
+  chunk(d.vocab,8).forEach((c,i,a)=>P.push({id:"w"+i,title:a.length>1?`Words ${i+1}`:"Words",icon:"book",items:c,desc:[`${c.length} new words: ${c.slice(0,3).map(v=>v.de).join(", ")} …`,`${c.length} کلمه جدید`]}));
+  chunk(d.phrases,8).forEach((c,i,a)=>P.push({id:"p"+i,title:a.length>1?`Phrases ${i+1}`:"Phrases",icon:"chat",items:c,desc:[`${c.length} phrases, starting with „${c[0].de}“`,`${c.length} جمله پرکاربرد`]}));
+  if(d.grammar&&d.grammar.length) P.push({id:"gram",title:"Grammar",icon:"bulb",desc:[d.grammar.map(g=>g.topic).join(" · "),"دستور زبان امروز"]});
+  return P; }
+function practiceParts(d){ return chunk(d.exercises||[],11).map((c,i,a)=>({id:"x"+i,title:a.length>1?`Practice ${i+1}`:"Practice",icon:"star",items:c,desc:["Mixed exercises on today's grammar and words.","تمرین‌های ترکیبی روی دستور و لغات امروز."]})); }
+function dayNodes(n,d){ const out=[];
+  stepsFor(d).forEach(s=>{
+    if(s.id==="learn"||s.id==="practice"){ const parts=s.id==="learn"?learnParts(d):practiceParts(d); const per=Math.max(3,Math.round(s.min/Math.max(1,parts.length)));
+      parts.forEach((p,pi)=>out.push({step:s.id, part:pi, parts:parts.length, title:p.title, icon:p.icon, min:per, desc:p.desc, kind:"lesson"})); }
+    else { const I=NODE_INFO[s.id]||[s.en,"","","star"]; out.push({step:s.id, part:0, parts:1, title:I[0], icon:I[3], min:s.min, desc:[I[1],I[2]], kind:PLAYER_STEPS.has(s.id)?"lesson":s.id==="review"?"review":"task"}); }
+  }); return out; }
+function nodeKey(n,nd){ return nd.parts>1 ? `${n}:${nd.step}#${nd.part}` : `${n}:${nd.step}`; }
+function nodeDone(n,nd){ return !!(S.st.done[n+":"+nd.step] || S.st.done[nodeKey(n,nd)]); }
+function dayAllDone(n){ const d=S.days[n]; return !!d && dayNodes(n,d).every(nd=>nodeDone(n,nd)); }
+
+/* ---------- Today: the path ---------- */
+const OFF=[0,46,72,46,0,-46,-72,-46];
+function pathHtml(n,d){
+  const nodes=dayNodes(n,d); const cur=nodes.findIndex(x=>!nodeDone(n,x));
+  let h=`<div class="path" style="${uStyle(n)}">`, cum=0; const BR=[[60,5],[120,15],[180,5]];
+  nodes.forEach((nd,i)=>{ const before=cum; cum+=nd.min; const done=nodeDone(n,nd), isCur=i===cur, locked=cur>=0&&i>cur; const x=OFF[i%OFF.length];
+    h+=`<div class="pwrap ${isCur?"has-bubble":""}" style="--x:${x}px">${isCur?`<div class="bubble">${i===0?"Start":"Next"}</div>`:""}
+      <button class="pnode ${done?"done":isCur?"cur":locked?"locked":""} ${nd.step==="quiz"?"big":""}" data-act="node" data-i="${i}" ${isCur?'id="curNode"':""} aria-expanded="${S.pop===i}" aria-label="${attr(nd.title+(done?", done":locked?", later":", next"))}">${ICONS[nd.icon]||ICONS.star}</button>
+      <div class="plb ${isCur?"cur":""}">${esc(nd.title)}</div></div>`;
+    if(S.pop===i) h+=popHtml(n,nd,i,{done,isCur,locked,x});
+    BR.forEach(([m,len])=>{ if(before<m && cum>=m && i<nodes.length-1){ const opened=!!S.st.done[`${n}:brk${m}`];
+      h+=`<div class="pwrap" style="--x:${Math.round(OFF[(i+4)%OFF.length]*0.7)}px"><button class="pnode chest ${opened?"opened":""}" data-act="brk" data-m="${m}" data-len="${len}" aria-label="${len}-minute break${opened?", taken":""}">${opened?ICONS.check:ICONS.cup}</button><div class="plb">${len}-min break</div></div>`; } });
+  });
+  const won=cur<0;
+  h+=`<div class="pwrap"><button class="pnode trophy ${won?"won":""}" data-act="node-trophy" aria-label="Day ${n} trophy${won?", won":""}">${ICONS.trophy}</button><div class="plb ${won?"cur":""}">${won?"Day complete!":"Day "+n+" trophy"}</div></div></div>`;
+  return h; }
+function popHtml(n,nd,i,o){
+  const r=S.st.results[nodeKey(n,nd)];
+  const sub = (nd.parts>1? `${nd.step==="learn"?"Lesson":"Part"} ${nd.part+1} of ${nd.parts} · `:"") + `about ${nd.min} min` + (r&&r.total?` · last ${r.score}/${r.total}`:"");
+  const xp = nd.kind==="task"?15:10;
+  let label = o.done ? (nd.kind==="task"?"Open again":`Practise again +${xp} XP`) : o.locked ? "Jump ahead" : `Start +${xp} XP`;
+  if(nd.step==="review" && !o.done){ const c=srsCounts(); const k=c.due+Math.min(25,c.fresh); label = k? `Review ${k} cards` : "Nothing due · mark done"; }
+  return `<div class="pop ${o.done?"done":o.locked?"locked":""}" style="--x:${o.x}px" role="dialog" aria-label="${attr(nd.title)}">
+    <div><h3>${esc(nd.title)}</h3><div class="sub">${sub}</div></div>
+    ${nd.desc&&nd.desc[0]?`<div class="sub">${ex(nd.desc[0], nd.desc[1])}</div>`:""}
+    ${o.locked?`<div class="sub">${ex("Finish the steps above first, or jump ahead if you already know this.","اول مراحل بالا را تمام کن، یا اگر بلدی جلو برو.")}</div>`:""}
+    <button class="btn" data-act="node-start" data-i="${i}">${label}</button>
+    ${nd.step==="learn"?`<button class="btn link" data-act="step" data-v="guide">${ICONS.book}Guidebook</button>`:""}
+  </div>`; }
+function questsCard(n,d){ const xp=xpToday(), g=goalXp(); const pr=dayProgress(n,d); const cards=(S.st.fcLog||{})[dk(new Date())]||0;
+  const q=(icon,color,title,val,max)=>`<div class="quest"><div class="qi" style="color:${color}">${ICONS[icon]}</div><div><b>${title}</b><div class="qbar"><i style="width:${max?Math.min(100,Math.round(val/max*100)):0}%"></i><span class="tnum">${Math.min(val,max)} / ${max}</span></div></div></div>`;
+  return `<section class="card"><div class="row between" style="margin-bottom:4px"><h2>Daily quests</h2><span class="small muted">reset at midnight</span></div>
+    ${q("bolt","var(--gold)",`Earn ${g} XP`,xp,g)}${q("cards","var(--purple)","Review 20 cards",cards,20)}${q("trophy","var(--orange)",`Finish every step of Day ${n}`,pr.done,pr.total)}</section>`; }
+function tutorMini(n){ return `<section class="card row" style="flex-wrap:nowrap;gap:14px"><div style="color:var(--blue);flex:none">${ICONS.mic.replace('<svg','<svg width="34" height="34"')}</div><div class="grow"><h3>Speak with your tutor</h3><p class="small muted">${ex("Gemini knows today's words, your script and your mistakes.","Gemini لغات، متن و اشتباهات امروزت را می‌داند.")}</p></div><button class="btn blue sm" data-act="live-start" data-n="${n}">Talk</button></section>`; }
+function breakSheet(){ const B=S.brk; const left=Math.max(0,B.endAt-Date.now());
+  return `<div class="sheet-bg"><div class="sheet" role="dialog" aria-label="Break"><div style="color:var(--orange);display:grid;place-items:center">${ICONS.cup.replace('<svg','<svg width="64" height="64"')}</div><h2>${B.len}-minute break</h2>
+    <div class="tnum" id="brkTxt" style="font-size:2.6rem;font-weight:900;color:var(--ink-strong)">${fmtMs(left)}</div>
+    <div class="muted">${B.len>=15?ex("Eat something, walk around, look out of a window. No phone.","چیزی بخور، کمی راه برو، از پنجره بیرون را نگاه کن. بدون گوشی."):ex("Stand up, drink water, rest your eyes.","بلند شو، آب بخور، به چشم‌هایت استراحت بده.")}</div>
+    <button class="btn primary big" data-act="brk-end">${left>0?"End break":"Back to learning"}</button></div></div>`; }
+function tickBreak(){ clearInterval(tickBreak._i); tickBreak._i=setInterval(()=>{ if(!S.brk){ clearInterval(tickBreak._i); return; } const left=S.brk.endAt-Date.now(); const el=$("#brkTxt"); if(el) el.textContent=fmtMs(Math.max(0,left));
+  if(left<=0){ clearInterval(tickBreak._i); sfx("done"); toast("Break over. Weiter geht's!"); } },500); }
+
+async function startNode(n, i){ const d=await getDay(n); if(!d) return; const nd=dayNodes(n,d)[i]; if(!nd) return; S.pop=null;
+  if(nd.kind==="lesson"){ const screens=buildScreens(n,d,nd); if(!screens.length){ toast("Nothing to practise here yet"); return; }
+    startLesson({n, step:nd.step, part:nd.part, parts:nd.parts, key:nodeKey(n,nd), title:nd.title, screens, node:i}); }
+  else if(nd.kind==="review"){ for(const k of Object.keys(S.st.intro)) await getDay(+k); startFc("de");
+    if(!S.fc.queue.length){ S.fc=null; if(!S.st.done[n+":review"]){ S.st.done[n+":review"]=Date.now(); addXp(5); save(); } toast(n===1?"Nothing to review on Day 1. Weiter!":"No cards due. Super!"); render(); return; }
+    S.fcFrom=n; S.view="review"; render(); window.scrollTo(0,0); }
+  else { S.step=nd.step; S.stepAt=Date.now(); render(); window.scrollTo(0,0); }
+}
+
+/* ---------- building lesson screens from a day's content ---------- */
+function vfull(v){ return (v.article&&v.article!=="-"?v.article+" ":"")+v.de; }
+function opts(correct, pool, k, seed){ const uniq=[...new Set(pool.filter(x=>x&&x!==correct))]; return shuffled([correct,...shuffled(uniq,seed).slice(0,k-1)], seed+"o"); }
+function shuf2(w, seed){ let sh=shuffled(w,seed); for(let t=1; t<6 && w.length>1 && sh.join("\u0001")===w.join("\u0001"); t++) sh=shuffled(w,seed+"#"+t); return sh; }
+const NAMES=["Gruber","Huber","Wieser","Steiner","Moser","Karimi","Bauer","Novak","Leitner","Hofer","Rahimi","Pichler"];
+function buildScreens(n,d,nd){ const seed=nd.step+nd.part+Date.now();
+  if(nd.step==="learn"){ const p=learnParts(d)[nd.part]; if(!S.st.intro[n]){ S.st.intro[n]=Date.now(); save(); } return p?learnScreens(d,p,seed):[]; }
+  if(nd.step==="practice"){ const p=practiceParts(d)[nd.part]; return p?p.items.map((it,i)=>exScreen(it, seed+i)):[]; }
+  if(nd.step==="quiz") return (d.review_quiz||[]).map((q,i)=>exScreen({type:"mcq",prompt:q.q,options:q.options,answer:q.answer,explain_en:q.explain_en,explain_fa:q.explain_fa}, seed+i));
+  if(nd.step==="diktat") return (d.diktat||[]).map(t=>({type:"dictation", text:t, noLog:true}));
+  return []; }
+function exScreen(it, seed){ const b={explain_en:it.explain_en, explain_fa:it.explain_fa};
+  if(it.type==="word_order"){ const w=String(it.prompt).split(/\s*·\s*/).filter(Boolean); return {...b,type:"word_order",words:shuf2(w,seed),answer:it.answer,q:it.answer}; }
+  if(it.type==="translate") return {...b,type:"translate",prompt:it.prompt,answer:it.answer,accept:it.accept,q:it.prompt};
+  if(it.type==="article") return {...b,type:"article",prompt:String(it.prompt).replace(/_+/g,"").trim(),options:(it.options&&it.options.length?it.options:["der","die","das"]),answer:it.answer,q:String(it.prompt).replace(/_+/g,"").trim()};
+  if(it.type==="gap") return {...b,type:"gap",prompt:it.prompt,options:shuffled(it.options||[],seed),answer:it.answer,q:it.prompt};
+  return {...b,type:"mcq",prompt:it.prompt,options:shuffled(it.options||[],seed),answer:it.answer,q:it.prompt}; }
+function learnScreens(d,p,seed){ const out=[]; const V=d.vocab||[], P=d.phrases||[];
+  if(p.id==="abc"){ const letters=d.alphabet.filter(a=>a.l&&a.l.length<=2); const say=a=>LETTER_TTS[a.l]||LETTER_TTS[a.l.toUpperCase()]||a.name||a.l;
+    out.push({type:"abcgrid"});
+    shuffled(letters,seed).slice(0,6).forEach((a,i)=>out.push({type:"listen",prompt:"Which letter do you hear?",say:say(a),options:opts(a.l,letters.map(x=>x.l),4,seed+i),answer:a.l,noLog:true}));
+    shuffled(NAMES,seed).slice(0,2).forEach(w=>out.push({type:"spell",word:w,noLog:true}));
+    return out; }
+  if(p.id==="sounds"){ const all=d.pronunciation.flatMap(x=>x.words||[]);
+    d.pronunciation.forEach((x,i)=>{ out.push({type:"tip",kind:"sound",title:x.focus,en:x.tip_en,fa:x.tip_fa,words:x.words||[]});
+      const w=x.words||[]; if(w.length>=2){ const a=w[hashStr(seed+i)%w.length]; out.push({type:"listen",prompt:"Tap what you hear",say:a,options:opts(a,[...w,...all],4,seed+"s"+i),answer:a,noLog:true}); } });
+    return out; }
+  if(p.id[0]==="w"){ const items=p.items, pool=V.map(v=>v.en), fullPool=V.map(vfull);
+    for(let g=0; g<items.length; g+=3){ const grp=items.slice(g,g+3);
+      grp.forEach(v=>out.push({type:"teach",kind:"word",v}));
+      shuffled(grp,seed+g).forEach((v,j)=>out.push({type:"meaning",de:vfull(v),fa:v.fa,options:opts(v.en,pool,4,seed+g+"m"+j),answer:v.en,q:vfull(v),explain_en:v.example_de?v.example_de+(v.example_en?" · "+v.example_en:""):"",explain_fa:v.fa})); }
+    if(items.length>=3) out.push({type:"match",pairs:shuffled(items,seed+"mt").slice(0,5).map(v=>({l:vfull(v),r:v.en,say:vfull(v)}))});
+    const rest=[];
+    items.filter(v=>["der","die","das"].includes(v.article)).slice(0,3).forEach(v=>rest.push({type:"article",prompt:v.de,options:["der","die","das"],answer:v.article,q:v.de,explain_en:`${v.article} ${v.de}${v.plural&&v.plural!=="-"?", "+v.plural:""}`}));
+    shuffled(items,seed+"l").slice(0,2).forEach((v,j)=>rest.push({type:"listen",prompt:"What do you hear?",say:vfull(v),options:opts(vfull(v),fullPool,4,seed+"L"+j),answer:vfull(v),noLog:true}));
+    shuffled(items,seed+"r").slice(0,2).forEach((v,j)=>rest.push({type:"reverse",en:v.en,fa:v.fa,options:opts(vfull(v),fullPool,4,seed+"R"+j),answer:vfull(v),q:v.en,sayOpts:true}));
+    out.push(...shuffled(rest,seed+"rest"));
+    return out; }
+  if(p.id[0]==="p"){ const items=p.items, pool=P.map(x=>x.en);
+    for(let g=0; g<items.length; g+=4){ const grp=items.slice(g,g+4);
+      grp.forEach(x=>out.push({type:"teach",kind:"phrase",v:x}));
+      shuffled(grp,seed+g).slice(0,2).forEach((x,j)=>out.push({type:"meaning",de:x.de,fa:x.fa,options:opts(x.en,pool,3,seed+g+"pm"+j),answer:x.en,q:x.de,explain_fa:x.fa})); }
+    if(items.length>=3) out.push({type:"match",pairs:shuffled(items,seed+"pmt").slice(0,4).map(x=>({l:x.de,r:x.en,say:x.de}))});
+    items.filter(x=>{ const w=x.de.split(/\s+/); return w.length>=3&&w.length<=7; }).sort((a,b)=>hashStr(seed+a.de)-hashStr(seed+b.de)).slice(0,2)
+      .forEach((x,j)=>{ const w=x.de.split(/\s+/); out.push({type:"word_order",words:shuf2(w,seed+"w"+j),answer:x.de,q:x.de,en:x.en,explain_fa:x.fa}); });
+    const sp=shuffled(items,seed+"sp")[0]; if(sp) out.push({type:"speak",text:sp.de,en:sp.en,noLog:true,free:true});
+    return out; }
+  if(p.id==="gram"){ d.grammar.forEach(g=>out.push({type:"tip",kind:"grammar",title:g.topic,en:g.explain_en,fa:g.explain_fa,table:g.table,examples:g.examples,mistakes:g.common_mistakes}));
+    (d.exercises||[]).filter(e=>e.type==="gap"||e.type==="word_order").slice(0,4).forEach((e,i)=>out.push(exScreen(e,seed+"g"+i)));
+    return out; }
+  return out; }
+
+/* ---------- the lesson player ---------- */
+const CHOICE=new Set(["mcq","gap","article","meaning","listen","reverse"]);
+const NOCHECK=new Set(["teach","tip","abcgrid"]);
+function startLesson(o){ stopSpeech(); S.les=Object.assign({queue:o.screens.map((_,i)=>i), pos:0, state:"ans", pick:null, wo:[], text:"", res:null, first:{}, graded:0, right:0, combo:0, maxCombo:0, startAt:Date.now(), retried:{}, match:null, sp:null, spoken:-1, quit:false}, o); S.pop=null; render(); window.scrollTo(0,0); }
+function lesCur(){ const L=S.les; return L.screens[L.queue[L.pos]]; }
+function bigSay(text, slow, small){ const i=SAY_BANK.push({text})-1; return `<button class="bigsay ${small||slow?"slowb":""}" data-act="say" data-i="${i}" ${slow?'data-slow="1"':""} aria-label="${slow?"Play slowly":"Play"}" title="${slow?"Play slowly":"Play"}">${slow?ICONS.turtle:ICONS.speaker}</button>`; }
+function artHtml(t){ const m=String(t).match(/^(der|die|das)\s+(.*)$/); return m?`<span class="${artClass(m[1])}">${m[1]}</span> ${esc(m[2])}`:esc(t); }
+function textIn(L, ph, single){ const chk=L.state==="chk"; const cls=chk?(L.res&&L.res.ok?"inp-ok":"inp-bad"):"";
+  return (single?`<input type="text" class="les-in ${cls}" id="lesIn" data-les="text" value="${attr(L.text)}" placeholder="${attr(ph)}" ${chk?"disabled":""} autocomplete="off" autocapitalize="words" spellcheck="false" aria-label="${attr(ph)}">`
+    :`<textarea class="les-in ${cls}" id="lesIn" data-les="text" placeholder="${attr(ph)}" ${chk?"disabled":""} autocomplete="off" autocapitalize="sentences" spellcheck="false" aria-label="${attr(ph)}">${esc(L.text)}</textarea>`)
+    + (chk?"":`<div class="ukeys" aria-label="Special letters">${["ä","ö","ü","ß","Ä","Ö","Ü"].map(c=>`<button data-act="les-key" data-v="${c}" tabindex="-1">${c}</button>`).join("")}</div>`); }
+function vLesson(){ const L=S.les, s=lesCur(); const pct=Math.round(L.pos/L.queue.length*100);
+  return `<div class="les"><div class="les-top"><button class="xbtn" data-act="les-quit" aria-label="Quit lesson">${ICONS.x}</button>
+    <div class="grow" style="position:relative"><div class="lbar" role="progressbar" aria-label="Lesson progress" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.max(pct,3)}%"></i></div>${L.combo>=3?`<span class="combo">${L.combo} in a row</span>`:""}</div></div>
+    <div class="les-body">${screenHtml(s,L)}</div>${lesFoot(s,L)}${L.quit?quitSheet():""}</div>`; }
+function screenHtml(s,L){ const chk=L.state==="chk";
+  const tiles=(list,cls="")=>{ const lay=list.length===3&&list.every(o=>o.length<12)?"three":list.length===4&&list.every(o=>o.length<26)?"two":"";
+    return `<div class="answers ${lay}">${list.map((o,i)=>{ let c=""; if(chk){ if(o===s.answer) c="right"; else if(i===L.pick) c="wrong"; } else if(i===L.pick) c="sel";
+      return `<button class="ans ${c} ${s.type==="article"?artClass(o):""} ${cls}" data-act="les-pick" data-v="${i}" ${chk?"disabled":""}><span class="kbd">${i+1}</span><span>${esc(o)}</span></button>`; }).join("")}</div>`; };
+  switch(s.type){
+  case "teach": { const v=s.v, word=s.kind==="word", art=word&&v.article&&v.article!=="-"?v.article:"";
+    return `<div><span class="badge">${word?"New word":"New phrase"}</span></div>
+      <div class="teach"><div class="prompt-row">${bigSay(vfull(v),false,true)}<div class="word">${art?`<span class="${artClass(art)}">${esc(art)}</span> `:""}${esc(v.de)}</div></div>
+      ${v.plural&&v.plural!=="-"?`<div class="muted">Plural: <b>${esc(v.plural)}</b></div>`:""}
+      <div class="mean">${esc(v.en)}</div>${S.st.lang!=="en"&&v.fa?`<div class="fa" style="font-size:1.12rem;align-self:stretch">${esc(v.fa)}</div>`:""}
+      <div class="row">${v.register==="formal"?`<span class="chip acc">formal · Sie</span>`:v.register==="informal"?`<span class="chip">informal · du</span>`:""}${v.austrian?`<span class="chip at">Austrian${typeof v.austrian==="string"?": "+esc(v.austrian):""}</span>`:""}</div>
+      ${v.example_de?`<div class="sunk row" style="flex-wrap:nowrap;align-self:stretch">${sayBtn(v.example_de,{slow:true})}<div><b>${esc(v.example_de)}</b>${v.example_en?`<br><span class="small muted">${esc(v.example_en)}</span>`:""}</div></div>`:""}</div>`; }
+  case "tip": return `<div><span class="badge blue">${s.kind==="sound"?"Sound tip":"Grammar"}</span></div><h1 class="les-h">${esc(s.title)}</h1><div class="card stack">${ex(s.en,s.fa)}
+      ${s.words&&s.words.length?`<div class="row">${s.words.map(w=>`<button class="wtile" data-act="sayw" data-v="${attr(w)}">${esc(w)}</button>`).join("")}</div><p class="small muted">Tap each word to hear it.</p>`:""}
+      ${s.table&&s.table.length?`<div class="tablewrap"><table class="gram">${s.table.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table></div>`:""}
+      ${(s.examples||[]).map(e=>`<div class="row" style="flex-wrap:nowrap;align-items:flex-start">${sayBtn(e.de)}<div><b>${esc(e.de)}</b><br><span class="small muted">${esc(e.en)}</span></div></div>`).join("")}
+      ${s.mistakes&&s.mistakes.length?`<div class="sunk small"><b>Common mistakes</b><ul style="margin:6px 0 0;padding-left:18px">${s.mistakes.map(m=>`<li>${esc(m)}</li>`).join("")}</ul></div>`:""}</div>`;
+  case "abcgrid": { const d=S.days[L.n]||{}; return `<h1 class="les-h">Tap each letter to hear it</h1><div class="abc">${(d.alphabet||[]).map(a=>`<button data-act="letter" data-v="${attr(a.l)}" aria-label="${attr(a.l+", "+a.name)}"><span class="L">${esc(a.l)}</span><span class="nm">${esc(a.name)}</span>${S.st.lang!=="en"&&a.fa?`<span class="fa">${esc(a.fa)}</span>`:""}</button>`).join("")}</div>
+      <p class="small muted">${ex("Listen carefully to E and I, G and J, V and W, and the umlauts: they're the classic spelling traps.","به E و I، G و J، V و W و حروف اوملات دقت کن؛ تله‌های رایج هجی هستند.")}</p>`; }
+  case "meaning": return `<h1 class="les-h">What does this mean?</h1><div class="prompt-row">${bigSay(s.de,false,true)}<div class="big-prompt">${artHtml(s.de)}</div></div>${tiles(s.options)}`;
+  case "reverse": return `<h1 class="les-h">How do you say this in German?</h1><div class="big-prompt">“${esc(s.en)}”</div>${S.st.lang!=="en"&&s.fa?`<div class="fa">${esc(s.fa)}</div>`:""}${tiles(s.options)}`;
+  case "listen": return `<h1 class="les-h">${esc(s.prompt||"What do you hear?")}</h1><div class="listen-row">${bigSay(s.say)}${bigSay(s.say,true)}</div>${tiles(s.options,"c")}`;
+  case "mcq": return `<h1 class="les-h">Choose the right answer</h1><div class="big-prompt" style="font-size:1.25rem">${esc(s.prompt)}</div>${tiles(s.options)}`;
+  case "gap": { const w=L.pick!=null?s.options[L.pick]:""; const html=esc(s.prompt).replace(/_{2,}/, `<span class="gapword">${w?esc(w):"&nbsp;"}</span>`);
+    return `<h1 class="les-h">Fill in the gap</h1><div class="big-prompt" style="font-size:1.3rem">${html}</div>${tiles(s.options)}`; }
+  case "article": return `<h1 class="les-h">der, die or das?</h1><div class="big-prompt"><span class="gapword ${L.pick!=null?artClass(s.options[L.pick]):""}">${L.pick!=null?esc(s.options[L.pick]):"&nbsp;"}</span> ${esc(s.prompt)}</div>${tiles(s.options,"c")}`;
+  case "word_order": return `<h1 class="les-h">${s.en?"Write this in German":"Put the words in order"}</h1>${s.en?`<div class="big-prompt" style="font-size:1.2rem">“${esc(s.en)}”</div>`:""}
+      <div class="wline">${L.wo.map(ix=>`<button class="wtile" data-act="les-wo-del" data-ix="${ix}" ${chk?"disabled":""}>${esc(s.words[ix])}</button>`).join("")}</div>
+      <div class="wbank">${s.words.map((w,ix)=>L.wo.includes(ix)?`<span class="wtile ph" aria-hidden="true">${esc(w)}</span>`:`<button class="wtile" data-act="les-wo-add" data-ix="${ix}" ${chk?"disabled":""}>${esc(w)}</button>`).join("")}</div>`;
+  case "translate": return `<h1 class="les-h">Write this in German</h1><div class="big-prompt" style="font-size:1.25rem">${esc(s.prompt)}</div>${textIn(L,"Type in German")}`;
+  case "dictation": return `<h1 class="les-h">Type what you hear</h1><div class="listen-row">${bigSay(s.text)}${bigSay(s.text,true)}</div>${textIn(L,"Type in German")}`;
+  case "spell": return `<h1 class="les-h">Type the name you hear spelled</h1><p class="muted small">${ex("In Hören Teil 2 a spelled name must be 100% correct.","در بخش ۲ شنیدن، اسمِ هجی‌شده باید کاملاً درست باشد.")}</p><div class="listen-row"><button class="bigsay" data-act="les-spell" aria-label="Spell again">${ICONS.speaker}</button></div>${textIn(L,"Surname",true)}`;
+  case "match": return matchHtml(s,L);
+  case "speak": return speakHtml(s,L);
+  } return ""; }
+function matchHtml(s,L){ if(!L.match){ const ids=s.pairs.map((_,i)=>i); L.match={L:shuffled(ids,"l"+L.pos+L.startAt), R:shuf2(ids,"r"+L.pos+L.startAt), sel:null, done:[], bad:null, mistakes:0}; }
+  const M=L.match; const tile=(side,i)=>{ const p=s.pairs[i]; const done=M.done.includes(i); const sel=M.sel&&M.sel.side===side&&M.sel.i===i; const bad=M.bad&&M.bad.some(b=>b.side===side&&b.i===i);
+    return `<button class="ans c ${done?"gone":bad?"wrong":sel?"sel":""}" data-act="les-match" data-side="${side}" data-i="${i}" ${done?"disabled":""}>${side==="l"?artHtml(p.l):esc(p.r)}</button>`; };
+  return `<h1 class="les-h">Tap the matching pairs</h1><div class="match"><div class="col">${M.L.map(i=>tile("l",i)).join("")}</div><div class="col">${M.R.map(i=>tile("r",i)).join("")}</div></div>`; }
+function srAvail(){ return !!(window.SpeechRecognition||window.webkitSpeechRecognition); }
+function speakHtml(s,L){ const P=L.sp||{};
+  return `<h1 class="les-h">Speak this sentence</h1><div class="prompt-row">${bigSay(s.text,false,true)}<div class="big-prompt" style="font-size:1.35rem">${esc(s.text)}</div></div>${s.en?`<div class="muted">${esc(s.en)}</div>`:""}
+    ${srAvail()?`<button class="micbtn ${P.listening?"on":""}" data-act="les-mic" ${L.state==="chk"||P.listening?"disabled":""}>${ICONS.mic}${P.listening?"Listening… speak now":"Tap to speak"}</button>`
+      :`<div class="banner info"><div>${ex("Say the sentence out loud, then tap “I said it”. Speech checking needs Chrome or Edge.","جمله را بلند بگو و بعد «I said it» را بزن. بررسی گفتار فقط در Chrome یا Edge کار می‌کند.")}</div></div>`}
+    ${P.error?`<p class="small" style="color:var(--red-ink)">${esc(P.error)}</p>`:""}`; }
+function answerText(s){ return s.type==="dictation"?s.text:s.type==="spell"?s.word:s.answer; }
+function expl(s){ return s.explain_en||s.explain_fa?`<div class="small">${ex(s.explain_en||"", s.explain_fa||"")}</div>`:""; }
+function lesFoot(s,L){
+  if(L.state==="chk"){ const r=L.res||{};
+    if(r.skip) return `<div class="les-foot"><div class="in"><span class="small muted">${ex("Skipped. It won't count against you.","رد شد و حساب نمی‌شود.")}</span><button class="btn primary big" id="lesBtn" data-act="les-next">Continue</button></div></div>`;
+    const praise=["Richtig!","Super!","Sehr gut!","Toll!","Perfekt!","Genau!","Ausgezeichnet!"][(L.pos*3+L.right)%7];
+    const body = r.ok ? `<div class="fbk"><div class="ic">${ICONS.check}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.note==="typo"?"Almost! Watch the spelling":praise}</h3>${r.note==="typo"?`<div class="ans-line">${esc(answerText(s))}</div>`:""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`
+      : `<div class="fbk"><div class="ic">${ICONS.x}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.match?"Some pairs were wrong":s.free?"Not quite. Listen and try again later":"Correct answer:"}</h3>${r.match||s.free?"":`<div class="ans-line">${s.type==="article"?artHtml(s.answer+" "+s.prompt):esc(answerText(s))}</div>`}${r.diff||""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`;
+    return `<div class="les-foot ${r.ok?"ok":"bad"}" role="status"><div class="in">${body}<button class="btn big" id="lesBtn" data-act="les-next">Continue</button></div></div>`; }
+  if(NOCHECK.has(s.type)) return `<div class="les-foot"><div class="in"><span></span><button class="btn primary big" id="lesBtn" data-act="les-next">Continue</button></div></div>`;
+  if(s.type==="match") return `<div class="les-foot"><div class="in"><span class="small muted">${ex("Tap a German word, then its meaning.","یک کلمه آلمانی و بعد معنی‌اش را بزن.")}</span><button class="btn big" disabled>Check</button></div></div>`;
+  if(s.type==="speak") return `<div class="les-foot"><div class="in"><button class="btn" data-act="les-skip">Can't speak now</button>${srAvail()?"":`<button class="btn primary big" id="lesBtn" data-act="les-said">I said it</button>`}</div></div>`;
+  const can = CHOICE.has(s.type) ? L.pick!=null : s.type==="word_order" ? L.wo.length>0 : !!L.text.trim();
+  const skip = (s.type==="listen"||s.type==="dictation"||s.type==="spell") ? `<button class="btn" data-act="les-skip">Can't listen now</button>` : `<span></span>`;
+  return `<div class="les-foot"><div class="in">${skip}<button class="btn primary big" id="lesBtn" data-act="les-check" ${can?"":"disabled"}>Check</button></div></div>`; }
+function quitSheet(){ return `<div class="sheet-bg"><div class="sheet" role="dialog" aria-label="Quit lesson"><h2>Wait, don't go!</h2><p class="muted">${ex("You'll lose your progress in this lesson.","پیشرفتت در این درس از بین می‌رود.")}</p>
+  <button class="btn primary big" data-act="les-quit-no">Keep learning</button><button class="btn ghost" data-act="les-quit-yes" style="color:var(--red-ink)">End session</button></div></div>`; }
+function germanOf(s){ if(s.type==="gap") return String(s.prompt).replace(/_{2,}/, s.answer); if(s.type==="article") return s.answer+" "+s.prompt; if(["reverse","word_order","translate"].includes(s.type)) return String(s.answer).split(" / ")[0]; return ""; }
+function lesCheck(){ const L=S.les, s=lesCur(); if(!L||L.state!=="ans") return; let ok=false, your="", extra={};
+  if(CHOICE.has(s.type)){ if(L.pick==null) return; your=s.options[L.pick]; ok=your===s.answer; }
+  else if(s.type==="word_order"){ your=L.wo.map(i=>s.words[i]).join(" "); if(!your) return; ok=norm(your)===norm(s.answer); }
+  else if(s.type==="translate"){ your=L.text.trim(); if(!your) return; ok=(s.accept&&s.accept.length?s.accept:String(s.answer).split(" / ")).some(x=>norm(x)===norm(your)); }
+  else if(s.type==="dictation"){ your=L.text.trim(); if(!your) return; const strip=t=>t.replace(/[.,!?;:„“"]/g,"").replace(/\s+/g," ").trim();
+    if(strip(your)===strip(s.text)) ok=true; else if(norm(your)===norm(s.text)){ ok=true; extra.note="typo"; }
+    if(!ok||extra.note) extra.diff=`<div class="small" style="line-height:1.9">${lcsDiff(s.text, your).map(t=>t.t==="ok"?esc(t.w):t.t==="extra"?`<s>${esc(t.w)}</s>`:`<u style="text-decoration-thickness:3px">${esc(t.w)}</u>`).join(" ")}</div>`; }
+  else if(s.type==="spell"){ your=L.text.trim(); if(!your) return; ok=your.toLowerCase().replace(/\s/g,"")===s.word.toLowerCase(); }
+  gradeScreen(ok, your, extra); }
+function gradeScreen(ok, your, extra){ const L=S.les; const idx=L.queue[L.pos], s=L.screens[idx];
+  L.state="chk"; L.res=Object.assign({ok, your}, extra||{});
+  if(!s.free){ if(!(idx in L.first)){ L.first[idx]=ok; L.graded++; if(ok) L.right++; else if(!s.noLog) logMistake(L.n||currentDay(), L.src||L.step, s.q||s.prompt||"", your, String(answerText(s)||"")); }
+    if(!ok && !L.retried[idx]){ L.retried[idx]=1; L.queue.push(idx); } }
+  if(ok){ L.combo++; L.maxCombo=Math.max(L.maxCombo,L.combo); sfx("ok"); const g=germanOf(s); if(g) setTimeout(()=>{ if(S.les===L){ stopSpeech(); speak(g); } },280); }
+  else { L.combo=0; sfx("bad"); vib(); }
+  render(); }
+function lesNext(){ const L=S.les; if(!L) return; stopSpeech(); L.pos++; Object.assign(L,{state:"ans",pick:null,wo:[],text:"",res:null,match:null,sp:null});
+  if(L.pos>=L.queue.length) return finishLesson(); render(); window.scrollTo(0,0); }
+function lesAfterRender(){ const L=S.les; if(!L) return; const s=lesCur(); if(!s) return;
+  if(L.state==="ans" && L.spoken!==L.pos){ L.spoken=L.pos;
+    const t = s.type==="teach"?vfull(s.v) : s.type==="meaning"?s.de : s.type==="listen"?s.say : s.type==="dictation"?s.text : null;
+    if(t) setTimeout(()=>{ if(S.les===L&&L.spoken===L.pos){ stopSpeech(); speak(t); } },350);
+    if(s.type==="spell") setTimeout(()=>{ if(S.les===L&&L.spoken===L.pos) spellOut(s.word); },350); }
+  const inp=$("#lesIn"); if(inp && L.state==="ans" && document.activeElement!==inp && matchMedia("(pointer:fine)").matches){ inp.focus({preventScroll:true}); const v=inp.value; try{ inp.setSelectionRange(v.length,v.length); }catch(e){} } }
+function lesMic(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; const L=S.les, s=lesCur(); if(!SR||!L) return; stopSpeech();
+  const r=new SR(); r.lang="de-DE"; r.interimResults=false; r.maxAlternatives=4; L.sp={listening:true}; render();
+  r.onresult=e=>{ const alts=[...e.results[0]].map(a=>a.transcript); const best=alts.map(a=>({a,s:simScore(s.text,a)})).sort((x,y)=>y.s-x.s)[0]; L.sp=null; if(S.les===L) gradeScreen(best.s>=70, best.a, {heard:best.a, score:best.s}); };
+  r.onerror=e=>{ L.sp={error:e.error==="not-allowed"?"Allow the microphone for this site, or tap “Can't speak now”.":e.error==="no-speech"?"I didn't hear anything. Try again.":String(e.error)}; render(); };
+  r.onend=()=>{ if(L.sp&&L.sp.listening){ L.sp={error:"I didn't hear anything. Try again."}; render(); } };
+  try{ r.start(); }catch(e){ L.sp={error:e.message}; render(); } }
+function finishLesson(){ const L=S.les; const acc=L.graded?Math.round(L.right/L.graded*100):null; const ms=Date.now()-L.startAt; const xp=10+(acc===100&&L.graded>=3?5:0);
+  let dayDone=false;
+  if(L.key){ const wasAll=dayAllDone(L.n); S.st.done[L.key]=Date.now(); if(L.graded) S.st.results[L.key]={score:L.right,total:L.graded,at:Date.now()};
+    if(L.parts>1 && [...Array(L.parts).keys()].every(pi=>S.st.done[`${L.n}:${L.step}#${pi}`])) S.st.done[`${L.n}:${L.step}`]=S.st.done[`${L.n}:${L.step}`]||Date.now();
+    dayDone=!wasAll && dayAllDone(L.n); }
+  addXp(xp); save(); sfx("done");
+  S.fin={title: dayDone?`Day ${L.n} complete!`:L.src==="mix"?"Review complete!":"Lesson complete!", xp, acc, ms, dayDone, n:L.n, node:L.node, combo:L.maxCombo};
+  S.les=null; render(); window.scrollTo(0,0); }
+function mockCta(n){ const m=MOCKS.find(x=>x.day===n); if(!m) return ""; const r=(S.st.mocks||{})[m.id];
+  return `<section class="card stack" style="border-color:var(--orange)"><div class="row" style="flex-wrap:nowrap;gap:14px"><div style="color:var(--orange);flex:none">${ICONS.exam.replace('<svg','<svg width="38" height="38"')}</div>
+    <div class="grow"><div class="label">Mock exam day</div><h3>${esc(m.title)}</h3></div></div><p class="small">${esc(m.how)}</p>${r?resultMini(r):""}
+    <div><button class="btn primary" data-act="mock-open" data-id="${m.id}">${r?"Take it again":"Start mock"}</button></div></section>`; }
+function medalSvg(){ return `<svg viewBox="0 0 160 160" aria-hidden="true"><g stroke="var(--gold)" stroke-width="7" stroke-linecap="round" opacity=".6">${[0,45,90,135,180,225,270,315].map(a=>`<path d="M80 8v16" transform="rotate(${a} 80 80)"/>`).join("")}</g>
+  <circle cx="80" cy="86" r="48" fill="var(--gold-d)"/><circle cx="80" cy="80" r="48" fill="var(--gold)"/><circle cx="80" cy="80" r="36" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="4"/>
+  <path d="m80 52 9 18.3 20.2 2.9-14.6 14.3 3.4 20.1L80 98.1l-18 9.5 3.4-20.1L50.8 73.2 71 70.3z" fill="#fff"/></svg>`; }
+function vFinish(){ const F=S.fin; const cols=["#58c322","#1db0f0","#ffc61a","#ff6fae","#ce82ff","#ff9a1f"];
+  const conf=Array.from({length:44},(_,i)=>`<i style="left:${(i*37+11)%100}%;background:${cols[i%6]};animation-delay:${((i*7)%10)*0.09}s;animation-duration:${2.2+(i%5)*0.25}s"></i>`).join("");
+  const accLbl = F.acc>=95?"Amazing":F.acc>=80?"Good":"Accuracy";
+  const msg = F.dayDone ? ex("You finished every step today. Rest well and come back tomorrow.","همه مراحل امروز را تمام کردی. خوب استراحت کن و فردا برگرد.")
+    : F.acc!=null&&F.acc<80 ? ex("Below 80%. Practise this once more to lock it in.","زیر ۸۰٪ است. یک بار دیگر تمرین کن تا جا بیفتد.")
+    : `<div>${["Weiter so!","Sehr gut gemacht!","Du schaffst das!","Prima!"][F.xp%4]}${F.combo>=5?` · ${F.combo} in a row`:""}</div>`;
+  return `<div class="les"><div class="confetti" aria-hidden="true">${conf}</div><div class="fin">
+    <div class="fin-art">${medalSvg()}</div><h1>${esc(F.title)}</h1><div class="muted">${msg}</div>
+    <div class="fin-stats">
+      <div class="fstat" style="--c:var(--gold)"><div class="h">Total XP</div><div class="b">${ICONS.bolt}${F.xp}</div></div>
+      ${F.acc!=null?`<div class="fstat" style="--c:var(--green)"><div class="h">${accLbl}</div><div class="b">${ICONS.target}${F.acc}%</div></div>`:""}
+      <div class="fstat" style="--c:var(--blue)"><div class="h">Time</div><div class="b">${ICONS.clock}${fmtMs(F.ms||0)}</div></div></div>
+    <div class="small muted tnum">Today: ${xpToday()} / ${goalXp()} XP${xpToday()>=goalXp()?" · daily goal reached":""}</div></div>
+    <div class="les-foot"><div class="in">${F.acc!=null&&F.acc<80&&F.node!=null?`<button class="btn" data-act="fin-again">Practise again</button>`:"<span></span>"}<button class="btn primary big" id="lesBtn" data-act="fin-continue">Continue</button></div></div></div>`; }
+function finishFc(){ const f=S.fc; S.fc=null; const xp=5+Math.min(20,f.seen); addXp(xp); const n=S.fcFrom; let dayDone=false;
+  if(n){ const wasAll=dayAllDone(n); S.st.done[n+":review"]=S.st.done[n+":review"]||Date.now(); dayDone=!wasAll&&dayAllDone(n); S.view="today"; }
+  S.fcFrom=null; save(); sfx("done");
+  S.fin={title:dayDone?`Day ${n} complete!`:"Cards reviewed!", xp, acc:f.seen?Math.round((f.good||0)/f.seen*100):null, ms:Date.now()-(f.at||Date.now()), dayDone, n};
+  render(); window.scrollTo(0,0); }
+function guideShell(n,d){ return `<div class="les"><div class="les-top"><button class="xbtn" data-act="back" aria-label="Close guidebook">${ICONS.x}</button><div class="grow"><div class="label">Day ${n} · Guidebook</div><h2>${esc(d.title||PLAN[n-1].t)}</h2></div></div>
+  <div class="les-body">${stLearn(n,d)}</div>
+  <div class="les-foot"><div class="in"><span class="small muted">${ex("All of today's words, phrases and grammar on one page.","همه لغات، جمله‌ها و دستور امروز در یک صفحه.")}</span><button class="btn primary big" id="lesBtn" data-act="back">Got it</button></div></div></div>`; }
+
 /* ---------- events ---------- */
 document.addEventListener("click", async e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   const a=b.dataset.act;
-  if(a==="tab"){ S.view=b.dataset.v; S.step=null; S.fc=null; S.mix=null; if(S.view==="today") S.dayN=S.dayN||currentDay(); render(); window.scrollTo(0,0); }
-  else if(a==="day"){ const n=+b.dataset.v; if(n<1||n>PLAN.length) return; S.dayN=n; S.view="today"; S.step=null; render(); window.scrollTo(0,0); }
-  else if(a==="step"){ S.step=b.dataset.v; render(); window.scrollTo(0,0); }
+  if(a==="tab"){ S.view=b.dataset.v; S.step=null; S.fc=null; S.mix=null; S.pop=null; S.fcFrom=null; if(S.view==="today") S.dayN=S.dayN||currentDay(); render(); window.scrollTo(0,0); }
+  else if(a==="day"){ const n=+b.dataset.v; if(n<1||n>PLAN.length) return; S.dayN=n; S.view="today"; S.step=null; S.pop=null; render(); window.scrollTo(0,0); }
+  else if(a==="step"){ S.step=b.dataset.v; S.stepAt=Date.now(); S.pop=null; render(); window.scrollTo(0,0); }
+  else if(a==="node"){ const i=+b.dataset.i; S.pop=S.pop===i?null:i; sfx("tap"); render(); const pp=$(".pop"); if(pp) pp.scrollIntoView({block:"nearest",behavior:"smooth"}); }
+  else if(a==="node-start"){ startNode(S.dayN||currentDay(), +b.dataset.i); }
+  else if(a==="node-trophy"){ const n=S.dayN||currentDay(); toast(dayAllDone(n)?`Day ${n} complete. Toll gemacht!`:"Finish every step on the path to win today's trophy."); }
+  else if(a==="brk"){ S.brk={n:S.dayN||currentDay(), m:+b.dataset.m, len:+b.dataset.len, endAt:Date.now()+(+b.dataset.len)*60000}; render(); }
+  else if(a==="brk-end"){ const B=S.brk; if(B){ const k=`${B.n}:brk${B.m}`; if(!S.st.done[k]){ S.st.done[k]=Date.now(); addXp(5); save(); toast("Break bonus +5 XP"); } } S.brk=null; render(); }
+  else if(a==="les-pick"){ const L=S.les; if(!L||L.state!=="ans") return; L.pick=+b.dataset.v; const s=lesCur(); if(s.sayOpts||s.type==="listen"&&/^[A-Za-zÄÖÜäöüß ]{3,}$/.test(s.options[L.pick])&&s.options[L.pick].length>2){ stopSpeech(); speak(s.options[L.pick]); } else sfx("tap"); render(); }
+  else if(a==="les-check"){ lesCheck(); }
+  else if(a==="les-next"){ lesNext(); }
+  else if(a==="les-wo-add"){ const L=S.les; if(L.state!=="ans") return; L.wo.push(+b.dataset.ix); const s=lesCur(); speak(s.words[+b.dataset.ix]); render(); }
+  else if(a==="les-wo-del"){ const L=S.les; if(L.state!=="ans") return; L.wo=L.wo.filter(x=>x!==+b.dataset.ix); render(); }
+  else if(a==="les-key"){ const el=$("#lesIn"); if(!el) return; const v=b.dataset.v; const st=el.selectionStart??el.value.length, en=el.selectionEnd??st; el.value=el.value.slice(0,st)+v+el.value.slice(en); try{ el.setSelectionRange(st+v.length, st+v.length); }catch(e){} el.focus(); S.les.text=el.value; const lb=$("#lesBtn"); if(lb) lb.disabled=!el.value.trim(); }
+  else if(a==="les-match"){ const L=S.les, M=L.match, s=lesCur(); if(!M||L.state!=="ans") return; const side=b.dataset.side, i=+b.dataset.i; if(side==="l"){ stopSpeech(); speak(s.pairs[i].say); }
+    if(!M.sel || M.sel.side===side){ M.sel={side,i}; render(); return; }
+    const li=side==="l"?i:M.sel.i, ri=side==="r"?i:M.sel.i; M.sel=null;
+    if(li===ri){ M.done.push(li); if(M.done.length===s.pairs.length){ gradeScreen(M.mistakes<=1, "", {match:true}); return; } sfx("pair"); render(); }
+    else { M.mistakes++; M.bad=[{side:"l",i:li},{side:"r",i:ri}]; sfx("bad"); vib(60); render(); setTimeout(()=>{ if(S.les===L&&L.match===M){ M.bad=null; render(); } },550); } }
+  else if(a==="les-mic"){ lesMic(); }
+  else if(a==="les-skip"){ const L=S.les; stopSpeech(); L.state="chk"; L.res={skip:true}; render(); }
+  else if(a==="les-said"){ gradeScreen(true, "", {}); }
+  else if(a==="les-spell"){ const s=lesCur(); if(s) spellOut(s.word); }
+  else if(a==="les-quit"){ const L=S.les; if(L.pos===0&&L.state==="ans"){ S.les=null; stopSpeech(); render(); return; } L.quit=true; render(); }
+  else if(a==="les-quit-no"){ S.les.quit=false; render(); }
+  else if(a==="les-quit-yes"){ S.les=null; stopSpeech(); render(); window.scrollTo(0,0); }
+  else if(a==="fin-continue"){ S.fin=null; render(); window.scrollTo(0,0); if(S.view==="today") setTimeout(()=>{ const c=$("#curNode"); if(c) c.scrollIntoView({block:"center",behavior:"smooth"}); },60); }
+  else if(a==="fin-again"){ const F=S.fin; S.fin=null; startNode(F.n, F.node); }
+  else if(a==="task-done"){ const k=b.dataset.key, step=b.dataset.step, n=+k.split(":")[0]; const wasAll=dayAllDone(n); S.st.done[k]=Date.now(); addXp(15);
+    let sc=0,tot=0; Object.entries(S.st.results).forEach(([rk,r])=>{ if(rk.startsWith(n+":"+step)&&r&&r.total){ sc+=r.score; tot+=r.total; } });
+    const dayDone=!wasAll&&dayAllDone(n); save(); sfx("done"); stopSpeech();
+    S.fin={title:dayDone?`Day ${n} complete!`:`${(NODE_INFO[step]||[step])[0]} complete!`, xp:15, acc:tot?Math.round(sc/tot*100):null, ms:S.stepAt?Date.now()-S.stepAt:0, dayDone, n}; S.step=null; S.timer=null; render(); window.scrollTo(0,0); }
+  else if(a==="goal"){ S.st.goal=+b.dataset.v; save(); render(); }
   else if(a==="back"){ S.step=null; stopSpeech(); render(); window.scrollTo(0,0); }
   else if(a==="done"){ const k=b.dataset.key; if(S.st.done[k]) delete S.st.done[k]; else S.st.done[k]=Date.now(); save(); if(S.st.done[k]){ S.step=null; toast("Step done. Weiter so!"); window.scrollTo(0,0); } render(); }
   else if(a==="timer"){ const k=b.dataset.key; const min=+b.dataset.min; if(!S.timer||S.timer.key!==k) S.timer={key:k,running:false,left:min*60000};
@@ -1419,9 +1797,10 @@ document.addEventListener("click", async e=>{
   else if(a==="import"){ importDay(+b.dataset.n); }
   else if(a==="fc-start"){ startFc(b.dataset.mode); render(); }
   else if(a==="fc-show"){ S.fc.show=true; render(); const c=S.fc.queue[0]; if(S.fc.mode==="en"&&c) speak((c.article&&c.article!=="-"?c.article+" ":"")+c.de); }
-  else if(a==="fc-grade"){ const q=+b.dataset.q; const c=S.fc.queue.shift(); grade(c,q); S.fc.seen++; if(q<3) S.fc.queue.splice(Math.min(4,S.fc.queue.length),0,c); S.fc.show=false; render();
+  else if(a==="fc-grade"){ const q=+b.dataset.q; const c=S.fc.queue.shift(); grade(c,q); S.fc.seen++; if(q>=3) S.fc.good=(S.fc.good||0)+1; const fk=dk(new Date()); S.st.fcLog=S.st.fcLog||{}; S.st.fcLog[fk]=(S.st.fcLog[fk]||0)+1;
+    if(q<3) S.fc.queue.splice(Math.min(4,S.fc.queue.length),0,c); S.fc.show=false; q>=3?sfx("ok"):sfx("bad"); if(!S.fc.queue.length){ finishFc(); return; } render();
     const nx=S.fc.queue[0]; if(nx&&S.fc.mode==="de") speak((nx.article&&nx.article!=="-"?nx.article+" ":"")+nx.de); }
-  else if(a==="fc-end"){ S.fc=null; render(); }
+  else if(a==="fc-end"){ S.fc=null; if(S.fcFrom){ S.view="today"; S.fcFrom=null; } render(); window.scrollTo(0,0); }
   else if(a==="clear-mist"){ S.st.mistakes=[]; save(); render(); }
   else if(a==="lang"){ S.st.lang=b.dataset.v; save(); render(); }
   else if(a==="reset"){ S.confirmReset=true; render(); }
@@ -1471,6 +1850,7 @@ document.addEventListener("click", async e=>{
 function itemsFor(src){ if(src==="mix") return S.mix||[]; const d=S.days[S.dayN||currentDay()]; if(src==="check") return d.exercises; if(src==="quiz") return d.review_quiz.map(q=>({type:"mcq",prompt:q.q,options:q.options,answer:q.answer})); return d.exercises; }
 document.addEventListener("input", e=>{
   const t=e.target;
+  if(t.dataset.les==="text" && S.les){ S.les.text=t.value; const lb=$("#lesBtn"); if(lb) lb.disabled=!t.value.trim(); }
   if(t.dataset.store && t.type!=="radio") S.ans[t.dataset.store]=t.value;
   if(t.dataset.draft){ S.st.drafts[t.dataset.draft]=t.value; const wc=wordCount(t.value); const el=$("#wc"); if(el){ el.textContent=wc+" words · aim for 30, at least 25"; el.style.color=wc>=25?"var(--ok)":"var(--muted)"; } const wk=$("#wcheck"); if(wk) wk.innerHTML=writeCheckHtml(t.value); clearTimeout(t._s); t._s=setTimeout(save,800); }
   if(t.dataset.imp) S.importText[t.dataset.imp]=t.value;
@@ -1478,6 +1858,17 @@ document.addEventListener("input", e=>{
   if(t.dataset.mtask&&S.mock) S.mock.task=t.value;
   if(t.dataset.set==="rate"){ S.st.rate=+t.value; const l=t.previousElementSibling; if(l) l.querySelector("span").textContent=(+t.value).toFixed(2)+"×"; clearTimeout(t._s); t._s=setTimeout(save,500); }
 });
+document.addEventListener("keydown", e=>{
+  if(!S.les && !S.fin && !S.fc) return; if(e.ctrlKey||e.metaKey||e.altKey) return;
+  const tag=e.target.tagName;
+  if(S.les && S.les.quit) return;
+  if(e.key==="Enter" && !e.shiftKey){ const b=$("#lesBtn"); if(b && !b.disabled){ e.preventDefault(); b.click(); } return; }
+  if(tag==="INPUT"||tag==="TEXTAREA") return;
+  if(S.les && /^[1-9]$/.test(e.key)){ const t=document.querySelector(`[data-act="les-pick"][data-v="${+e.key-1}"]`); if(t&&!t.disabled){ e.preventDefault(); t.click(); } }
+  if(S.fc && S.fc.show && /^[1-4]$/.test(e.key)){ const t=document.querySelectorAll('[data-act="fc-grade"]')[+e.key-1]; if(t){ e.preventDefault(); t.click(); } }
+  if(S.fc && !S.fc.show && e.key===" "){ const t=$("#lesBtn"); if(t){ e.preventDefault(); t.click(); } }
+});
+document.addEventListener("mousedown", e=>{ if(e.target.closest('[data-act="les-key"]')) e.preventDefault(); });
 document.addEventListener("submit", e=>{
   if(e.target.id==="authForm"){ e.preventDefault(); submitAuth(); }
   if(e.target.id==="liveText"){ e.preventDefault(); const i=$("#liveTextIn"); const v=i&&i.value.trim(); if(v&&S.live&&S.live.sess){ S.live.sess.sendText(v); S.live.log.push({role:"you",text:v}); i.value=""; drawLiveLog(); } }
@@ -1495,6 +1886,7 @@ document.addEventListener("change", e=>{
   if(t.dataset.chk){ if(t.checked) S.st.done[t.dataset.chk]=Date.now(); else delete S.st.done[t.dataset.chk]; save(); }
   if(t.dataset.set==="voice"){ S.st.voice=t.value; save(); speak("Grüß Gott!"); }
   if(t.dataset.set==="strict"){ S.st.strict=t.checked; save(); }
+  if(t.dataset.set==="sfx"){ S.st.sfx=t.checked; save(); if(t.checked) sfx("ok"); }
   if(t.dataset.set==="start"){ if(/^\d{4}-\d{2}-\d{2}$/.test(t.value)){ S.st.start=t.value; save(); render(); } else toast("Use the format YYYY-MM-DD"); }
 });
 
