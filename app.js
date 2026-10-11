@@ -420,7 +420,8 @@ function parseCards(text){
     cells.shift();
   }
   const g=(r,i)=>i>=0&&r[i]?r[i]:"";
-  return cells.map(r=>({front:g(r,map.front), back:g(r,map.back), fa:g(r,map.fa), plural:g(r,map.plural), example:g(r,map.example)})).filter(c=>c.front&&c.back);
+  const clean=v=>/^(not in source|uncountable|no plural|-|–)$/i.test(String(v).trim())?"":v;
+  return cells.map(r=>({front:clean(g(r,map.front)), back:clean(g(r,map.back)), fa:clean(g(r,map.fa)), plural:clean(g(r,map.plural)), example:clean(g(r,map.example))})).filter(c=>c.front&&c.back);
 }
 /* step: learn */
 function stLearn(n,d){
@@ -1078,6 +1079,7 @@ document.addEventListener("click", async e=>{
   else if(a==="att-del-no"){ S.confirmDel=null; render(); }
   else if(a==="att-del-yes"){ const path=b.dataset.path, n=+b.dataset.n; S.confirmDel=null; const { error } = await sb.storage.from("media").remove([path]); if(error) toast("Couldn't delete: "+error.message); else toast("Removed"); delete S.att[n]; render(); }
   else if(a==="cards-import"){ const n=+b.dataset.n; const cards=parseCards(S.cardText[n]); if(!cards.length){ toast("No cards found. Paste two or more columns."); return; }
+    if(cards.length>60 && !confirm(cards.length+" cards is a lot for one day (25–40 is ideal). The table probably pulled words from the whole notebook. Add them anyway?")) return;
     const ov=Object.assign({day:n}, S.imported[n]||{}); const seen=new Set((ov.flashcards||[]).map(c=>c.front)); ov.flashcards=[...(ov.flashcards||[]), ...cards.filter(c=>!seen.has(c.front))];
     await saveOverlay(n, ov); S.cardText[n]=""; S.st.intro[n]=S.st.intro[n]||Date.now(); save(); toast(cards.length+" cards added"); render(); }
   else if(a==="cards-clear"){ const n=+b.dataset.n; const ov=Object.assign({}, S.imported[n]||{}); delete ov.flashcards; await saveOverlay(n, ov); render(); }
