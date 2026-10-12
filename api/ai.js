@@ -28,8 +28,18 @@ function summarizePrompt(p) {
 TRANSCRIPT:
 ${String(p.transcript).slice(0, 60000)}
 SESSION MODE: ${p.mode || "coach"}. WEAK POINTS HE CAME IN WITH: ${(p.weak || []).join("; ") || "none listed"}.
+Score him with the official ÖSD Zertifikat A1 Sprechen criteria, judging only what he actually did in this session (give null for a part that was not practised):
+teil1 = introducing himself (0-4), teil2 = describing a photo/situation (0-4), teil3 = role-play/asking and answering (0-4), vocab = range and accuracy of words (0-5), pron = pronunciation and fluency (0-4), grammar = basic structures, verb position, endings (0-4).
 Reply with JSON only:
-{"summary_en":"2 sentences on what was practised","strengths":["",""],"errors":[{"wrong":"","right":""}],"next_focus":["what the next session should drill"],"fixed":["weak points from the list that he now handles correctly"],"still_weak":["weak points or new problems that still need work"],"score_25": number 0-25}`;
+{"summary_en":"2 sentences on what was practised","strengths":["",""],
+"errors":[{"wrong":"what he said","right":"correct German","category":"article|verb_position|conjugation|case|vocabulary|pronunciation|word_order|other","why_en":"one short reason"}],
+"criteria":{"teil1":null,"teil2":null,"teil3":null,"vocab":null,"pron":null,"grammar":null},
+"score_25": number 0-25 (sum of the criteria, scaled up fairly if some parts were not practised),
+"topics_covered":["only from: Sprachen, Hobbys, Sport, Familie, Beruf, Lieblingsessen"],
+"new_words_used":["German words he used correctly"],
+"next_focus":["what the next session should drill"],
+"fixed":["weak points from the list that he now handles correctly"],
+"still_weak":["weak points or new problems that still need work"]}`;
 }
 
 export default async function handler(req, res) {

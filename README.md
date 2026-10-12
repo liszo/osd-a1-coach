@@ -41,6 +41,16 @@ When you start a session, the app builds the tutor's instructions from: the day 
 
 Any static server works for the UI (`npx serve .`); the `/api` functions need `npx vercel dev`.
 
+## v8 — tutor → app loop and speaking analytics (Oct 2026)
+
+- **Every tutor session is saved automatically** when you press End: the transcript (private storage folder), an ÖSD Sprechen score with the six criteria, corrections with error type, strengths, Teil 1 topics covered, words used, next focus, fixed / still-weak points, and fluency numbers measured from the transcript (words you said, words per turn, share of the talking, share of German, minutes).
+- **Nothing gets lost:** the conversation is auto-saved on the device while you talk; if the app closes or the analysis fails, a banner offers "Save & analyse" later.
+- **Closed loop:** every correction becomes a flashcard and a mistake for the day report, the repair lesson and the next tutor brief.
+- **Speaking dashboard** (Progress → Speaking): score trend with the pass line, criteria averages, Teil 1 topic coverage, recurring error types, session history with detail pages and transcripts, a "how did it feel?" rating.
+- **Sessions from the Gemini app** can be pasted in and analysed the same way.
+- **Exam readiness** card: rolling average of the last three results per section.
+- **Plan fits the exam date:** starting later than 11 Oct skips buffer days (32, then 28, then 15) so Day 34 is still the rest day before the exam.
+
 ## v7 — daily report and personal tutor (Oct 2026)
 
 - **Daily report (Tagesbericht):** tap the trophy at the end of the path (or "See today's report" when the day is complete, or Progress → Day reports). Shows today's Lesen, Hören and Schreiben projected onto the official ÖSD scale (30/30/15, written total /75 with the minimums 6/6/email 4 and 38), Sprechen /25 from the tutor or a self-rating with the ÖSD criteria, every exam part's raw score, lesson accuracy, all mistakes grouped by type, and up to six ranked weak spots with examples.

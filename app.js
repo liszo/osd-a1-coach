@@ -107,7 +107,7 @@ function defaultState(){ return {v:1, updatedAt:0, start:DEFAULT_START, lang:"bo
 const S = { st: defaultState(), uid:null, email:"", sync:"local", ai:false, liveModel:"",
   published:new Set(), imported:{}, days:{}, view:"today", dayN:null, step:null,
   ans:{}, checked:{}, plays:{}, wo:{}, ex:{}, fc:null, timer:null, gradeBusy:false, checkBusy:false, importText:{},
-  authMode:"signin", authBusy:false, authMsg:"", offline:false, att:{}, attBusy:false, cardText:{}, pron:{}, live:null, liveMode:"coach", installEvt:null, confirmDel:null, mock:null, mockData:{}, austria:null, mix:null, rec:{}, recActive:null, testPrefix:"", les:null, fin:null, cel:[], report:null, blitz:null, pop:null, brk:null, fcFrom:null, stepAt:0 };
+  authMode:"signin", authBusy:false, authMsg:"", offline:false, att:{}, attBusy:false, cardText:{}, pron:{}, live:null, liveMode:"coach", installEvt:null, confirmDel:null, mock:null, mockData:{}, austria:null, mix:null, rec:{}, recActive:null, testPrefix:"", les:null, fin:null, cel:[], report:null, sess:null, transcript:null, saveBusy:false, blitz:null, pop:null, brk:null, fcFrom:null, stepAt:0 };
 
 const LS_KEY = "osd-a1-coach-state";
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
@@ -176,9 +176,16 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;"
 function attr(s){ return esc(s); }
 function pad(n){ return String(n).padStart(2,"0"); }
 function startDate(){ const [y,m,d]=(S.st.start||DEFAULT_START).split("-").map(Number); return new Date(y,m-1,d); }
-function dateOf(n){ const s=startDate(); return new Date(s.getFullYear(), s.getMonth(), s.getDate()+n-1); }
+const EXAM_EVE = new Date(2026, 10, 13);
+const SKIP_ORDER = [32, 28, 15];   // buffer days dropped first when the plan starts late
+function schedule(){ const key=S.st.start||DEFAULT_START; if(schedule._k===key) return schedule._v;
+  const span=Math.round((EXAM_EVE-startDate())/DAY_MS)+1; const extra=Math.max(0, Math.min(SKIP_ORDER.length, PLAN.length-span));
+  const drop=SKIP_ORDER.slice(0,extra); const list=[]; for(let n=1;n<=PLAN.length;n++) if(!drop.includes(n)) list.push(n);
+  schedule._k=key; schedule._v={list, drop, short:Math.max(0,PLAN.length-span-extra)}; return schedule._v; }
+function isSkipped(n){ return schedule().drop.includes(n); }
+function dateOf(n){ const {list}=schedule(); let i=list.indexOf(n); if(i<0){ i=list.findIndex(x=>x>n); if(i<0) i=list.length-1; } const s=startDate(); return new Date(s.getFullYear(), s.getMonth(), s.getDate()+i); }
 function todayMid(){ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); }
-function currentDay(){ const n=Math.floor((todayMid()-startDate())/DAY_MS)+1; return Math.max(1,Math.min(PLAN.length,n)); }
+function currentDay(){ const {list}=schedule(); const i=Math.floor((todayMid()-startDate())/DAY_MS); return list[Math.max(0,Math.min(list.length-1,i))]; }
 function daysLeft(){ return Math.round((EXAM - todayMid())/DAY_MS); }
 function fmtDate(d){ return d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"}); }
 function fmtFa(d){ try{ return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{day:"numeric",month:"long"}).format(d); }catch(e){ return ""; } }
@@ -302,6 +309,7 @@ async function render(){
     else if(showCel) html = vCel();
     else if(S.report) html = vReport();
     else if(S.view==="shop") html = vShop();
+    else if(S.view==="speaking") html = vSpeaking();
     else if(S.view==="today") html = await vToday();
     else if(S.view==="plan") html = vPlan();
     else if(S.mock && S.view==="exam") html = await vMock();
@@ -333,7 +341,7 @@ async function vToday(){
     ${n!==currentDay()?`<div><button class="guide" data-act="day" data-v="${currentDay()}">Back to today</button></div>`:""}
   </section>`;
   if(!d) return banner + mockCta(n) + resCard(n) + pendingPanel(n);
-  return banner + (n===currentDay()?ediSays(n):"") + pathHtml(n,d) + reportCard(n) + questsCard(n,d) + leagueCard(true) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
+  return draftBanner() + banner + (n===currentDay()?ediSays(n):"") + pathHtml(n,d) + reportCard(n) + questsCard(n,d) + leagueCard(true) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
 }
 function progressBar(n,d){ const pr=dayProgress(n,d); const pct=pr.minTotal?Math.round(pr.min/pr.minTotal*100):0;
   return `<div class="stack" style="gap:6px"><div class="row between small"><span>${pr.done}/${pr.total} steps</span><span class="tnum muted">${pr.min} / ${pr.minTotal} min</span></div><div class="meter" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>`; }
@@ -848,7 +856,7 @@ function vPlan(){
   const cur=currentDay();
   const row=(p,n)=>{ const d=S.days[n]; const av=hasDay(n); const pr=d?dayProgress(n,d):null; const dt=dateOf(n);
     const isDone=!!(pr&&pr.total&&pr.done===pr.total), part=!!(pr&&pr.done&&!isDone); const pct=pr&&pr.minTotal?Math.round(pr.min/pr.minTotal*100):0;
-    const chip = p.k==="mock" ? `<span class="chip at">mock</span>` : p.k==="buffer"||p.k==="rest" ? `<span class="chip warn">${p.k}</span>` : av ? (isDone?`<span class="chip gold">done</span>`:part?`<span class="chip acc tnum">${pct}%</span>`:`<span class="chip ok">ready</span>`) : `<span class="chip">prompts</span>`;
+    const chip = isSkipped(n) ? `<span class="chip">optional</span>` : p.k==="mock" ? `<span class="chip at">mock</span>` : p.k==="buffer"||p.k==="rest" ? `<span class="chip warn">${p.k}</span>` : av ? (isDone?`<span class="chip gold">done</span>`:part?`<span class="chip acc tnum">${pct}%</span>`:`<span class="chip ok">ready</span>`) : `<span class="chip">prompts</span>`;
     return `<button class="pday ${n===cur?"today":""} ${isDone?"isdone":part?"part":""} kind-${p.k}" data-act="day" data-v="${n}"><span class="dn tnum">${isDone?ICONS.check.replace('<svg','<svg width="22" height="22"'):n}</span>
       <span style="min-width:0"><span class="dt">${dt.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}${n===cur?" · TODAY":""}${S.st.lang!=="en"?` · <span class="fa">${fmtFa(dt)}</span>`:""}</span><br><b>${esc(p.t)}</b>${p.g?`<br><span class="small muted">${esc(p.g)}</span>`:""}</span>${chip}</button>`; };
   return `<div><h1>34 days to A1</h1><p class="muted">${ex("Five units, 31 lesson and mock days plus 3 buffer days. Tap a day to open its path.","پنج بخش: ۳۱ روز درس و آزمون + ۳ روز جبرانی. روی هر روز بزن تا مسیرش باز شود.")}</p></div>
@@ -1190,7 +1198,7 @@ async function vProgress(){
   return `<div><h1>Fortschritt</h1><p class="muted">Day ${cur} of ${PLAN.length} · ${daysLeft()} days to the exam</p></div>
   <div class="card stack"><div class="meter"><i style="width:${pct}%"></i></div>
     <div class="tiles">${tile("flame","var(--orange)",streak(),"day streak")}${tile("bolt","var(--gold)",totalXp,"total XP")}${tile("trophy","var(--gold)",daysDone,"days complete")}${tile("clock","var(--blue)",Math.round(mins/60*10)/10+" h","studied")}${tile("cards","var(--purple)",c.learned+c.due,"cards in memory")}${tile("mic","var(--blue)",sessions.length,"tutor sessions")}</div></div>
-  ${levelCard()}${leagueCard(false)}
+  ${draftBanner()}${readinessCard()}${speakingCard()}${levelCard()}${leagueCard(false)}
   <section class="card stack"><div class="row between"><h2>XP this week</h2><span class="chip gold tnum">${wk.reduce((a,x)=>a+x.v,0)} XP</span></div>
     <div class="xpchart">${wk.map(x=>`<div class="xpcol ${x.today?"today":""}"><span class="tnum">${x.v||""}</span><i style="height:${Math.round(x.v/mx*100)}%"></i><b>${x.lb}</b></div>`).join("")}</div>
     <p class="small muted">Daily goal: ${goalXp()} XP · change it in Settings</p></section>
@@ -1345,7 +1353,7 @@ async function startLive(n){
     const tk=await api("/api/live-token");
     const sess=new LiveSession({ token:tk.token, apiVersion:tk.apiVersion, model:tk.model, systemText:buildTutorBrief(n,d,S.liveMode), voice:S.st.tutorVoice||"Kore", outCtx, inCtx,
       onStatus:st=>{ if(!S.live) return; S.live.status=st; const el=$("#liveStatus"); if(el) el.textContent=liveStatusText(); if(st==="ended") render(); },
-      onTranscript:(role,text,final)=>{ if(!S.live) return; if(final){ S.live.log.push({role,text}); S.live.partial=null; } else S.live.partial={role,text}; drawLiveLog(); },
+      onTranscript:(role,text,final)=>{ if(!S.live) return; if(final){ S.live.log.push({role,text}); S.live.partial=null; saveDraft(); } else S.live.partial={role,text}; drawLiveLog(); },
       onError:msg=>{ if(!S.live) return; S.live.error=msg; const el=$("#liveErr"); if(el){ el.textContent=msg; el.hidden=false; } },
       onLevel:v=>{ const el=$("#liveLevel"); if(el) el.style.width=Math.min(100,Math.round(v*400))+"%"; } });
     S.live.sess=sess;
@@ -1357,7 +1365,7 @@ function vLive(){
   const L=S.live; const p=PLAN[L.n-1];
   const over = L.status==="ended"||L.status==="error";
   return `<div class="live">
-    <div class="row between"><div><div class="label">Day ${L.n} · ${L.mode==="exam"?"Exam simulation":"Coaching"}</div><h2>${esc(p.t)}</h2></div><span class="chip ${L.status==="live"?"ok":L.status==="error"?"bad":"acc"}" id="liveStatus">${liveStatusText()}</span></div>
+    <div class="row between"><div><div class="label">Day ${L.n} · ${L.mode==="exam"?"Exam simulation":L.mode==="review"?"Fixing your weak spots":"Coaching"} · saved automatically</div><h2>${esc(p.t)}</h2></div><span class="chip ${L.status==="live"?"ok":L.status==="error"?"bad":"acc"}" id="liveStatus">${liveStatusText()}</span></div>
     <div class="meter" aria-hidden="true"><i id="liveLevel" style="width:0%"></i></div>
     <div class="banner" id="liveErr" ${L.error?"":"hidden"}>${esc(L.error)}</div>
     <div class="live-log" id="liveLog" aria-live="polite"></div>
@@ -1375,13 +1383,13 @@ function drawLiveLog(){ const el=$("#liveLog"); if(!el||!S.live) return; const i
 async function endLive(){
   const L=S.live; if(!L) return;
   try{ L.sess&&L.sess.stop(); }catch(e){}
-  const transcript=L.log.map(x=>(x.role==="you"?"Raam: ":"Tutor: ")+x.text).join("\n");
-  if(transcript.length>60 && S.ai){
+  const talk=L.log.map(x=>x.text).join(" ");
+  if(talk.length>60 && S.ai && S.uid){
     L.status="summarizing"; render();
-    try{ const r=await api("/api/ai",{mode:"summarize", payload:{day:L.n, transcript, mode:L.mode, weak:(()=>{ try{ return dayReport(L.n).weak.map(w=>w.area); }catch(e){ return []; } })()}}); const s=r.result||{}; s.at=Date.now(); s.minutes=Math.max(1,Math.round((Date.now()-L.started)/60000)); s.mode=L.mode;
-      const arr=S.st.live[L.n]=(S.st.live[L.n]||[]); arr.push(s); if(arr.length>5) arr.shift(); save(); toast("Session notes saved"); }
-    catch(e){ toast("Couldn't save notes: "+e.message); }
-  }
+    try{ const {sess,xp}=await analyseSession({n:L.n, mode:L.mode, log:L.log, started:L.started, source:"live"}); clearDraft();
+      S.live=null; S.view="speaking"; S.sess={day:L.n, id:sess.id}; S.report=null; toast(`Session saved · +${xp} XP`); render(); window.scrollTo(0,0); return; }
+    catch(e){ saveDraft(); toast("Couldn't analyse it right now. The session is kept; save it later from Progress."); }
+  } else if(talk.length<=60) clearDraft();
   S.live=null; render();
 }
 
@@ -1426,7 +1434,8 @@ function vSettings(){
     <div class="field"><span class="lb">Daily XP goal</span><div class="row">${[[50,"Casual"],[100,"Regular"],[150,"Serious"],[200,"Intense"]].map(([v,l])=>`<button class="opt ${goalXp()===v?"sel":""}" data-act="goal" data-v="${v}">${l} · ${v} XP</button>`).join("")}</div>
     <p class="small muted">${ex("A full study day on the path earns about 150–200 XP.","یک روز کامل مطالعه حدود ۱۵۰ تا ۲۰۰ امتیاز می‌دهد.")}</p></div></section>
   <section class="card stack"><h2>Exam mode for Hören</h2><label class="row"><input type="checkbox" data-set="strict" ${S.st.strict?"checked":""}> Limit audio plays like the real exam</label></section>
-  <section class="card stack"><h2>Plan</h2><div class="field"><label for="startIn">Day 1 date</label><input type="text" id="startIn" value="${attr(S.st.start)}" data-set="start" placeholder="YYYY-MM-DD" inputmode="numeric"></div><p class="small muted">Exam: Saturday 14 November 2026 (23 Aban 1405).</p></section>
+  <section class="card stack"><h2>Plan</h2><div class="field"><label for="startIn">Day 1 date</label><input type="text" id="startIn" value="${attr(S.st.start)}" data-set="start" placeholder="YYYY-MM-DD" inputmode="numeric"></div>
+    ${schedule().drop.length?`<div class="banner info"><div>${ex(`Because Day 1 is ${fmtDate(startDate())}, ${schedule().drop.map(d=>"Day "+d).join(" and ")} (buffer) ${schedule().drop.length>1?"are":"is"} skipped so the plan still ends with a rest day on Fri 13 Nov. ${schedule().drop.length>1?"They stay":"It stays"} open as optional extra practice.`,`چون روز اول ${fmtFa(startDate())} است، ${schedule().drop.map(d=>"روز "+d).join(" و ")} (جبرانی) حذف شد تا برنامه با یک روز استراحت در ۲۲ آبان تمام شود.`)}</div></div>`:""}<p class="small muted">Exam: Saturday 14 November 2026 (23 Aban 1405).</p></section>
   <section class="card stack"><h2>Account &amp; sync</h2><p class="small">${syncTxt}</p>
     ${S.uid?`<div class="row between"><span class="small">Signed in as <b>${esc(S.email)}</b></span><button class="btn sm" data-act="signout">Sign out</button></div>`:`<button class="btn sm" data-act="auth-show">Sign in to sync</button>`}
     ${installHint()?`<div class="row">${installHint()}<span class="small muted">Adds the app to your home screen or Start menu.</span></div>`:isStandalone()?`<span class="chip ok">Installed</span>`:`<p class="small muted">To install: Chrome on Android → ⋮ → Install app. Edge on Windows → … → Apps → Install this site as an app.</p>`}</section>
@@ -1938,6 +1947,7 @@ const KIND_INFO={
  mcq:["Understanding situations","Which phrase fits which situation","کدام جمله برای کدام موقعیت","Describe a tiny situation in English and ask what he says in German (greeting, goodbye, polite form)."],
  translate:["Writing sentences","Translating short sentences","ترجمه جمله‌های کوتاه","He translates short English sentences aloud; correct and have him repeat."],
  "hoeren-notes":["Notes in Hören","Exact spelling and numbers","هجی دقیق و اعداد","Dictate surnames letter by letter and phone numbers in pairs; he writes and reads them back."],
+ speaking:["Speaking errors","Sentences the tutor corrected","جمله‌هایی که مربی اصلاح کرد","Say his wrong sentence back to him and let him correct it aloud; then ask a new question that needs the same structure."],
  form:["Form filling","Personal data in German forms","اطلاعات شخصی در فرم","Ask form questions (Vorname? Geburtsdatum? Postleitzahl?) and he answers in the right format."]};
 function dayMistakes(n){ return (S.st.mistakes||[]).filter(m=>m.day===n); }
 function mistakeKind(m){ if(m.kind) return m.kind; const s=String(m.src||""); if(s.startsWith("hoeren")) return "hoeren-notes"; if(s==="form") return "form"; return "mcq"; }
@@ -1991,7 +2001,7 @@ function repairScreens(n){ const mis=dayMistakes(n).filter(m=>m.q&&m.right); con
     if(k==="word_order"&&String(m.right).split(/\s+/).length>2){ const w=String(m.right).split(/\s+/); return {type:"word_order",words:shuf2(w,"rep"+i+Date.now()),answer:m.right,q:m.right,kind:"word_order"}; }
     const pool=rights.filter(r=>r!==m.right&&r!==m.your&&String(r).length<70); const wrong=m.your&&m.your!==m.right&&String(m.your).length<70?[m.your]:[];
     const options=shuffled([m.right,...wrong,...shuffled(pool,"rp"+i).slice(0,3-wrong.length)],"ro"+i+Date.now());
-    return {type:"mcq",prompt:m.q,options,answer:m.right,q:m.q,kind:k,explain_en:m.your?`Last time you answered: ${m.your}`:""}; }).map(x=>Object.assign(x,{noLog:true})); }
+    return {type:"mcq",prompt:k==="speaking"?`Which is correct? You said: „${m.q}“`:m.q,options,answer:m.right,q:m.q,kind:k,explain_en:m.your?`Last time you answered: ${m.your}`:""}; }).map(x=>Object.assign(x,{noLog:true})); }
 function startRepair(n){ const screens=repairScreens(n); if(!screens.length){ toast("No mistakes to repair today. Super!"); return; } S.report=null; startLesson({src:"repair", n, title:"Repair lesson", screens}); }
 
 /* the report screen */
@@ -2059,11 +2069,117 @@ function logPartMistakes(g){ try{ const [ns,part]=g.split(":"); const n=+ns, d=S
   if(part==="h2"&&d.hoeren&&d.hoeren.teil2) d.hoeren.teil2.note_fields.forEach((f,i)=>{ const v=S.ans[g+":"+i]||""; if(!noteOk(f,v)) logMistake(n,"hoeren-2",`Hören note: ${f.label_de}`,v,String(f.answer),"hoeren-notes"); });
   if(part==="s1"&&d.schreiben&&d.schreiben.teil1) d.schreiben.teil1.fields.forEach(f=>{ const v=S.ans[g+":"+f.id]; if(!formOk(f,v)) logMistake(n,"form",`Form: ${f.label_de}`,Array.isArray(v)?v.join(", "):(v||""),Array.isArray(f.answer)?f.answer.join(", "):String(f.answer),"form"); });
 }catch(e){} }
+/* ====================== v8: tutor → app loop, speaking analytics, readiness ====================== */
+const SP_CRIT=[["teil1","Teil 1 · introduce yourself",4],["teil2","Teil 2 · photo",4],["teil3","Teil 3 · role-play",4],["vocab","Vocabulary",5],["pron","Pronunciation & fluency",4],["grammar","Grammar",4]];
+const TEIL1_TOPICS=["Sprachen","Hobbys","Sport","Familie","Beruf","Lieblingsessen"];
+const ERR_CAT={article:"der/die/das",verb_position:"Verb position",conjugation:"Verb endings",case:"Cases (den/dem)",vocabulary:"Wrong word",pronunciation:"Pronunciation",word_order:"Word order",other:"Other"};
+const EN_STOP=new Set("the a an and or but is are was were i you he she it we they my your this that what how do does did not no yes yeah okay ok please sorry can could would should will to of in on at for with from about have has had be been me him her them our their so just like think know mean".split(" "));
+function allSessions(){ return Object.entries(S.st.live||{}).flatMap(([day,arr])=>(arr||[]).map((x,i)=>Object.assign({day:+day, idx:i}, x))).sort((a,b)=>(a.at||0)-(b.at||0)); }
+function sessionMetrics(log, ms){ const mine=log.filter(x=>x.role==="you"), tutor=log.filter(x=>x.role!=="you");
+  const words=t=>(String(t).match(/[A-Za-zÄÖÜäöüß']+/g)||[]); const my=mine.flatMap(x=>words(x.text)); const tw=tutor.flatMap(x=>words(x.text));
+  const en=my.filter(w=>EN_STOP.has(w.toLowerCase())).length; const minutes=Math.max(1,Math.round(ms/60000));
+  return {minutes, myWords:my.length, tutorWords:tw.length, turns:mine.length, avgLen:mine.length?Math.round(my.length/mine.length*10)/10:0, wpm:Math.round(my.length/Math.max(1,ms/60000)), talkShare:my.length+tw.length?Math.round(my.length/(my.length+tw.length)*100):0, germanShare:my.length?Math.round((1-en/my.length)*100):0}; }
+const DRAFT_KEY="osd-a1-live-draft";
+function saveDraft(){ const L=S.live; if(!L||!L.log.length) return; lsSet(DRAFT_KEY, JSON.stringify({n:L.n, mode:L.mode, started:L.started, log:L.log, at:Date.now()})); }
+function getDraft(){ try{ const d=JSON.parse(lsGet(DRAFT_KEY)||"null"); return d&&d.log&&d.log.length?d:null; }catch(e){ return null; } }
+function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
+function draftBanner(){ const D=getDraft(); if(!D||S.live) return ""; return `<div class="banner info"><div class="grow"><b>${ex("You have an unsaved tutor session","یک جلسه ذخیره‌نشده با مربی داری")}</b><div class="small">Day ${D.n} · ${new Date(D.started).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · ${D.log.length} lines</div>
+  <div class="row" style="margin-top:8px"><button class="btn primary sm" data-act="draft-save" ${S.saveBusy?"disabled":""}>${S.saveBusy?"Saving…":"Save & analyse"}</button><button class="btn sm" data-act="draft-discard">Discard</button></div></div></div>`; }
+/* turn a transcript into a stored, analysed session (used by live sessions, recovered drafts and Gemini-app imports) */
+async function analyseSession({n, mode, log, started, source, rawText}){
+  const ms=Math.max(60000,(Date.now()-(started||Date.now())));
+  const transcript=rawText || log.map(x=>(x.role==="you"?"Raam: ":"Tutor: ")+x.text).join("\n");
+  if(transcript.length<60) throw new Error("The session was too short to analyse.");
+  let weak=[]; try{ weak=dayReport(n).weak.map(w=>w.area); }catch(e){}
+  const r=await api("/api/ai",{mode:"summarize", payload:{day:n, transcript, mode, weak}}); const s=r.result||{};
+  const crit=s.criteria||{}; SP_CRIT.forEach(([k,,mx])=>{ if(crit[k]!=null) crit[k]=Math.max(0,Math.min(mx,Math.round(+crit[k]))); });
+  const sum=SP_CRIT.reduce((a,[k])=>a+(crit[k]!=null?crit[k]:0),0); const hasCrit=SP_CRIT.some(([k])=>crit[k]!=null);
+  const sess={id:"s"+Date.now().toString(36), at:Date.now(), started:started||Date.now(), mode:mode||"coach", source:source||"live",
+    summary_en:s.summary_en||"", strengths:s.strengths||[], errors:(s.errors||[]).slice(0,12), next_focus:s.next_focus||[], fixed:s.fixed||[], still_weak:s.still_weak||[],
+    topics:(s.topics_covered||[]).filter(t=>TEIL1_TOPICS.includes(t)), words_used:(s.new_words_used||[]).slice(0,20), criteria:hasCrit?crit:null,
+    score_25:s.score_25!=null&&!isNaN(+s.score_25)?Math.max(0,Math.min(25,Math.round(+s.score_25))):(hasCrit?sum:null),
+    metrics: log&&log.length ? sessionMetrics(log, ms) : {minutes:Math.max(1,Math.round(ms/60000))}};
+  // keep the transcript: private storage folder when signed in, otherwise this device
+  try{ if(S.uid){ const path=`${S.uid}/sessions/${sess.id}.json`; const { error } = await sb.storage.from("media").upload(path, new Blob([JSON.stringify({n, mode, transcript})],{type:"application/json"}), {upsert:true}); if(!error) sess.transcript=path; }
+       if(!sess.transcript){ const T=JSON.parse(lsGet("osd-a1-transcripts")||"{}"); T[sess.id]=transcript.slice(0,20000); const ks=Object.keys(T); while(ks.length>12) delete T[ks.shift()]; lsSet("osd-a1-transcripts", JSON.stringify(T)); sess.transcript="local:"+sess.id; } }catch(e){}
+  const arr=S.st.live[n]=(S.st.live[n]||[]); arr.push(sess); if(arr.length>10) arr.shift();
+  // close the loop: every corrected error becomes a flashcard and a mistake the report and repair lesson can use
+  sess.errors.forEach(e=>{ if(e&&e.wrong&&e.right&&norm(e.wrong)!==norm(e.right)) logMistake(n,"tutor",e.wrong,"",e.right,"speaking"); });
+  const xp=addXp(20); addCoins(10); dbump("speak"); bump("sessions"); checkBadges(); save();
+  return {sess, xp}; }
+function sessionCard(x){ const sc=x.score_25; return `<button class="prow rbtn" data-act="sess-open" data-day="${x.day}" data-id="${attr(x.id||x.idx)}"><div><b>Day ${x.day} · ${x.mode==="exam"?"Exam simulation":x.mode==="review"?"Weak-spot review":"Coaching"}</b><div class="small muted">${new Date(x.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}${x.metrics?` · ${x.metrics.minutes} min`:""}${x.source==="gemini-app"?" · Gemini app":""}</div></div>${sc!=null?`<span class="chip ${sc>=12?"ok":"bad"} tnum">${sc}/25</span>`:""}</button>`; }
+function findSession(day, id){ const arr=S.st.live[day]||[]; return arr.find(x=>x.id===id) || arr[+id] || null; }
+function lineChart(points, max, min, label){ // single series, own scale; native tooltips per point
+  if(!points.length) return ""; const W=320,H=140,p=26; const xs=i=>p+(points.length===1?(W-2*p)/2:i*(W-2*p)/(points.length-1)); const ys=v=>H-p-(v/max)*(H-2*p);
+  const path=points.map((v,i)=>`${i?"L":"M"}${xs(i).toFixed(1)},${ys(v.y).toFixed(1)}`).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}" class="lchart" role="img" aria-label="${attr(label)}">
+    ${[0,max].map(g=>`<line x1="${p}" x2="${W-p}" y1="${ys(g)}" y2="${ys(g)}" class="grid"/><text x="${p-6}" y="${ys(g)+4}" class="ax" text-anchor="end">${Math.round(g)}</text>`).join("")}
+    ${min!=null?`<line x1="${p}" x2="${W-p}" y1="${ys(min)}" y2="${ys(min)}" class="minl"/><text x="${p+4}" y="${ys(min)+14}" class="ax" text-anchor="start">pass ${min}</text>`:""}
+    <path d="${path}" class="ln"/>${points.map((v,i)=>`<circle cx="${xs(i)}" cy="${ys(v.y)}" r="5" class="pt"><title>${esc(v.t)}: ${v.y}</title></circle>`).join("")}
+    ${points.length>1?`<text x="${xs(points.length-1)}" y="${ys(points[points.length-1].y)-10}" class="lbl" text-anchor="end">${points[points.length-1].y}</text>`:""}</svg>`; }
+function vSpeaking(){ const all=allSessions(); const scored=all.filter(x=>x.score_25!=null); const last=scored[scored.length-1];
+  if(S.sess){ const x=findSession(S.sess.day, S.sess.id); if(x) return sessionDetail(x, S.sess.day); S.sess=null; }
+  const mins=all.reduce((a,x)=>a+((x.metrics||{}).minutes||0),0); const withM=all.filter(x=>x.metrics&&x.metrics.myWords!=null);
+  const avg=(arr,f)=>arr.length?Math.round(arr.reduce((a,x)=>a+f(x),0)/arr.length*10)/10:null;
+  const errCount={}; all.forEach(x=>(x.errors||[]).forEach(e=>{ const c=ERR_CAT[e.category]?e.category:"other"; errCount[c]=(errCount[c]||0)+1; }));
+  const errs=Object.entries(errCount).sort((a,b)=>b[1]-a[1]); const emax=errs.length?errs[0][1]:1;
+  const topics=new Set(all.flatMap(x=>x.topics||[]));
+  const critAvg=SP_CRIT.map(([k,l,mx])=>{ const v=scored.filter(x=>x.criteria&&x.criteria[k]!=null).slice(-3).map(x=>x.criteria[k]); return [k,l,mx,v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10:null]; });
+  const tile=(ic,col,v,l)=>`<div class="tile"><div class="ti" style="color:${col}">${ICONS[ic]}</div><b class="tnum">${v}</b><span>${l}</span></div>`;
+  return `<div class="row between"><div><div class="label">Progress</div><h1>Speaking</h1></div><button class="btn sm" data-act="tab" data-v="progress">${ICONS.back}Back</button></div>
+    ${draftBanner()}
+    <section class="card stack"><div class="tiles">${tile("mic","var(--blue)",all.length,"sessions")}${tile("clock","var(--blue)",mins+" min","speaking time")}${tile("target","var(--green)",last?last.score_25+"/25":"–","latest score")}${tile("chat","var(--purple)",avg(withM,x=>x.metrics.myWords)??"–","words you say / session")}${tile("bolt","var(--gold)",avg(withM,x=>x.metrics.avgLen)??"–","words per turn")}${tile("flagAT","var(--red)",withM.length?avg(withM,x=>x.metrics.germanShare)+"%":"–","German, not English")}</div>
+    <p class="small muted">${ex("Words per turn is the best simple sign of fluency: A1 speakers move from 2–3 words to full 6–8 word sentences.","«کلمه در هر نوبت» ساده‌ترین نشانه روانی است: از ۲–۳ کلمه به جمله‌های کامل ۶–۸ کلمه‌ای برس.")}</p></section>
+    <section class="card stack"><h2>Sprechen score</h2>${scored.length?lineChart(scored.slice(-12).map(x=>({y:x.score_25,t:`Day ${x.day}`})),25,12,"Sprechen score per session"):`<p class="small muted">${ex("No scored session yet. Do one session in Exam simulation mode to get your first score out of 25.","هنوز جلسه نمره‌دار نداری. یک جلسه در حالت شبیه‌سازی آزمون انجام بده.")}</p>`}</section>
+    ${critAvg.some(c=>c[3]!=null)?`<section class="card stack"><h2>ÖSD criteria</h2><p class="small muted">Average of your last 3 scored sessions</p>${critAvg.map(([k,l,mx,v])=>v==null?"":barRow(l,v,mx,null)).join("")}</section>`:""}
+    <section class="card stack"><h2>Teil 1 topics practised</h2><div class="row">${TEIL1_TOPICS.map(t=>`<span class="chip ${topics.has(t)?"ok":""}">${topics.has(t)?ICONS.check.replace('<svg','<svg width="12" height="12"'):""} ${t}</span>`).join("")}</div><p class="small muted">${ex("In the exam you talk about 4 of these 6. Cover all six before Day 21.","در آزمون درباره ۴ مورد از این ۶ صحبت می‌کنی. تا روز ۲۱ همه را تمرین کن.")}</p></section>
+    ${errs.length?`<section class="card stack"><h2>Your recurring speaking errors</h2>${errs.map(([c,v])=>`<div class="bar-row"><div class="row between small"><b>${esc(ERR_CAT[c])}</b><span class="tnum">${v}</span></div><div class="bar"><i class="bad" style="width:${Math.round(v/emax*100)}%"></i></div></div>`).join("")}<p class="small muted">${ex("Every corrected error is now a flashcard in Review and part of the next repair lesson. The tutor drills the top ones next time.","هر اشتباه اصلاح‌شده حالا یک فلش‌کارت در Review است و مربی دفعه بعد روی مهم‌ترین‌ها کار می‌کند.")}</p></section>`:""}
+    <section class="card"><div class="row between" style="margin-bottom:4px"><h2>Sessions</h2><button class="btn blue sm" data-act="live-start" data-n="${currentDay()}">${ICONS.mic}New session</button></div>${all.length?all.slice().reverse().map(sessionCard).join(""):`<p class="small muted">No sessions yet.</p>`}</section>
+    <details class="acc"><summary>Add a session from the Gemini app</summary><div class="in stack">
+      <p class="small">${ex("Practised in the Gemini app instead? Copy the conversation there (share → copy) and paste it here. The app analyses it like an in-app session.","در اپ Gemini تمرین کردی؟ گفت‌وگو را کپی کن و اینجا بچسبان تا مثل جلسه داخل اپ تحلیل شود.")}</p>
+      <textarea data-imp="gemini-session" placeholder="Paste the conversation…">${esc(S.importText["gemini-session"]||"")}</textarea>
+      <div class="row"><select id="impMode" style="width:auto"><option value="coach">Coaching</option><option value="review">Weak-spot review</option><option value="exam">Exam simulation</option></select><button class="btn primary" data-act="sess-import" ${S.saveBusy?"disabled":""}>${S.saveBusy?"Analysing…":"Analyse & save"}</button></div></div></details>`; }
+function sessionDetail(x, day){ const m=x.metrics||{};
+  return `<div class="row between"><div><div class="label">Day ${day} · ${new Date(x.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div><h1>${x.mode==="exam"?"Exam simulation":x.mode==="review"?"Weak-spot review":"Coaching"}</h1></div><button class="btn sm" data-act="sess-close">${ICONS.back}All sessions</button></div>
+    <section class="card stack"><div class="row between"><h2>Result</h2>${x.score_25!=null?`<span class="chip ${x.score_25>=12?"ok":"bad"} tnum" style="font-size:.95rem">${x.score_25}/25 · ${x.score_25>=22?"sehr gut":x.score_25>=19?"gut":x.score_25>=12?"bestanden":"nicht bestanden"}</span>`:""}</div>
+      ${x.summary_en?`<p>${esc(x.summary_en)}</p>`:""}
+      ${x.criteria?SP_CRIT.map(([k,l,mx])=>x.criteria[k]==null?"":barRow(l,x.criteria[k],mx,null)).join(""):""}
+      ${m.myWords!=null?`<div class="tiles">${[["chat","var(--purple)",m.myWords,"words you said"],["bolt","var(--gold)",m.avgLen,"words per turn"],["clock","var(--blue)",m.minutes+" min","length"],["mic","var(--blue)",m.talkShare+"%","of the talking was you"],["flagAT","var(--red)",m.germanShare+"%","German"],["review","var(--green)",m.turns,"turns"]].map(([ic,c,v,l])=>`<div class="tile"><div class="ti" style="color:${c}">${ICONS[ic]}</div><b class="tnum">${v}</b><span>${l}</span></div>`).join("")}</div>`:""}
+      ${x.confidence==null?`<div class="stack" style="gap:6px"><span class="small"><b>How did it feel?</b></span><div class="row">${["Very hard","Hard","OK","Good","Easy"].map((l,i)=>`<button class="opt" data-act="sess-conf" data-v="${i+1}" data-day="${day}" data-id="${attr(x.id||x.idx)}">${l}</button>`).join("")}</div></div>`:`<div class="small muted">You felt: ${["Very hard","Hard","OK","Good","Easy"][x.confidence-1]}</div>`}</section>
+    ${(x.strengths||[]).length?`<section class="card stack"><h2>What went well</h2>${x.strengths.map(s=>`<div class="row" style="flex-wrap:nowrap;align-items:flex-start"><span style="color:var(--green)">${ICONS.check.replace('<svg','<svg width="18" height="18"')}</span><span>${esc(s)}</span></div>`).join("")}</section>`:""}
+    ${(x.errors||[]).length?`<section class="card stack"><h2>Corrections · added to your cards</h2>${x.errors.map(e=>`<div class="sunk small"><span class="label">${esc(ERR_CAT[e.category]||"")}</span><br><span style="color:var(--red-ink);text-decoration:line-through">${esc(e.wrong)}</span> → <b style="color:var(--green-ink)">${esc(e.right)}</b>${e.why_en?`<br><span class="muted">${esc(e.why_en)}</span>`:""}</div>`).join("")}</section>`:""}
+    ${(x.fixed||[]).length||(x.still_weak||[]).length?`<section class="card stack"><h2>Weak spots</h2>${(x.fixed||[]).map(f=>`<div class="small"><span class="chip ok">fixed</span> ${esc(f)}</div>`).join("")}${(x.still_weak||[]).map(f=>`<div class="small"><span class="chip bad">still weak</span> ${esc(f)}</div>`).join("")}</section>`:""}
+    ${(x.next_focus||[]).length?`<section class="card stack"><h2>Next session</h2>${x.next_focus.map(f=>`<div class="small">→ ${esc(f)}</div>`).join("")}</section>`:""}
+    ${(x.topics||[]).length||(x.words_used||[]).length?`<section class="card stack">${(x.topics||[]).length?`<div class="small"><b>Teil 1 topics:</b> ${x.topics.map(esc).join(", ")}</div>`:""}${(x.words_used||[]).length?`<div class="small"><b>Words you used:</b> ${x.words_used.map(esc).join(", ")}</div>`:""}</section>`:""}
+    ${x.transcript?`<details class="acc" data-act="sess-transcript" data-path="${attr(x.transcript)}"><summary>Transcript</summary><div class="in"><pre class="prompt" id="transcriptBox" style="max-height:360px">${S.transcript&&S.transcript.path===x.transcript?esc(S.transcript.text):"Loading…"}</pre></div></details>`:""}`; }
+async function loadTranscript(path){ if(S.transcript&&S.transcript.path===path) return; let text="";
+  try{ if(path.startsWith("local:")){ text=(JSON.parse(lsGet("osd-a1-transcripts")||"{}"))[path.slice(6)]||"Not stored on this device."; }
+       else { const { data, error } = await sb.storage.from("media").download(path); if(error) throw error; const j=JSON.parse(await data.text()); text=j.transcript||""; } }
+  catch(e){ text="Couldn't load the transcript: "+(e.message||e); }
+  S.transcript={path, text}; const el=$("#transcriptBox"); if(el) el.textContent=text; }
+function speakingCard(){ const all=allSessions(); const scored=all.filter(x=>x.score_25!=null); const last=scored[scored.length-1];
+  return `<section class="card stack"><div class="row between"><h2>Speaking with your tutor</h2>${last?`<span class="chip ${last.score_25>=12?"ok":"bad"} tnum">${last.score_25}/25</span>`:""}</div>
+    ${scored.length>1?lineChart(scored.slice(-8).map(x=>({y:x.score_25,t:`Day ${x.day}`})),25,12,"Sprechen score trend"):`<p class="small muted">${all.length?`${all.length} session${all.length>1?"s":""} saved.`:ex("Every tutor session is saved here automatically with a score, corrections and fluency numbers.","هر جلسه با مربی به‌طور خودکار با نمره، اصلاح‌ها و آمار روانی اینجا ذخیره می‌شود.")}</p>`}
+    <div><button class="btn primary sm" data-act="tab" data-v="speaking">Open speaking dashboard</button></div></section>`; }
+/* exam readiness: rolling average of the last three measurements per section */
+function readinessCard(){ const snap=Object.assign({}, S.st.reports||{});
+  for(let n=1;n<=PLAN.length;n++){ if(S.days[n]&&hasReportData(n)){ try{ const R=dayReport(n); snap[n]={L:R.L&&R.L.pts, H:R.H&&R.H.pts, Sch:R.Sch&&!R.Sch.partial?R.Sch.pts:null}; }catch(e){} } }
+  const reps=Object.entries(snap).sort((a,b)=>a[0]-b[0]).map(([,r])=>r); const mocks=Object.values(S.st.mocks||{}).sort((a,b)=>a.at-b.at);
+  const pick=(fromRep, fromMock)=>{ const v=[...reps.map(fromRep), ...mocks.map(fromMock)].filter(x=>x!=null&&!isNaN(x)); return v.length?{v:Math.round(v.slice(-3).reduce((a,b)=>a+b,0)/Math.min(3,v.length)), n:v.length}:null; };
+  const L=pick(r=>r.L,m=>m.L), H=pick(r=>r.H,m=>m.H), Sch=pick(r=>r.Sch,m=>m.Sch);
+  const spv=allSessions().filter(x=>x.score_25!=null).map(x=>x.score_25).concat(mocks.map(m=>m.sp).filter(x=>x!=null)); const Sp=spv.length?{v:Math.round(spv.slice(-3).reduce((a,b)=>a+b,0)/Math.min(3,spv.length)), n:spv.length}:null;
+  if(!L&&!H&&!Sch&&!Sp) return "";
+  const W=L&&H&&Sch?L.v+H.v+Sch.v:null;
+  const row=(l,o,mx,mn)=>o?barRow(l,o.v,mx,mn):`<div class="small muted">${l}: no data yet</div>`;
+  return `<section class="card stack"><div class="row between"><h2>Exam readiness</h2>${W!=null?`<span class="chip ${W>=38&&L.v>=6&&H.v>=6?"ok":"bad"} tnum">Written ≈ ${W}/75</span>`:""}</div>
+    ${row("Lesen",L,30,6)}${row("Hören",H,30,6)}${row("Schreiben",Sch,15,null)}${W!=null?barRow("Written total",W,75,38):""}${row("Sprechen",Sp,25,12)}
+    <p class="small muted">${ex("Average of your last three results per section (day reports, mocks and tutor sessions). This is the number to watch as the exam gets closer.","میانگین سه نتیجه آخر در هر بخش (گزارش روزانه، آزمون آزمایشی و جلسه مربی).")}</p></section>`; }
+
 /* ---------- events ---------- */
 document.addEventListener("click", async e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   const a=b.dataset.act;
-  if(a==="tab"){ S.view=b.dataset.v; S.step=null; S.fc=null; S.mix=null; S.pop=null; S.fcFrom=null; S.report=null; if(S.blitz){ clearInterval(tickBlitz._i); S.blitz=null; } if(S.view==="today") S.dayN=S.dayN||currentDay(); render(); window.scrollTo(0,0); }
+  if(a==="tab"){ S.view=b.dataset.v; S.step=null; S.fc=null; S.mix=null; S.pop=null; S.fcFrom=null; S.report=null; S.sess=null; if(S.blitz){ clearInterval(tickBlitz._i); S.blitz=null; } if(S.view==="today") S.dayN=S.dayN||currentDay(); render(); window.scrollTo(0,0); }
   else if(a==="day"){ const n=+b.dataset.v; if(n<1||n>PLAN.length) return; S.dayN=n; S.view="today"; S.step=null; S.pop=null; S.report=null; render(); window.scrollTo(0,0); }
   else if(a==="step"){ S.step=b.dataset.v; S.stepAt=Date.now(); S.pop=null; render(); window.scrollTo(0,0); }
   else if(a==="node"){ const i=+b.dataset.i; S.pop=S.pop===i?null:i; sfx("tap"); render(); const pp=$(".pop"); if(pp) pp.scrollIntoView({block:"nearest",behavior:"smooth"}); }
@@ -2109,6 +2225,18 @@ document.addEventListener("click", async e=>{
   else if(a==="rep-close"){ S.report=null; render(); window.scrollTo(0,0); }
   else if(a==="rep-open"){ const n=S.report; S.report=null; S.dayN=n; S.view="today"; S.step=b.dataset.v; S.stepAt=Date.now(); render(); window.scrollTo(0,0); }
   else if(a==="rep-repair"){ startRepair(S.report); }
+  else if(a==="sess-open"){ S.sess={day:+b.dataset.day, id:b.dataset.id}; S.view="speaking"; S.transcript=null; render(); window.scrollTo(0,0); }
+  else if(a==="sess-close"){ S.sess=null; render(); window.scrollTo(0,0); }
+  else if(a==="sess-conf"){ const x=findSession(+b.dataset.day, b.dataset.id); if(x){ x.confidence=+b.dataset.v; save(); render(); } }
+  else if(a==="sess-transcript"){ if(!b.open) loadTranscript(b.dataset.path); }
+  else if(a==="draft-discard"){ clearDraft(); render(); }
+  else if(a==="draft-save"||a==="sess-import"){ if(!S.ai||!S.uid){ toast("Sign in (and set up Gemini) to analyse sessions"); return; } if(S.saveBusy) return;
+    let job; if(a==="draft-save"){ const D=getDraft(); if(!D) return; job={n:D.n, mode:D.mode, log:D.log, started:D.started, source:"live"}; }
+    else { const txt=(S.importText["gemini-session"]||"").trim(); if(txt.length<60){ toast("Paste the whole conversation first"); return; } const md=($("#impMode")||{}).value||"coach"; job={n:currentDay(), mode:md, log:[], started:Date.now()-60000, source:"gemini-app", rawText:txt}; }
+    S.saveBusy=true; render();
+    try{ const {sess}=await analyseSession(job); if(a==="draft-save") clearDraft(); else S.importText["gemini-session"]=""; S.view="speaking"; S.sess={day:job.n, id:sess.id}; toast("Session saved"); }
+    catch(e){ toast("Couldn't analyse: "+e.message); }
+    S.saveBusy=false; render(); window.scrollTo(0,0); }
   else if(a==="cel-next"){ S.cel.shift(); render(); window.scrollTo(0,0); }
   else if(a==="blitz-start"){ startBlitz(); }
   else if(a==="blitz-quit"){ clearInterval(tickBlitz._i); S.blitz=null; stopSpeech(); render(); }
@@ -2236,7 +2364,7 @@ document.addEventListener("change", e=>{
   if(t.dataset.set==="voice"){ S.st.voice=t.value; save(); speak("Grüß Gott!"); }
   if(t.dataset.set==="strict"){ S.st.strict=t.checked; save(); }
   if(t.dataset.set==="sfx"){ S.st.sfx=t.checked; save(); if(t.checked) sfx("ok"); }
-  if(t.dataset.set==="start"){ if(/^\d{4}-\d{2}-\d{2}$/.test(t.value)){ S.st.start=t.value; save(); render(); } else toast("Use the format YYYY-MM-DD"); }
+  if(t.dataset.set==="start"){ if(/^\d{4}-\d{2}-\d{2}$/.test(t.value)){ S.st.start=t.value; schedule._k=null; S.dayN=currentDay(); save(); render(); } else toast("Use the format YYYY-MM-DD"); }
 });
 
 /* ---------- boot ---------- */
