@@ -511,3 +511,13 @@ nav.tabs button .coin{width:30px;height:30px}
 .blitz-t{font-weight:900;font-size:1.3rem;color:var(--gold-ink);min-width:34px;text-align:right}
 .blitz-card{border-color:var(--gold)}
 .league{border-color:var(--line)}
+
+/* ---------- v7: daily report ---------- */
+.prow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:2px solid var(--line)}
+.card .prow:first-of-type{border-top:0}
+button.prow{appearance:none;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+button.prow:first-of-type{border-top:0}
+.weak{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:10px 0;border-top:2px solid var(--line)}
+.weak:first-of-type{border-top:0}
+.weak .wn{width:34px;height:34px;border-radius:50%;background:var(--red-soft);color:var(--red-ink);display:grid;place-items:center;font-weight:900}
+.report-card{border-color:var(--gold)}

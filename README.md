@@ -41,6 +41,13 @@ When you start a session, the app builds the tutor's instructions from: the day 
 
 Any static server works for the UI (`npx serve .`); the `/api` functions need `npx vercel dev`.
 
+## v7 — daily report and personal tutor (Oct 2026)
+
+- **Daily report (Tagesbericht):** tap the trophy at the end of the path (or "See today's report" when the day is complete, or Progress → Day reports). Shows today's Lesen, Hören and Schreiben projected onto the official ÖSD scale (30/30/15, written total /75 with the minimums 6/6/email 4 and 38), Sprechen /25 from the tutor or a self-rating with the ÖSD criteria, every exam part's raw score, lesson accuracy, all mistakes grouped by type, and up to six ranked weak spots with examples.
+- **Repair lesson:** one tap turns today's mistakes into a short lesson.
+- **Personal tutor:** the Gemini Live brief now contains today's scores, exam-part results, lesson accuracy, every mistake, the email errors, pronunciation problems, ranked weak points with a drill for each, weak points from earlier days and what was still weak after earlier sessions. New default mode at the end of a day: **Fix my weak spots**. Session notes record what got fixed and what is still weak, so the next session continues from there.
+- Hören Teil 2 notes and Schreiben Teil 1 form errors are now logged as mistakes; the form score is saved; pronunciation checks are kept per day.
+
 ## v6 — more game (Oct 2026)
 
 - **Schilling coins** (top bar → Shop): earned for lessons (5, +5 perfect), exam-format steps (10), break chests (5–15), daily quests (10–20), achievements (20), level-ups (30) and finishing a whole day (50).

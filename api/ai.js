@@ -27,8 +27,9 @@ function summarizePrompt(p) {
   return `You are an ÖSD A1 speaking coach. Below is the transcript of a voice practice session (Day ${p.day} of 34) between the tutor and Raam, an absolute beginner. Transcription of the learner may contain recognition errors; judge kindly.
 TRANSCRIPT:
 ${String(p.transcript).slice(0, 60000)}
+SESSION MODE: ${p.mode || "coach"}. WEAK POINTS HE CAME IN WITH: ${(p.weak || []).join("; ") || "none listed"}.
 Reply with JSON only:
-{"summary_en":"2 sentences on what was practised","strengths":["",""],"errors":[{"wrong":"","right":""}],"next_focus":["what the next session should drill"],"score_25": number 0-25}`;
+{"summary_en":"2 sentences on what was practised","strengths":["",""],"errors":[{"wrong":"","right":""}],"next_focus":["what the next session should drill"],"fixed":["weak points from the list that he now handles correctly"],"still_weak":["weak points or new problems that still need work"],"score_25": number 0-25}`;
 }
 
 export default async function handler(req, res) {
