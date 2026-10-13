@@ -531,3 +531,10 @@ button.prow:first-of-type{border-top:0}
 .lchart .pt{fill:var(--blue);stroke:var(--surface);stroke-width:2;cursor:default}
 .lchart .pt:hover{r:7}
 .lchart .lbl{fill:var(--ink-strong);font-size:12px;font-weight:900;font-family:var(--f-body)}
+
+/* ---------- v9: guided sessions, hooks, recap ---------- */
+.phasecard{border-color:var(--blue-line);gap:10px}
+.phase-left{font-weight:900;font-size:1.5rem;color:var(--blue-ink)}
+.hook{display:flex;gap:8px;align-items:flex-start;background:var(--gold-soft);border-radius:var(--r-sm);padding:10px 12px;font-size:.92rem;align-self:stretch}
+.hook svg{width:20px;height:20px;flex:none;color:var(--gold-ink)}
+.recap-card{border-color:var(--purple)}

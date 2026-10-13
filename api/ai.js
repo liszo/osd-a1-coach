@@ -28,11 +28,12 @@ function summarizePrompt(p) {
 TRANSCRIPT:
 ${String(p.transcript).slice(0, 60000)}
 SESSION MODE: ${p.mode || "coach"}. WEAK POINTS HE CAME IN WITH: ${(p.weak || []).join("; ") || "none listed"}.
+Errors: list only real learner mistakes you are sure about. Skip lines that look like speech-recognition noise (garbled or non-German words), skip anything the tutor said, and do not "correct" a sentence into a different sentence with another meaning.
 Score him with the official ÖSD Zertifikat A1 Sprechen criteria, judging only what he actually did in this session (give null for a part that was not practised):
 teil1 = introducing himself (0-4), teil2 = describing a photo/situation (0-4), teil3 = role-play/asking and answering (0-4), vocab = range and accuracy of words (0-5), pron = pronunciation and fluency (0-4), grammar = basic structures, verb position, endings (0-4).
 Reply with JSON only:
 {"summary_en":"2 sentences on what was practised","strengths":["",""],
-"errors":[{"wrong":"what he said","right":"correct German","category":"article|verb_position|conjugation|case|vocabulary|pronunciation|word_order|other","why_en":"one short reason"}],
+"errors":[{"wrong":"the exact words Raam said (copied from a Raam line, never from the tutor)","right":"the corrected German","category":"article|verb_position|conjugation|case|vocabulary|pronunciation|word_order|other","why_en":"one short reason"}],
 "criteria":{"teil1":null,"teil2":null,"teil3":null,"vocab":null,"pron":null,"grammar":null},
 "score_25": number 0-25 (sum of the criteria, scaled up fairly if some parts were not practised),
 "topics_covered":["only from: Sprachen, Hobbys, Sport, Familie, Beruf, Lieblingsessen"],
@@ -42,18 +43,37 @@ Reply with JSON only:
 "still_weak":["weak points or new problems that still need work"]}`;
 }
 
+function variantsPrompt(p) {
+  return `You write practice sentences for Raam, an absolute beginner (CEFR A1) learning Austrian German for the ÖSD Zertifikat A1 exam. Day ${p.day}: ${p.theme}${p.grammar ? " (grammar: " + p.grammar + ")" : ""}.
+Words he already knows: ${(p.known || []).join(", ").slice(0, 4000)}
+For EACH target item below write ${p.count || 3} NEW sentences that use the target in a different everyday context (not the textbook example). Rules:
+- 4–9 words, A1 level, mostly present tense, only very common words (mainly from the known list), correct capitalisation and punctuation, natural Austrian standard German.
+- Vary the sentence type: statement, W-question, yes/no question. Personal contexts are welcome: Raam is from Tehran, works as a web developer, is married, is learning German for a trip to Austria.
+- Word targets: use the word itself (with article or in the right case form). Phrase targets: put the phrase in a mini situation (it may be followed by a second short sentence).
+For each sentence return:
+  "de": the German sentence,
+  "en": a natural English translation,
+  "gap": the exact substring of "de" that contains the target (so it can be blanked; for nouns include the article if present),
+  "wrong_en": 2 plausible but WRONG English translations (change the meaning, e.g. person, time, negation, object),
+  "near_de": 2 German sentences identical to "de" except ONE word changed, both still correct German (for a listening test),
+  "situation_en": for phrase targets only, one English sentence describing a situation where you would say the phrase (do not include the phrase itself).
+Also return "hook": a short, vivid memory aid for the target in English (a sound-alike with an English or Persian word, or a funny image), max 15 words, no explanation of grammar.
+Targets: ${JSON.stringify(p.items || [])}
+Reply with JSON only: {"items":[{"id":"<target id exactly as given>","hook":"","sentences":[{"de":"","en":"","gap":"","wrong_en":["",""],"near_de":["",""],"situation_en":""}]}]}`;
+}
+
 export default async function handler(req, res) {
   if (!onlyPost(req, res)) return;
   if (!(await requireUser(req, res))) return;
   if (!requireKey(res)) return;
 
   const { mode, payload } = req.body || {};
-  const prompt = mode === "grade" ? gradePrompt(payload) : mode === "check" ? checkPrompt(payload) : mode === "summarize" ? summarizePrompt(payload) : null;
+  const prompt = mode === "grade" ? gradePrompt(payload) : mode === "check" ? checkPrompt(payload) : mode === "summarize" ? summarizePrompt(payload) : mode === "variants" ? variantsPrompt(payload) : null;
   if (!prompt) return res.status(400).json({ error: "Unknown mode." });
 
   const r = await gemini(`models/${TEXT_MODEL}:generateContent`, {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { responseMimeType: "application/json", temperature: 0.3 },
+    generationConfig: { responseMimeType: "application/json", temperature: mode === "variants" ? 0.8 : 0.3 },
   });
   if (!r.ok) return res.status(502).json({ error: "Gemini request failed.", detail: r.json || r.text });
 

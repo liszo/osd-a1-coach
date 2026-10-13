@@ -266,7 +266,7 @@ function cardsForDay(n, d){ const out=[]; (d.vocab||[]).forEach(v=>out.push({id:
   (d.flashcards||[]).forEach(c=>out.push({id:"x:"+c.front, day:n, kind:"x", de:c.front, en:c.back, fa:c.fa||"", plural:c.plural||"", example_de:c.example||"", article:"-"})); return out; }
 function allCards(){ const out=[]; Object.keys(S.st.intro).forEach(k=>{ const n=+k; const d=S.days[n]; if(d) out.push(...cardsForDay(n,d)); });
   if(S.st.decks&&S.st.decks.austria&&S.austria) S.austria.cards.forEach(c=>out.push({id:"a:"+c.de, kind:"a", ...c}));
-  const seenQ=new Set(); (S.st.mistakes||[]).forEach(m=>{ if(m.q&&m.right&&!seenQ.has(m.q)&&seenQ.size<80){ seenQ.add(m.q); out.push({id:"m:"+m.q, kind:"m", de:m.q, en:m.right, article:"-", fa:""}); } }); const seen=new Set(); return out.filter(c=>!seen.has(c.id)&&seen.add(c.id)); }
+  const seenQ=new Set(); (S.st.mistakes||[]).forEach(m=>{ if(m.q&&m.right&&!seenQ.has(m.q)&&seenQ.size<80){ seenQ.add(m.q); out.push({id:"m:"+m.q, kind:"m", de:m.kind==="speaking"?"Say it correctly: "+m.q:m.q, en:m.right, article:"-", fa:""}); } }); const seen=new Set(); return out.filter(c=>!seen.has(c.id)&&seen.add(c.id)); }
 function srsCounts(){ const now=Date.now(); let due=0,fresh=0,learned=0; allCards().forEach(c=>{ const r=S.st.srs[c.id]; if(!r) fresh++; else if(r.due<=now) due++; else learned++; }); return {due,fresh,learned}; }
 function grade(card, q){ const now=Date.now(); const r=S.st.srs[card.id]||{ef:2.5,ivl:0,reps:0,lapses:0,due:now};
   if(q<3){ r.reps=0; r.ivl=0; r.lapses++; r.due=now+10*60000; }
@@ -341,7 +341,8 @@ async function vToday(){
     ${n!==currentDay()?`<div><button class="guide" data-act="day" data-v="${currentDay()}">Back to today</button></div>`:""}
   </section>`;
   if(!d) return banner + mockCta(n) + resCard(n) + pendingPanel(n);
-  return draftBanner() + banner + (n===currentDay()?ediSays(n):"") + pathHtml(n,d) + reportCard(n) + questsCard(n,d) + leagueCard(true) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
+  if(S.uid&&S.ai&&!S.varBusy) setTimeout(()=>ensureVariants(n),1500);
+  return draftBanner() + banner + (n===currentDay()?ediSays(n):"") + pathHtml(n,d) + recapCard(n) + reportCard(n) + questsCard(n,d) + leagueCard(true) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
 }
 function progressBar(n,d){ const pr=dayProgress(n,d); const pct=pr.minTotal?Math.round(pr.min/pr.minTotal*100):0;
   return `<div class="stack" style="gap:6px"><div class="row between small"><span>${pr.done}/${pr.total} steps</span><span class="tnum muted">${pr.min} / ${pr.minTotal} min</span></div><div class="meter" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>`; }
@@ -892,7 +893,7 @@ async function flashcardsView(){
       :`<span class="small muted">${ex("Say the answer out loud first.","اول جواب را بلند بگو.")}</span><button class="btn blue big" id="lesBtn" data-act="fc-show">Show answer</button>`}</div></div></div>`;
 }
 function mistakesView(){ const m=S.st.mistakes; return `<div class="card stack"><div class="row between"><h2>My mistakes</h2>${m.length?`<button class="btn sm" data-act="clear-mist">Clear</button>`:""}</div>
-  ${m.length?m.slice(0,40).map(x=>`<div class="sunk small"><span class="label">Day ${x.day} · ${esc(x.src)}</span><br><b>${esc(x.q)}</b><br><span style="color:var(--bad)">${esc(x.your||"–")}</span> → <span style="color:var(--ok)">${esc(x.right)}</span></div>`).join(""):`<p class="small muted">Wrong answers from Practice, Quiz and Mixed review collect here and become flashcards automatically.</p>`}</div>`; }
+  ${m.length?m.filter(x=>x.q&&x.right).slice(0,40).map(x=>`<div class="sunk small"><span class="label">Day ${x.day} · ${esc(x.src)}</span><br><b>${esc(x.q)}</b><br><span style="color:var(--bad)">${esc(x.your||"–")}</span> → <span style="color:var(--ok)">${esc(x.right)}</span></div>`).join(""):`<p class="small muted">Wrong answers from Practice, Quiz and Mixed review collect here and become flashcards automatically.</p>`}</div>`; }
 function startFc(mode){ const now=Date.now(); const all=allCards(); const due=all.filter(c=>S.st.srs[c.id]&&S.st.srs[c.id].due<=now).sort((a,b)=>S.st.srs[a.id].due-S.st.srs[b.id].due); const fresh=all.filter(c=>!S.st.srs[c.id]).slice(0,25); S.fc={mode, queue:[...due,...fresh], show:false, seen:0, good:0, at:Date.now()}; }
 
 /* ---------- resources from the research ---------- */
@@ -1295,9 +1296,10 @@ function pronView(k){ const p=S.pron[k]; if(!p) return "";
 function tutorCard(n){
   const sessions=S.st.live[n]||[]; const last=sessions[sessions.length-1];
   const ready=S.ai&&S.uid;
-  return `<section class="card stack tutor-card"><div class="label">Live tutor · Gemini · 10–15 min</div><h2>Talk to your tutor</h2>
+  return `<section class="card stack tutor-card"><div class="label">Live tutor · Gemini · about ${tutorMinutes()} min, guided in phases</div><h2>Talk to your tutor</h2>
     <p class="small">${ex("The tutor already knows which day you're on, today's words and script, your recent mistakes and the notes from your last session. Use headphones.","مربی می‌داند روز چندم هستی، لغات و متن امروز، اشتباهات اخیر و یادداشت‌های جلسه قبل را. از هدفون استفاده کن.")}</p>
     <div class="row">${[["review","Fix my weak spots"],["coach","Coach: teach today"],["exam","Exam simulation"]].map(([v,l])=>`<button class="opt ${S.liveMode===v?"sel":""}" data-act="live-mode" data-v="${v}">${l}</button>`).join("")}</div>
+    <div class="row"><span class="small muted">Length</span>${[15,25,30].map(m=>`<button class="opt ${tutorMinutes()===m?"sel":""}" data-act="tutor-min" data-v="${m}">${m} min</button>`).join("")}</div>
     ${ready?`<div><button class="btn primary" data-act="live-start" data-n="${n}">${ICONS.mic}Start speaking session</button></div>`:`<div class="banner"><div>${S.uid?"The tutor needs GEMINI_API_KEY in Vercel → Settings → Environment Variables.":"Sign in to use the tutor."}</div></div>`}
     ${last?`<div class="sunk stack" style="gap:4px"><div class="label">Last session · ${new Date(last.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}${last.score_25!=null?` · ${esc(last.score_25)}/25`:""}</div><div class="small">${esc(last.summary_en||"")}</div>
       ${(last.errors||[]).slice(0,4).map(e=>`<div class="small"><span style="color:var(--bad);text-decoration:line-through">${esc(e.wrong)}</span> → <b style="color:var(--ok)">${esc(e.right)}</b></div>`).join("")}
@@ -1305,7 +1307,7 @@ function tutorCard(n){
   </section>`;
 }
 function weakSpots(){ const out=[]; Object.entries(S.st.results).forEach(([k,r])=>{ if(r.total&&r.score/r.total<0.6) out.push(`${k} (${r.score}/${r.total})`); }); return out.slice(-6); }
-function buildTutorBrief(n, d, mode){
+function buildTutorBrief(n, d, mode, plan){ plan=plan||sessionPlan(n, mode, tutorMinutes());
   const p=PLAN[n-1]; const left=daysLeft();
   const done=PLAN.slice(0,n-1).filter(x=>x.k==="lesson").map(x=>x.t);
   const next=PLAN[n]?PLAN[n].t:"exam";
@@ -1331,13 +1333,9 @@ function buildTutorBrief(n, d, mode){
   const ws=weakSpots(); if(ws.length) L.push("WEAK EXERCISE SCORES: "+ws.join(", "));
   const notes=Object.entries(S.st.live).flatMap(([day,arr])=>arr.map(x=>({day:+day,...x}))).sort((a,b)=>a.at-b.at).slice(-3);
   if(notes.length) L.push("NOTES FROM EARLIER TUTOR SESSIONS: "+notes.map(x=>`Day ${x.day}: ${x.summary_en||""} Errors: ${(x.errors||[]).map(e=>e.wrong+" → "+e.right).join(", ")}. Next focus: ${(x.next_focus||[]).join("; ")}`).join(" || "));
-  if(mode==="review"){
-    L.push("SESSION PLAN (about 15 minutes, personalised): 1) Greet him and, in two short English sentences, sum up today's results: name his strongest area and the 2–3 weakest. 2) Work through the WEAK POINTS in order, about 3 minutes each. For each one: first re-ask the exact items he got wrong today (in German, as a spoken question), let him answer, correct him, make him repeat the correct form; then give 2–3 NEW similar items to check he can transfer the rule. Use the DRILL hint for each point. For Hören weaknesses, say a short A1 announcement or dialogue slowly once and ask one question about it (numbers, times, spelled names). For email errors, have him say the corrected sentences aloud. For pronunciation, model the sentence slowly and let him shadow it. 3) If Sprechen was weak or not measured, finish with a 2-minute Teil 1 introduction and one photo question. 4) End in English: say which weak points are now fine and which still need work tomorrow, and give a speaking score out of 25. If there is no result data at all, run a normal coaching session on today's content instead.");
-  } else if(mode==="exam"){
-    L.push("SESSION: Simulate the ÖSD A1 oral exam exactly. Teil 1: ask him to introduce himself on 4 of: Sprachen, Hobbys, Sport, Familie, Beruf, Lieblingsessen; ask one or two follow-ups (e.g. spell the surname, phone number). Teil 2: describe the photo (Was sehen Sie? Wie viele Personen? Wo? Was machen sie?). Teil 3: short role-play about that photo. Use Sie. Do NOT correct during the exam. Afterwards switch to English and give a score out of 25 (task, vocabulary, grammar, pronunciation) with his 3 most important errors.");
-  } else {
-    L.push("SESSION PLAN (about 12 minutes): 1) Greet him and say in English what today's session covers. 2) Vocabulary recall: say an English word from today, he answers in German with article; also recycle 2–3 earlier mistakes. 3) Sprechen Teil 1 drill with his script; ask him to spell his name. 4) "+(n>=8?"A short Teil 2 photo description and a Teil 3 role-play. ":"A tiny dialogue using today's phrases (switch between du and Sie). ")+"5) Finish with 3 things he did well and 3 corrections. Use TODAY'S MISTAKES and WEAK POINTS (if listed) when choosing what to drill in steps 2 and 4.");
-  }
+  const total=plan.reduce((x,p)=>x+p.min,0);
+  L.push(`SESSION LENGTH: about ${total} minutes, run by the app in ${plan.length} phases: `+plan.map((p,i)=>`${i+1}) ${p.t} (${p.min} min)`).join("; ")+". The app sends you a note that starts with [APP NOTE] at the start of every phase with the exact instructions. Those notes come from the app, not from Raam: never read them aloud or mention them, just move on smoothly.");
+  L.push("YOUR ROLE: an energetic, demanding but kind personal trainer, not a chat partner. You lead all the time. Keep each turn short (at most 2 sentences) and end almost every turn with a question or task for him. After every answer: quick feedback (richtig / fast / nein), the correct form if needed, and he repeats it; then the next item. Aim for 40–60 questions in a session. Use spaced retrieval: anything he gets wrong comes back 2–3 minutes later in a new sentence. Raise the difficulty after 3 correct answers in a row (full sentences, faster, new context); simplify when he struggles. If he answers in English, help him say it in German. Never end the session, summarise it or say goodbye before the final phase. If the app has not sent a new note yet, keep drilling the current phase with new items.");
   L.push("RULES: Speak slow, clear Austrian standard German (Grüß Gott, Jänner) in very short A1 sentences. Use only today's and earlier vocabulary. Explain in short simple English; use Persian only if he asks. In coaching mode, correct every mistake immediately: say the correct sentence once, ask him to repeat it, then continue. If he is silent or lost, give him the first words. Keep your turns short so he speaks more than you.");
   return L.join("\n");
 }
@@ -1347,25 +1345,31 @@ async function startLive(n){
   const d=await getDay(n).catch(()=>null);
   let outCtx, inCtx;
   try{ outCtx=new AudioContext({sampleRate:24000}); inCtx=new AudioContext(); }catch(e){ toast("Audio is not available: "+e.message); return; }
-  S.live={ n, status:"starting", log:[], partial:null, started:Date.now(), mode:S.liveMode, muted:false, error:"" };
+  const plan=sessionPlan(n, S.liveMode, tutorMinutes());
+  S.live={ n, status:"starting", log:[], partial:null, started:Date.now(), mode:S.liveMode, muted:false, error:"", plan, phase:0, phaseEnd:Date.now()+plan[0].min*60000, complete:false };
   render();
   try{
     const tk=await api("/api/live-token");
-    const sess=new LiveSession({ token:tk.token, apiVersion:tk.apiVersion, model:tk.model, systemText:buildTutorBrief(n,d,S.liveMode), voice:S.st.tutorVoice||"Kore", outCtx, inCtx,
+    const LL=S.live;
+    const sess=new LiveSession({ token:tk.token, apiVersion:tk.apiVersion, model:tk.model, systemText:buildTutorBrief(n,d,S.liveMode,plan), voice:S.st.tutorVoice||"Kore", outCtx, inCtx,
+      starter: regie(LL,0,"Begin now."), getToken:()=>api("/api/live-token"),
+      onResumed:kept=>{ if(S.live!==LL) return; if(!kept) try{ LL.sess.sendText(regie(LL,LL.phase,"The connection was renewed. Continue naturally from where you were; do not greet him again.")); }catch(e){} },
+      onGoAway:()=>{},
       onStatus:st=>{ if(!S.live) return; S.live.status=st; const el=$("#liveStatus"); if(el) el.textContent=liveStatusText(); if(st==="ended") render(); },
       onTranscript:(role,text,final)=>{ if(!S.live) return; if(final){ S.live.log.push({role,text}); S.live.partial=null; saveDraft(); } else S.live.partial={role,text}; drawLiveLog(); },
       onError:msg=>{ if(!S.live) return; S.live.error=msg; const el=$("#liveErr"); if(el){ el.textContent=msg; el.hidden=false; } },
       onLevel:v=>{ const el=$("#liveLevel"); if(el) el.style.width=Math.min(100,Math.round(v*400))+"%"; } });
     S.live.sess=sess;
-    await sess.start();
+    await sess.start(); LL.phaseEnd=Date.now()+plan[0].min*60000; livePhaseTick();
   }catch(e){ if(S.live){ S.live.status="error"; S.live.error=e.message; } try{ outCtx.close(); inCtx.close(); }catch(_){} render(); }
 }
-function liveStatusText(){ const L=S.live; if(!L) return ""; return {starting:"Getting a secure connection…",connecting:"Connecting to Gemini…",live:L.muted?"Microphone muted":"Live · speak any time",ended:"Session ended",error:"Couldn't start",summarizing:"Saving session notes…"}[L.status]||L.status; }
+function liveStatusText(){ const L=S.live; if(!L) return ""; return {starting:"Getting a secure connection…",connecting:"Connecting to Gemini…",live:L.muted?"Microphone muted":"Live · speak any time",reconnecting:"Reconnecting… (keeps your conversation)",ended:"Session ended",error:"Couldn't start",summarizing:"Saving session notes…"}[L.status]||L.status; }
 function vLive(){
   const L=S.live; const p=PLAN[L.n-1];
   const over = L.status==="ended"||L.status==="error";
   return `<div class="live">
     <div class="row between"><div><div class="label">Day ${L.n} · ${L.mode==="exam"?"Exam simulation":L.mode==="review"?"Fixing your weak spots":"Coaching"} · saved automatically</div><h2>${esc(p.t)}</h2></div><span class="chip ${L.status==="live"?"ok":L.status==="error"?"bad":"acc"}" id="liveStatus">${liveStatusText()}</span></div>
+    ${phaseBlock(L)}
     <div class="meter" aria-hidden="true"><i id="liveLevel" style="width:0%"></i></div>
     <div class="banner" id="liveErr" ${L.error?"":"hidden"}>${esc(L.error)}</div>
     <div class="live-log" id="liveLog" aria-live="polite"></div>
@@ -1394,7 +1398,7 @@ async function endLive(){
 }
 
 /* ---------- Gemini app context ---------- */
-async function copyContext(n){ const d=await getDay(n).catch(()=>null); copyText(buildTutorBrief(n,d,S.liveMode)+"\n\nStart now: greet me and begin the session."); }
+async function copyContext(n){ const d=await getDay(n).catch(()=>null); const plan=sessionPlan(n,S.liveMode,tutorMinutes()); copyText(buildTutorBrief(n,d,S.liveMode,plan)+"\n\nIn this app there are no APP NOTES: follow the phases yourself by time, with these instructions:\n"+plan.map((p,i)=>`Phase ${i+1} (${p.min} min) ${p.t}: ${p.ins}`).join("\n")+"\n\nStart now with phase 1."); }
 
 function examFacts(){
   const mod=(title, mins, pts, pass, rows, note)=>`<section class="card stack"><div class="row between"><h2>${title}</h2><span class="chip tnum">${mins} · ${pts}</span></div>${pass?`<p class="small"><b>Minimum:</b> ${pass}</p>`:""}
@@ -1537,6 +1541,7 @@ function popHtml(n,nd,i,o){
   return `<div class="pop ${o.done?"done":o.locked?"locked":""}" style="--x:${o.x}px" role="dialog" aria-label="${attr(nd.title)}">
     <div><h3>${esc(nd.title)}</h3><div class="sub">${sub}</div></div>
     ${nd.desc&&nd.desc[0]?`<div class="sub">${ex(nd.desc[0], nd.desc[1])}</div>`:""}
+    ${nd.step==="learn"&&(()=>{ const pp=learnParts(S.days[n]||{})[nd.part]; return pp&&pp.items&&getVariants(n,pp.id); })()?`<div class="sub">${ICONS.star.replace('<svg','<svg width="14" height="14" style="vertical-align:-2px"')} ${ex("New practice sentences every time","هر بار جمله‌های تمرینی تازه")}</div>`:""}
     ${o.locked?`<div class="sub">${ex("Finish the steps above first, or jump ahead if you already know this.","اول مراحل بالا را تمام کن، یا اگر بلدی جلو برو.")}</div>`:""}
     <button class="btn" data-act="node-start" data-i="${i}">${label}</button>
     ${nd.step==="learn"?`<button class="btn link" data-act="step" data-v="guide">${ICONS.book}Guidebook</button>`:""}
@@ -1565,7 +1570,12 @@ function opts(correct, pool, k, seed){ const uniq=[...new Set(pool.filter(x=>x&&
 function shuf2(w, seed){ let sh=shuffled(w,seed); for(let t=1; t<6 && w.length>1 && sh.join("\u0001")===w.join("\u0001"); t++) sh=shuffled(w,seed+"#"+t); return sh; }
 const NAMES=["Gruber","Huber","Wieser","Steiner","Moser","Karimi","Bauer","Novak","Leitner","Hofer","Rahimi","Pichler"];
 function buildScreens(n,d,nd){ const seed=nd.step+nd.part+Date.now();
-  if(nd.step==="learn"){ const p=learnParts(d)[nd.part]; if(!S.st.intro[n]){ S.st.intro[n]=Date.now(); save(); } return p?learnScreens(d,p,seed):[]; }
+  if(nd.step==="learn"){ const p=learnParts(d)[nd.part]; if(!S.st.intro[n]){ S.st.intro[n]=Date.now(); save(); } if(!p) return [];
+    const rk=n+":"+p.id; S.st.runs=S.st.runs||{}; const run=S.st.runs[rk]||0; S.st.runs[rk]=run+1;
+    S.les_build={variants:p.items?getVariants(n,p.id):null, run}; const out=learnScreens(d,p,seed); S.les_build=null;
+    if(p.items&&!getVariants(n,p.id)) ensureVariants(n,p.id);
+    else if(p.items&&run>=2&&run%3===2){ const ov=Object.assign({day:n}, S.imported[n]||{}); if(ov.variants&&ov.variants[p.id]){ delete ov.variants[p.id]; saveOverlay(n,ov).then(()=>getDay(n)).then(()=>ensureVariants(n,p.id)); } }
+    return out; }
   if(nd.step==="practice"){ const p=practiceParts(d)[nd.part]; return p?p.items.map((it,i)=>exScreen(it, seed+i)):[]; }
   if(nd.step==="quiz") return (d.review_quiz||[]).map((q,i)=>exScreen({type:"mcq",prompt:q.q,options:q.options,answer:q.answer,explain_en:q.explain_en,explain_fa:q.explain_fa}, seed+i));
   if(nd.step==="diktat") return (d.diktat||[]).map(t=>({type:"dictation", text:t, noLog:true}));
@@ -1586,24 +1596,30 @@ function learnScreens(d,p,seed){ const out=[]; const V=d.vocab||[], P=d.phrases|
     d.pronunciation.forEach((x,i)=>{ out.push({type:"tip",kind:"sound",title:x.focus,en:x.tip_en,fa:x.tip_fa,words:x.words||[]});
       const w=x.words||[]; if(w.length>=2){ const a=w[hashStr(seed+i)%w.length]; out.push({type:"listen",prompt:"Tap what you hear",say:a,options:opts(a,[...w,...all],4,seed+"s"+i),answer:a,noLog:true}); } });
     return out; }
+  const VAR=S.les_build&&S.les_build.variants, RUN=(S.les_build&&S.les_build.run)||0;
   if(p.id[0]==="w"){ const items=p.items, pool=V.map(v=>v.en), fullPool=V.map(vfull);
     for(let g=0; g<items.length; g+=3){ const grp=items.slice(g,g+3);
       grp.forEach(v=>out.push({type:"teach",kind:"word",v}));
-      shuffled(grp,seed+g).forEach((v,j)=>out.push({type:"meaning",de:vfull(v),fa:v.fa,options:opts(v.en,pool,4,seed+g+"m"+j),answer:v.en,q:vfull(v),explain_en:v.example_de?v.example_de+(v.example_en?" · "+v.example_en:""):"",explain_fa:v.fa})); }
-    if(items.length>=3) out.push({type:"match",pairs:shuffled(items,seed+"mt").slice(0,5).map(v=>({l:vfull(v),r:v.en,say:vfull(v)}))});
+      shuffled(grp,seed+g).slice(0,VAR?2:3).forEach((v,j)=>out.push({type:"meaning",de:vfull(v),fa:v.fa,options:opts(v.en,pool,4,seed+g+"m"+j),answer:v.en,q:vfull(v),explain_en:v.example_de?v.example_de+(v.example_en?" · "+v.example_en:""):"",explain_fa:v.fa})); }
+    if(items.length>=3) out.push({type:"match",pairs:shuffled(items,seed+"mt").slice(0,5).map(v=>({l:vfull(v),r:v.en,say:vfull(v)})),noLog:true});
     const rest=[];
-    items.filter(v=>["der","die","das"].includes(v.article)).slice(0,3).forEach(v=>rest.push({type:"article",prompt:v.de,options:["der","die","das"],answer:v.article,q:v.de,explain_en:`${v.article} ${v.de}${v.plural&&v.plural!=="-"?", "+v.plural:""}`}));
-    shuffled(items,seed+"l").slice(0,2).forEach((v,j)=>rest.push({type:"listen",prompt:"What do you hear?",say:vfull(v),options:opts(vfull(v),fullPool,4,seed+"L"+j),answer:vfull(v),noLog:true}));
-    shuffled(items,seed+"r").slice(0,2).forEach((v,j)=>rest.push({type:"reverse",en:v.en,fa:v.fa,options:opts(vfull(v),fullPool,4,seed+"R"+j),answer:vfull(v),q:v.en,sayOpts:true}));
+    items.filter(v=>["der","die","das"].includes(v.article)).slice(0,VAR?2:3).forEach(v=>rest.push({type:"article",prompt:v.de,options:["der","die","das"],answer:v.article,q:v.de,explain_en:`${v.article} ${v.de}${v.plural&&v.plural!=="-"?", "+v.plural:""}`}));
+    if(VAR){ rest.push(...variantScreens(p, VAR, RUN, fullPool)); }
+    else { shuffled(items,seed+"l").slice(0,2).forEach((v,j)=>rest.push({type:"listen",prompt:"What do you hear?",say:vfull(v),options:opts(vfull(v),fullPool,4,seed+"L"+j),answer:vfull(v),noLog:true}));
+      shuffled(items,seed+"r").slice(0,2).forEach((v,j)=>rest.push({type:"reverse",en:v.en,fa:v.fa,options:opts(vfull(v),fullPool,4,seed+"R"+j),answer:vfull(v),q:v.en,sayOpts:true})); }
+    shuffled(items,seed+"wr").slice(0,2).forEach(v=>rest.push(writeScreen(v)));
     out.push(...shuffled(rest,seed+"rest"));
     return out; }
-  if(p.id[0]==="p"){ const items=p.items, pool=P.map(x=>x.en);
+  if(p.id[0]==="p"){ const items=p.items, pool=P.map(x=>x.en), dePool=P.map(x=>x.de);
     for(let g=0; g<items.length; g+=4){ const grp=items.slice(g,g+4);
       grp.forEach(x=>out.push({type:"teach",kind:"phrase",v:x}));
       shuffled(grp,seed+g).slice(0,2).forEach((x,j)=>out.push({type:"meaning",de:x.de,fa:x.fa,options:opts(x.en,pool,3,seed+g+"pm"+j),answer:x.en,q:x.de,explain_fa:x.fa})); }
-    if(items.length>=3) out.push({type:"match",pairs:shuffled(items,seed+"pmt").slice(0,4).map(x=>({l:x.de,r:x.en,say:x.de}))});
-    items.filter(x=>{ const w=x.de.split(/\s+/); return w.length>=3&&w.length<=7; }).sort((a,b)=>hashStr(seed+a.de)-hashStr(seed+b.de)).slice(0,2)
-      .forEach((x,j)=>{ const w=x.de.split(/\s+/); out.push({type:"word_order",words:shuf2(w,seed+"w"+j),answer:x.de,q:x.de,en:x.en,explain_fa:x.fa}); });
+    if(items.length>=3) out.push({type:"match",pairs:shuffled(items,seed+"pmt").slice(0,4).map(x=>({l:x.de,r:x.en,say:x.de})),noLog:true});
+    const rest=[];
+    if(VAR) rest.push(...variantScreens(p, VAR, RUN, dePool));
+    else items.filter(x=>{ const w=x.de.split(/\s+/); return w.length>=3&&w.length<=7; }).sort((a,b)=>hashStr(seed+a.de)-hashStr(seed+b.de)).slice(0,2)
+      .forEach((x,j)=>{ const w=x.de.split(/\s+/); rest.push({type:"word_order",words:shuf2(w,seed+"w"+j),answer:x.de,q:x.de,en:x.en,explain_fa:x.fa}); });
+    out.push(...shuffled(rest,seed+"prest"));
     const sp=shuffled(items,seed+"sp")[0]; if(sp) out.push({type:"speak",text:sp.de,en:sp.en,noLog:true,free:true});
     return out; }
   if(p.id==="gram"){ d.grammar.forEach(g=>out.push({type:"tip",kind:"grammar",title:g.topic,en:g.explain_en,fa:g.explain_fa,table:g.table,examples:g.examples,mistakes:g.common_mistakes}));
@@ -1638,6 +1654,7 @@ function screenHtml(s,L){ const chk=L.state==="chk";
       ${v.plural&&v.plural!=="-"?`<div class="muted">Plural: <b>${esc(v.plural)}</b></div>`:""}
       <div class="mean">${esc(v.en)}</div>${S.st.lang!=="en"&&v.fa?`<div class="fa" style="font-size:1.12rem;align-self:stretch">${esc(v.fa)}</div>`:""}
       <div class="row">${v.register==="formal"?`<span class="chip acc">formal · Sie</span>`:v.register==="informal"?`<span class="chip">informal · du</span>`:""}${v.austrian?`<span class="chip at">Austrian${typeof v.austrian==="string"?": "+esc(v.austrian):""}</span>`:""}</div>
+      ${(()=>{ const hk=hookFor(L.n||currentDay(), v); return hk?`<div class="hook">${ICONS.bulb}<span><b>Memory hook:</b> ${esc(hk)}</span></div>`:""; })()}
       ${v.example_de?`<div class="sunk row" style="flex-wrap:nowrap;align-self:stretch">${sayBtn(v.example_de,{slow:true})}<div><b>${esc(v.example_de)}</b>${v.example_en?`<br><span class="small muted">${esc(v.example_en)}</span>`:""}</div></div>`:""}</div>`; }
   case "tip": return `<div><span class="badge blue">${s.kind==="sound"?"Sound tip":"Grammar"}</span></div><h1 class="les-h">${esc(s.title)}</h1><div class="card stack">${ex(s.en,s.fa)}
       ${s.words&&s.words.length?`<div class="row">${s.words.map(w=>`<button class="wtile" data-act="sayw" data-v="${attr(w)}">${esc(w)}</button>`).join("")}</div><p class="small muted">Tap each word to hear it.</p>`:""}
@@ -1649,7 +1666,8 @@ function screenHtml(s,L){ const chk=L.state==="chk";
   case "meaning": return `<h1 class="les-h">What does this mean?</h1><div class="prompt-row">${bigSay(s.de,false,true)}<div class="big-prompt">${artHtml(s.de)}</div></div>${tiles(s.options)}`;
   case "reverse": return `<h1 class="les-h">How do you say this in German?</h1><div class="big-prompt">“${esc(s.en)}”</div>${S.st.lang!=="en"&&s.fa?`<div class="fa">${esc(s.fa)}</div>`:""}${tiles(s.options)}`;
   case "listen": return `<h1 class="les-h">${esc(s.prompt||"What do you hear?")}</h1><div class="listen-row">${bigSay(s.say)}${bigSay(s.say,true)}</div>${tiles(s.options,"c")}`;
-  case "mcq": return `<h1 class="les-h">Choose the right answer</h1><div class="big-prompt" style="font-size:1.25rem">${esc(s.prompt)}</div>${tiles(s.options)}`;
+  case "write": return `<h1 class="les-h">Write it in German</h1><div class="big-prompt">“${esc(s.en)}”</div>${S.st.lang!=="en"&&s.fa?`<div class="fa">${esc(s.fa)}</div>`:""}<p class="small muted">${ex("Nouns with der, die or das.","اسم‌ها را با der، die یا das بنویس.")}</p>${textIn(L,"Type in German",true)}`;
+  case "mcq": return `<h1 class="les-h">${esc(s.h||"Choose the right answer")}</h1>${s.say?`<div>${bigSay(s.say,false,true)}</div>`:""}<div class="big-prompt" style="font-size:1.25rem">${esc(s.prompt)}</div>${tiles(s.options)}`;
   case "gap": { const w=L.pick!=null?s.options[L.pick]:""; const html=esc(s.prompt).replace(/_{2,}/, `<span class="gapword">${w?esc(w):"&nbsp;"}</span>`);
     return `<h1 class="les-h">Fill in the gap</h1><div class="big-prompt" style="font-size:1.3rem">${html}</div>${tiles(s.options)}`; }
   case "article": return `<h1 class="les-h">der, die or das?</h1><div class="big-prompt"><span class="gapword ${L.pick!=null?artClass(s.options[L.pick]):""}">${L.pick!=null?esc(s.options[L.pick]):"&nbsp;"}</span> ${esc(s.prompt)}</div>${tiles(s.options,"c")}`;
@@ -1678,7 +1696,7 @@ function lesFoot(s,L){
   if(L.state==="chk"){ const r=L.res||{};
     if(r.skip) return `<div class="les-foot"><div class="in"><span class="small muted">${ex("Skipped. It won't count against you.","رد شد و حساب نمی‌شود.")}</span><button class="btn primary big" id="lesBtn" data-act="les-next">Continue</button></div></div>`;
     const praise=["Richtig!","Super!","Sehr gut!","Toll!","Perfekt!","Genau!","Ausgezeichnet!"][(L.pos*3+L.right)%7];
-    const body = r.ok ? `<div class="fbk"><div class="ic">${ICONS.check}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.note==="typo"?"Almost! Watch the spelling":praise}</h3>${r.note==="typo"?`<div class="ans-line">${esc(answerText(s))}</div>`:""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`
+    const body = r.ok ? `<div class="fbk"><div class="ic">${ICONS.check}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.note==="typo"?"Almost! Watch the spelling":r.note==="article"?"Almost! Remember the article":praise}</h3>${r.note==="typo"||r.note==="article"?`<div class="ans-line">${s.type==="write"?artHtml(answerText(s)):esc(answerText(s))}</div>`:""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`
       : `<div class="fbk"><div class="ic">${ICONS.x}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.match?"Some pairs were wrong":s.free?"Not quite. Listen and try again later":"Correct answer:"}</h3>${r.match||s.free?"":`<div class="ans-line">${s.type==="article"?artHtml(s.answer+" "+s.prompt):esc(answerText(s))}</div>`}${r.diff||""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`;
     return `<div class="les-foot ${r.ok?"ok":"bad"}" role="status"><div class="in">${body}<button class="btn big" id="lesBtn" data-act="les-next">Continue</button></div></div>`; }
   if(NOCHECK.has(s.type)) return `<div class="les-foot"><div class="in"><span></span><button class="btn primary big" id="lesBtn" data-act="les-next">Continue</button></div></div>`;
@@ -1690,7 +1708,7 @@ function lesFoot(s,L){
   return `<div class="les-foot"><div class="in">${skip}<button class="btn primary big" id="lesBtn" data-act="les-check" ${can?"":"disabled"}>Check</button></div></div>`; }
 function quitSheet(){ return `<div class="sheet-bg"><div class="sheet" role="dialog" aria-label="Quit lesson"><h2>Wait, don't go!</h2><p class="muted">${ex("You'll lose your progress in this lesson.","پیشرفتت در این درس از بین می‌رود.")}</p>
   <button class="btn primary big" data-act="les-quit-no">Keep learning</button><button class="btn ghost" data-act="les-quit-yes" style="color:var(--red-ink)">End session</button></div></div>`; }
-function germanOf(s){ if(s.type==="gap") return String(s.prompt).replace(/_{2,}/, s.answer); if(s.type==="article") return s.answer+" "+s.prompt; if(["reverse","word_order","translate"].includes(s.type)) return String(s.answer).split(" / ")[0]; return ""; }
+function germanOf(s){ if(s.type==="write") return s.answer; if(s.type==="gap") return String(s.prompt).replace(/_{2,}/, s.answer); if(s.type==="article") return s.answer+" "+s.prompt; if(["reverse","word_order","translate"].includes(s.type)) return String(s.answer).split(" / ")[0]; return ""; }
 function lesCheck(){ const L=S.les, s=lesCur(); if(!L||L.state!=="ans") return; let ok=false, your="", extra={};
   if(CHOICE.has(s.type)){ if(L.pick==null) return; your=s.options[L.pick]; ok=your===s.answer; }
   else if(s.type==="word_order"){ your=L.wo.map(i=>s.words[i]).join(" "); if(!your) return; ok=norm(your)===norm(s.answer); }
@@ -1699,6 +1717,7 @@ function lesCheck(){ const L=S.les, s=lesCur(); if(!L||L.state!=="ans") return; 
     if(strip(your)===strip(s.text)) ok=true; else if(norm(your)===norm(s.text)){ ok=true; extra.note="typo"; }
     if(!ok||extra.note) extra.diff=`<div class="small" style="line-height:1.9">${lcsDiff(s.text, your).map(t=>t.t==="ok"?esc(t.w):t.t==="extra"?`<s>${esc(t.w)}</s>`:`<u style="text-decoration-thickness:3px">${esc(t.w)}</u>`).join(" ")}</div>`; }
   else if(s.type==="spell"){ your=L.text.trim(); if(!your) return; ok=your.toLowerCase().replace(/\s/g,"")===s.word.toLowerCase(); }
+  else if(s.type==="write"){ your=L.text.trim(); if(!your) return; if(norm(your)===norm(s.answer)) ok=true; else if(s.bare&&s.answer!==s.bare&&norm(your)===norm(s.bare)){ ok=true; extra.note="article"; } }
   gradeScreen(ok, your, extra); }
 function gradeScreen(ok, your, extra){ const L=S.les; const idx=L.queue[L.pos], s=L.screens[idx];
   L.state="chk"; L.res=Object.assign({ok, your}, extra||{});
@@ -1711,7 +1730,7 @@ function lesNext(){ const L=S.les; if(!L) return; stopSpeech(); L.pos++; Object.
   if(L.pos>=L.queue.length) return finishLesson(); render(); window.scrollTo(0,0); }
 function lesAfterRender(){ const L=S.les; if(!L) return; const s=lesCur(); if(!s) return;
   if(L.state==="ans" && L.spoken!==L.pos){ L.spoken=L.pos;
-    const t = s.type==="teach"?vfull(s.v) : s.type==="meaning"?s.de : s.type==="listen"?s.say : s.type==="dictation"?s.text : null;
+    const t = s.type==="teach"?vfull(s.v) : s.type==="meaning"?s.de : s.type==="listen"?s.say : s.type==="dictation"?s.text : s.say ? s.say : null;
     if(t) setTimeout(()=>{ if(S.les===L&&L.spoken===L.pos){ stopSpeech(); speak(t); } },350);
     if(s.type==="spell") setTimeout(()=>{ if(S.les===L&&L.spoken===L.pos) spellOut(s.word); },350); }
   const inp=$("#lesIn"); if(inp && L.state==="ans" && document.activeElement!==inp && matchMedia("(pointer:fine)").matches){ inp.focus({preventScroll:true}); const v=inp.value; try{ inp.setSelectionRange(v.length,v.length); }catch(e){} } }
@@ -1726,6 +1745,7 @@ function finishLesson(){ const L=S.les; const acc=L.graded?Math.round(L.right/L.
   if(L.key){ const wasAll=dayAllDone(L.n); S.st.done[L.key]=Date.now(); if(L.graded) S.st.results[L.key]={score:L.right,total:L.graded,at:Date.now()};
     if(L.parts>1 && [...Array(L.parts).keys()].every(pi=>S.st.done[`${L.n}:${L.step}#${pi}`])) S.st.done[`${L.n}:${L.step}`]=S.st.done[`${L.n}:${L.step}`]||Date.now();
     dayDone=!wasAll && dayAllDone(L.n); }
+  if(L.step==="learn"&&L.n&&S.days[L.n]){ const p=learnParts(S.days[L.n])[L.part]; if(p&&p.items) seedSrs(L.n,p); }
   bump("lessons"); dbump("lessons"); if(perfect){ bump("perfect"); dbump("perfect"); } dmax("maxCombo", L.maxCombo||0);
   if(L.step==="diktat"){ dbump("listen"); if(perfect) bump("dictPerfect"); }
   let coins=addCoins(5+(perfect?5:0)); if(dayDone){ coins+=addCoins(50); bump("daysDone"); }
@@ -1948,8 +1968,9 @@ const KIND_INFO={
  translate:["Writing sentences","Translating short sentences","ترجمه جمله‌های کوتاه","He translates short English sentences aloud; correct and have him repeat."],
  "hoeren-notes":["Notes in Hören","Exact spelling and numbers","هجی دقیق و اعداد","Dictate surnames letter by letter and phone numbers in pairs; he writes and reads them back."],
  speaking:["Speaking errors","Sentences the tutor corrected","جمله‌هایی که مربی اصلاح کرد","Say his wrong sentence back to him and let him correct it aloud; then ask a new question that needs the same structure."],
+ write:["Writing words","Spelling today's words from memory","نوشتن لغات از حفظ","Say the English word; he says the German word with article and spells it letter by letter."],
  form:["Form filling","Personal data in German forms","اطلاعات شخصی در فرم","Ask form questions (Vorname? Geburtsdatum? Postleitzahl?) and he answers in the right format."]};
-function dayMistakes(n){ return (S.st.mistakes||[]).filter(m=>m.day===n); }
+function dayMistakes(n){ return (S.st.mistakes||[]).filter(m=>m.day===n&&m.q&&m.right); }
 function mistakeKind(m){ if(m.kind) return m.kind; const s=String(m.src||""); if(s.startsWith("hoeren")) return "hoeren-notes"; if(s==="form") return "form"; return "mcq"; }
 function partPct(n, key){ const r=S.st.results[n+":"+key]; return r&&r.total? r.score/r.total : null; }
 function sectionPts(n, keys, max){ const ps=keys.map(k=>partPct(n,k)).filter(x=>x!=null); if(!ps.length) return null; return {pts:Math.round(ps.reduce((a,b)=>a+b,0)/ps.length*max), parts:ps.length, of:keys.length}; }
@@ -2104,7 +2125,10 @@ async function analyseSession({n, mode, log, started, source, rawText}){
        if(!sess.transcript){ const T=JSON.parse(lsGet("osd-a1-transcripts")||"{}"); T[sess.id]=transcript.slice(0,20000); const ks=Object.keys(T); while(ks.length>12) delete T[ks.shift()]; lsSet("osd-a1-transcripts", JSON.stringify(T)); sess.transcript="local:"+sess.id; } }catch(e){}
   const arr=S.st.live[n]=(S.st.live[n]||[]); arr.push(sess); if(arr.length>10) arr.shift();
   // close the loop: every corrected error becomes a flashcard and a mistake the report and repair lesson can use
-  sess.errors.forEach(e=>{ if(e&&e.wrong&&e.right&&norm(e.wrong)!==norm(e.right)) logMistake(n,"tutor",e.wrong,"",e.right,"speaking"); });
+  const said=norm((log||[]).filter(x=>x.role==="you").map(x=>x.text).join(" "));
+  const real=e=>{ if(!e||!e.wrong||!e.right||norm(e.wrong)===norm(e.right)) return false; if(!said) return true; const w=norm(e.wrong).split(" ").filter(x=>x.length>1); return w.length>0 && w.filter(x=>said.includes(x)).length/w.length>=0.6; };
+  sess.errors=sess.errors.filter(real);
+  sess.errors.forEach(e=>logMistake(n,"tutor",e.wrong,"",e.right,"speaking"));
   const xp=addXp(20); addCoins(10); dbump("speak"); bump("sessions"); checkBadges(); save();
   return {sess, xp}; }
 function sessionCard(x){ const sc=x.score_25; return `<button class="prow rbtn" data-act="sess-open" data-day="${x.day}" data-id="${attr(x.id||x.idx)}"><div><b>Day ${x.day} · ${x.mode==="exam"?"Exam simulation":x.mode==="review"?"Weak-spot review":"Coaching"}</b><div class="small muted">${new Date(x.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}${x.metrics?` · ${x.metrics.minutes} min`:""}${x.source==="gemini-app"?" · Gemini app":""}</div></div>${sc!=null?`<span class="chip ${sc>=12?"ok":"bad"} tnum">${sc}/25</span>`:""}</button>`; }
@@ -2174,6 +2198,97 @@ function readinessCard(){ const snap=Object.assign({}, S.st.reports||{});
   return `<section class="card stack"><div class="row between"><h2>Exam readiness</h2>${W!=null?`<span class="chip ${W>=38&&L.v>=6&&H.v>=6?"ok":"bad"} tnum">Written ≈ ${W}/75</span>`:""}</div>
     ${row("Lesen",L,30,6)}${row("Hören",H,30,6)}${row("Schreiben",Sch,15,null)}${W!=null?barRow("Written total",W,75,38):""}${row("Sprechen",Sp,25,12)}
     <p class="small muted">${ex("Average of your last three results per section (day reports, mocks and tutor sessions). This is the number to watch as the exam gets closer.","میانگین سه نتیجه آخر در هر بخش (گزارش روزانه، آزمون آزمایشی و جلسه مربی).")}</p></section>`; }
+
+/* ====================== v9: guided long tutor sessions, varied sentences, memory ====================== */
+/* --- tutor session conductor: the app runs a timed lesson plan and steers Gemini phase by phase --- */
+function tutorMinutes(){ return +S.st.tutorMin||25; }
+function sessionPlan(n, mode, total){ let R=null; try{ if(hasReportData(n)) R=dayReport(n); }catch(e){} const weak=R?R.weak:[]; const late=n>=8;
+  const speak = late ? "ÖSD Sprechen: Teil 1 (introduce himself on 4 of the 6 topics, follow-up questions, spell his name, say a phone number), then one Teil 2 photo description (Was sehen Sie? Wer? Wo? Was machen die Leute?) and a short Teil 3 role-play where he must ask you questions too."
+    : "ÖSD Sprechen Teil 1: he introduces himself (name, country, city, languages, job, family). Ask follow-up questions, make him spell his name and say his phone number in pairs of digits. Push him from single words to full sentences.";
+  let P;
+  if(mode==="exam") P=[
+    ["Warm-up",1,"Greet him as the examiner. In one English sentence explain how the oral exam works. Then begin."],
+    ["Teil 1 · introduce yourself",4,"Exam conditions, Sie, no corrections: he introduces himself on 4 of: Sprachen, Hobbys, Sport, Familie, Beruf, Lieblingsessen. Ask 2–3 follow-up questions, including spelling his surname."],
+    ["Teil 2 · describe a picture",4,"Describe a simple everyday photo in words (for example a family at breakfast, people at a bus stop). Ask: Was sehen Sie? Wie viele Personen? Wo sind sie? Was machen sie? No corrections yet."],
+    ["Teil 3 · role-play",4,"Short role-play linked to the picture: you are the other person; he must ask at least 3 questions and answer yours. No corrections yet."],
+    ["Feedback & score",4,"Switch to English. Give his score out of 25 with the six criteria (Teil 1, 2, 3 each 0–4, vocabulary 0–5, pronunciation 0–4, grammar 0–4). Name his 3 most important errors; for each, say the correct sentence and make him repeat it twice."],
+    ["Second attempt",5,"Repeat his weakest exam part with NEW questions. He must use the corrections. Praise every improvement."],
+    ["Final recap",2,"Ask 4 quick questions he struggled with today. Tell him what improved. Say goodbye only now."]];
+  else if(mode==="review"){ const w=(weak.length?weak:[{area:"Today's grammar", en:"Today's grammar.", drill:"Many short transformation questions on today's grammar.", items:[]},{area:"Today's words", en:"Today's words.", drill:"English → German recall with articles.", items:[]}]).slice(0,3);
+    P=[["Warm-up",2,"Greet him warmly. In two short English sentences sum up today's results (strongest area, 2–3 weakest). Ask in German how he is, then 3 easy questions about himself."],
+      ...w.map((x,i)=>[`Weak spot ${i+1}: ${x.area}`, i<2?5:4, `Work only on this: ${x.en||x.area} ${x.drill||""} First re-ask the exact items he got wrong${(x.items||[]).length?" ("+x.items.slice(0,4).map(it=>`${it.q} → ${it.right}`).join("; ")+")":""}. Then give at least 6 NEW similar items, each in a new sentence. Make him repeat every corrected sentence once.`]),
+      ["Words & phrases recall",5,"Quick-fire recall of TODAY'S WORDS and PHRASES and older mistakes: say the English (or a tiny situation), he answers in German, nouns always with article. After every 4 items he builds one sentence using two of them. Re-ask every miss 2–3 minutes later."],
+      ["Speaking exam practice",6,speak],
+      ["Recap",2,"Re-ask 5 items he got wrong in THIS session. In English, tell him which weak spots are now fine and which need more work tomorrow, and give a speaking score out of 25. Say goodbye only now."]]; }
+  else P=[
+    ["Warm-up",2,"Greet him, say in one English sentence what today's session covers, then 3 easy questions about himself."],
+    ["New words",6,"Active recall of TODAY'S WORDS: English → German with article, then German → English, then he uses each word in his own short sentence. Re-ask misses 2–3 minutes later."],
+    ["Phrases in mini-dialogues",5,"Play short everyday situations (meeting a neighbour, a shop, a phone call) where he must use TODAY'S PHRASES. Switch between du and Sie."],
+    ["Grammar drill",5,"Drill TODAY'S GRAMMAR with many short transformation questions (statement → question, du → Sie, ich → er/sie), one sentence at a time."],
+    ["Speaking exam practice",5,speak],
+    ["Recap",2,"Re-ask 5 things he missed in this session, name 3 things he did well and 3 corrections, give a speaking score out of 25. Say goodbye only now."]];
+  const sum=P.reduce((a,p)=>a+p[1],0), k=total/sum; return P.map(([t,m,i])=>({t, min:Math.max(1,Math.round(m*k)), ins:i})); }
+function regie(L, i, extra){ const p=L.plan[i], N=L.plan.length;
+  return `[APP NOTE – instructions from the app, not from Raam. Do not read aloud or mention this note.] Phase ${i+1} of ${N}: ${p.t} (about ${p.min} minutes). ${p.ins} ${i<N-1?"Stay in this phase and keep asking questions until the next APP NOTE arrives. Do not wrap up or say goodbye.":"This is the final phase."}${extra?" "+extra:""}`; }
+function livePhaseTick(){ clearInterval(livePhaseTick._i); livePhaseTick._i=setInterval(()=>{ const L=S.live; if(!L||!L.plan){ clearInterval(livePhaseTick._i); return; }
+  if(L.status!=="live"||L.paused) return; const p=L.plan[L.phase]; const left=L.phaseEnd-Date.now();
+  const t=$("#phaseLeft"); if(t) t.textContent=fmtMs(Math.max(0,left)); const bar=$("#phaseBar"); if(bar) bar.style.width=Math.min(100,Math.max(0,100-left/(p.min*600)))+"%";
+  const tot=$("#liveTotal"); if(tot) tot.textContent=fmtMs(Date.now()-L.started);
+  if(left<=0){ if(L.phase<L.plan.length-1) nextPhase(); else if(!L.complete){ L.complete=true; sfx("done"); render(); } } },1000); }
+function nextPhase(){ const L=S.live; if(!L||!L.plan||L.phase>=L.plan.length-1) return; L.phase++; L.phaseEnd=Date.now()+L.plan[L.phase].min*60000;
+  try{ L.sess&&L.sess.sendText(regie(L,L.phase)); }catch(e){} sfx("tap"); render(); }
+function phaseBlock(L){ if(!L.plan) return ""; const p=L.plan[L.phase];
+  return `<div class="card stack phasecard"><div class="row between"><div><div class="label">Phase ${L.phase+1} of ${L.plan.length} · total <span id="liveTotal" class="tnum">${fmtMs(Date.now()-L.started)}</span> / ${tutorMinutes()} min</div><h3>${esc(p.t)}</h3></div><span class="tnum phase-left" id="phaseLeft">${fmtMs(Math.max(0,L.phaseEnd-Date.now()))}</span></div>
+    <div class="lbar"><i id="phaseBar" style="width:${Math.min(100,Math.max(0,100-(L.phaseEnd-Date.now())/(p.min*600)))}%"></i></div>
+    <div class="phases">${L.plan.map((x,i)=>`<span class="ph ${i<L.phase?"done":i===L.phase?"cur":""}">${esc(x.t.replace(/^Weak spot \d+: /,"Weak: "))}</span>`).join("")}</div>
+    ${L.complete?`<div class="banner info"><div>${ex("Plan finished. Let the tutor finish the recap, then press End session to save everything.","برنامه تمام شد. بگذار مربی جمع‌بندی کند، بعد End session را بزن تا ذخیره شود.")}</div></div>`:""}
+    <div class="row">${L.phase<L.plan.length-1?`<button class="btn sm" data-act="live-next">Next phase</button>`:""}<button class="btn sm" data-act="live-more">+5 min</button></div></div>`; }
+
+/* --- fresh sentences: Gemini writes new A1 sentences for each word and phrase, cached per day in the synced overlay --- */
+function knownWords(n){ const out=[]; for(let k=1;k<=n;k++){ const d=S.days[k]; if(!d) continue; (d.vocab||[]).forEach(v=>out.push(vfull(v))); (d.phrases||[]).slice(0,10).forEach(p=>out.push(p.de)); } return out.slice(-260); }
+function partItems(p){ return (p.items||[]).map(x=>p.id[0]==="w"?{id:vfull(x), de:x.de, article:x.article, en:x.en, kind:"word"}:{id:x.de, de:x.de, en:x.en, kind:"phrase"}); }
+function cleanVariants(res, items){ const ids=new Set(items.map(i=>i.id)); const out={}; const arr=(res&&res.items)||[];
+  arr.forEach(it=>{ if(!it||!ids.has(it.id)) return; const sents=(it.sentences||[]).filter(s=>s&&typeof s.de==="string"&&s.de.split(/\s+/).length>=2&&s.de.length<120&&s.en).slice(0,4).map(s=>({de:s.de.trim(), en:String(s.en).trim(), fa:s.fa||"", gap:s.gap&&s.de.includes(s.gap)?s.gap:null,
+      wrong_en:(s.wrong_en||[]).filter(w=>w&&w!==s.en).slice(0,2), near_de:(s.near_de||[]).filter(w=>w&&w.trim()!==s.de.trim()).slice(0,2), situation_en:s.situation_en||""}));
+    if(sents.length) out[it.id]={hook:String(it.hook||"").slice(0,140), sentences:sents}; });
+  return Object.keys(out).length?out:null; }
+function getVariants(n,pid){ const d=S.days[n]; return d&&d.variants&&d.variants[pid]&&d.variants[pid].items||null; }
+async function ensureVariants(n, onlyPid){ if(!S.uid||!S.ai||S.varBusy) return; const d=S.days[n]; if(!d) return;
+  const parts=learnParts(d).filter(p=>p.items&&(!onlyPid||p.id===onlyPid)&&!getVariants(n,p.id)); if(!parts.length) return; S.varBusy=true;
+  try{ for(const p of parts){ const items=partItems(p);
+      const r=await api("/api/ai",{mode:"variants", payload:{day:n, theme:PLAN[n-1].t, grammar:PLAN[n-1].g, items, known:knownWords(n), count:3}});
+      const clean=cleanVariants(r.result, items); if(!clean) continue;
+      const ov=Object.assign({day:n}, S.imported[n]||{}); ov.variants=Object.assign({}, ov.variants||{}, {[p.id]:{at:Date.now(), items:clean}}); await saveOverlay(n, ov); await getDay(n); } }
+  catch(e){ console.warn("variants", e); }
+  S.varBusy=false; }
+function hookFor(n, v){ const d=S.days[n]; if(!d||!d.variants) return ""; for(const k of Object.keys(d.variants)){ const it=d.variants[k].items&&d.variants[k].items[v.article!==undefined&&v.article!=="-"&&v.article?vfull(v):v.de]; if(it&&it.hook) return it.hook; } return ""; }
+function variantScreens(p, V, run, pool){ const out=[]; const items=partItems(p); const gaps=[];
+  items.forEach(it=>{ const vv=V[it.id]; if(vv) vv.sentences.forEach(s=>{ if(s.gap) gaps.push(s.gap); }); });
+  items.forEach((it,i)=>{ const vv=V[it.id]; if(!vv) return; const s=vv.sentences[(run+i)%vv.sentences.length]; const kind=(run+i)%4;
+    if(it.kind==="phrase" && s.situation_en && kind===0){ out.push({type:"mcq", h:"What do you say?", prompt:s.situation_en, options:opts(it.de, pool, 3, "sit"+run+i), answer:it.de, q:s.situation_en, explain_en:`${s.de} · ${s.en}`}); return; }
+    if(kind===0 && s.gap){ const dis=[...new Set(gaps.filter(g=>g!==s.gap))]; if(dis.length>=2){ out.push({type:"gap", prompt:s.de.replace(s.gap,"____"), options:shuffled([s.gap,...shuffled(dis,"g"+run+i).slice(0,3)],"go"+run+i), answer:s.gap, q:s.de, explain_en:s.en, explain_fa:s.fa}); return; } }
+    if(kind===1 && s.wrong_en.length>=1){ out.push({type:"mcq", h:"What does this sentence mean?", say:s.de, prompt:`„${s.de}“`, options:shuffled([s.en,...s.wrong_en],"c"+run+i), answer:s.en, q:s.de, explain_en:s.de}); return; }
+    if(kind===2 && s.near_de.length>=1){ out.push({type:"listen", prompt:"Which sentence do you hear?", say:s.de, options:shuffled([s.de,...s.near_de],"l"+run+i), answer:s.de, noLog:true, explain_en:s.en}); return; }
+    const w=s.de.split(/\s+/); if(w.length>=3&&w.length<=9) out.push({type:"word_order", words:shuf2(w,"b"+run+i), answer:s.de, q:s.de, en:s.en, explain_fa:s.fa});
+    else if(s.wrong_en.length) out.push({type:"mcq", h:"What does this sentence mean?", say:s.de, prompt:`„${s.de}“`, options:shuffled([s.en,...s.wrong_en],"c2"+run+i), answer:s.en, q:s.de});
+  });
+  return out; }
+/* typed recall: producing the word is the strongest memory exercise */
+function writeScreen(v){ return {type:"write", en:v.en, fa:v.fa, answer:vfull(v), bare:v.de, q:v.en}; }
+function nextMorning(){ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()+1,4).getTime(); }
+function seedSrs(n, p){ if(!p||!p.items) return; const nm=nextMorning(); p.items.forEach(x=>{ const id=(p.id[0]==="w"?"v:":"p:")+x.de; if(!S.st.srs[id]) S.st.srs[id]={ef:2.5,ivl:0,reps:0,lapses:0,due:nm}; }); }
+/* evening recap: a short retrieval round on today's words before sleep */
+function recapScreens(n){ const d=S.days[n]; if(!d) return []; const done=learnParts(d).filter((p,pi)=>p.items&&(S.st.done[`${n}:learn#${pi}`]||S.st.done[n+":learn"]));
+  const words=done.filter(p=>p.id[0]==="w").flatMap(p=>p.items), phr=done.filter(p=>p.id[0]==="p").flatMap(p=>p.items); if(words.length+phr.length<4) return [];
+  const seed="rc"+Date.now(), fullPool=(d.vocab||[]).map(vfull), out=[];
+  shuffled(words,seed+"w").slice(0,5).forEach(v=>out.push(writeScreen(v)));
+  shuffled(words,seed+"r").slice(0,4).forEach((v,j)=>out.push({type:"reverse",en:v.en,fa:v.fa,options:opts(vfull(v),fullPool,4,seed+"R"+j),answer:vfull(v),q:v.en,sayOpts:true}));
+  shuffled(phr,seed+"p").slice(0,4).forEach((x,j)=>out.push({type:"mcq",h:"What do you say?",prompt:x.en,options:opts(x.de,(d.phrases||[]).map(y=>y.de),3,seed+"P"+j),answer:x.de,q:x.en}));
+  shuffled(words,seed+"l").slice(0,3).forEach((v,j)=>out.push({type:"listen",prompt:"What do you hear?",say:vfull(v),options:opts(vfull(v),fullPool,4,seed+"L"+j),answer:vfull(v),noLog:true}));
+  return shuffled(out,seed); }
+function recapCard(n){ const d=S.days[n]; if(!d||S.st.done[n+":recap"]||n!==currentDay()) return ""; const h=new Date().getHours(); if(h<17&&!dayAllDone(n)) return "";
+  if(recapScreens(n).length<4) return "";
+  return `<section class="card row recap-card" style="flex-wrap:nowrap;gap:14px"><div style="flex:none">${edi(60,"wink")}</div><div class="grow"><h3>Before you sleep · 5-minute recap</h3><p class="small muted">${ex("Recalling today's words just before sleep and again tomorrow morning is the fastest way to stop forgetting them.","یادآوری لغات امروز درست قبل از خواب و دوباره فردا صبح، سریع‌ترین راه برای فراموش نکردن آن‌هاست.")}</p></div><button class="btn primary sm" data-act="recap-start" data-n="${n}">Start</button></section>`; }
 
 /* ---------- events ---------- */
 document.addEventListener("click", async e=>{
@@ -2315,9 +2430,13 @@ document.addEventListener("click", async e=>{
   else if(a==="cards-clear"){ const n=+b.dataset.n; const ov=Object.assign({}, S.imported[n]||{}); delete ov.flashcards; await saveOverlay(n, ov); render(); }
   else if(a==="pron"){ pronCheck(b.dataset.k, b.dataset.t); }
   else if(a==="live-mode"){ S.liveMode=b.dataset.v; render(); }
+  else if(a==="tutor-min"){ S.st.tutorMin=+b.dataset.v; save(); render(); }
   else if(a==="live-start"){ if(b.dataset.mode) S.liveMode=b.dataset.mode; else if(S.liveMode==="coach"&&hasReportData(+b.dataset.n)&&!b.closest(".tutor-card")) S.liveMode="review"; startLive(+b.dataset.n); }
   else if(a==="live-mute"){ if(S.live&&S.live.sess){ S.live.muted=!S.live.muted; S.live.sess.setMuted(S.live.muted); render(); } }
-  else if(a==="live-end"){ endLive(); }
+  else if(a==="live-end"){ clearInterval(livePhaseTick._i); endLive(); }
+  else if(a==="live-next"){ nextPhase(); }
+  else if(a==="live-more"){ if(S.live&&S.live.plan){ S.live.phaseEnd+=5*60000; S.live.complete=false; S.live.plan[S.live.phase].min+=5; render(); } }
+  else if(a==="recap-start"){ const n=+b.dataset.n; const screens=recapScreens(n); if(!screens.length){ toast("Finish a Words lesson first"); return; } startLesson({src:"recap", n, key:n+":recap", step:"recap", parts:1, title:"Evening recap", screens}); }
   else if(a==="copy-context"){ copyContext(+b.dataset.n); }
   else if(a==="reset-no"){ S.confirmReset=false; render(); }
   else if(a==="reset-yes"){ const keep={lang:S.st.lang,voice:S.st.voice,rate:S.st.rate,start:S.st.start}; S.st=Object.assign(defaultState(),keep); S.confirmReset=false; S.ex={}; S.ans={}; S.checked={}; save(); toast("Progress reset"); render(); }

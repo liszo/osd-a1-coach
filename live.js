@@ -1,5 +1,7 @@
 // Gemini Live client: microphone → 16 kHz PCM → WebSocket; 24 kHz PCM → speakers.
 // Connects straight from the browser with a single-use token from /api/live-token.
+// Long sessions: context-window compression lifts the 15-minute audio limit, and session resumption
+// reconnects transparently when Google closes a connection (about every 10 minutes, announced by goAway).
 
 const CAPTURE_WORKLET = `
 class Cap extends AudioWorkletProcessor {
@@ -37,7 +39,8 @@ export class LiveSession {
    *          onStatus:(s:string)=>void, onTranscript:(role:"you"|"tutor", text:string, final:boolean)=>void,
    *          onError:(msg:string)=>void, onLevel?:(v:number)=>void}} o
    */
-  constructor(o) { this.o = o; this.muted = false; this.closed = false; this.sources = []; this.nextTime = 0; this.cur = { you: "", tutor: "" }; }
+  constructor(o) { this.o = o; this.muted = false; this.closed = false; this.userClosed = false; this.sources = []; this.nextTime = 0; this.cur = { you: "", tutor: "" };
+    this.handle = null; this.reconnects = 0; this.micStarted = false; this.lite = false; this.everLive = false; }
 
   async start() {
     const { token, apiVersion, model, systemText, voice } = this.o;
@@ -47,32 +50,45 @@ export class LiveSession {
     try { await this.outCtx.resume(); await this.inCtx.resume(); } catch {}
     this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
 
+    this.connect(token, apiVersion);
+  }
+
+  connect(token, apiVersion) {
+    const { model, systemText, voice } = this.o;
     const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
-    this.ws = new WebSocket(url);
-    this.o.onStatus("connecting");
-    this.ws.onopen = () => {
-      this.send({
-        setup: {
-          model: `models/${model}`,
-          generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice || "Kore" } } } },
-          systemInstruction: { parts: [{ text: systemText }] },
-          inputAudioTranscription: {},
-          outputAudioTranscription: {},
-          realtimeInputConfig: { automaticActivityDetection: { silenceDurationMs: 1400, prefixPaddingMs: 300 } },
-        },
-      });
+    const ws = new WebSocket(url); this.ws = ws; this.gotSetup = false;
+    this.o.onStatus(this.everLive ? "reconnecting" : "connecting");
+    ws.onopen = () => {
+      const setup = {
+        model: `models/${model}`,
+        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice || "Kore" } } } },
+        systemInstruction: { parts: [{ text: systemText }] },
+        inputAudioTranscription: {},
+        outputAudioTranscription: {},
+        realtimeInputConfig: { automaticActivityDetection: { silenceDurationMs: 1400, prefixPaddingMs: 300 } },
+      };
+      if (!this.lite) { setup.contextWindowCompression = { slidingWindow: {} }; setup.sessionResumption = this.handle ? { handle: this.handle } : {}; }
+      this.send({ setup });
     };
-    this.ws.onmessage = (ev) => this.onMessage(ev);
-    this.ws.onerror = () => {};
-    this.ws.onclose = (ev) => {
-      const wasOpen = !this.closed;
-      this.cleanup();
-      if (wasOpen) {
-        const why = ev.reason ? ` (${ev.reason})` : ev.code !== 1000 ? ` (code ${ev.code})` : "";
-        if (ev.code !== 1000) this.o.onError("The tutor disconnected" + why + ".");
-        this.o.onStatus("ended");
-      }
-    };
+    ws.onmessage = (ev) => { if (ws === this.ws) this.onMessage(ev); };
+    ws.onerror = () => {};
+    ws.onclose = (ev) => { if (ws === this.ws) this.onClose(ev); };
+  }
+
+  async onClose(ev) {
+    if (this.userClosed || this.closed) return;
+    this.flush("you"); this.flush("tutor");
+    // the first connection was refused before setup finished: retry once without the long-session options
+    if (!this.everLive && !this.gotSetup && !this.lite) { this.lite = true; try { const t = await this.o.getToken(); return this.connect(t.token, t.apiVersion); } catch {} }
+    // Google closes connections regularly; resume the same conversation with a fresh token
+    if (this.everLive && this.reconnects < 6 && this.o.getToken) {
+      this.reconnects++; this.o.onStatus("reconnecting");
+      try { await new Promise((r) => setTimeout(r, 400)); const t = await this.o.getToken(); if (!this.userClosed) return this.connect(t.token, t.apiVersion); } catch {}
+    }
+    const why = ev.reason ? ` (${ev.reason})` : ev.code !== 1000 ? ` (code ${ev.code})` : "";
+    this.cleanup();
+    if (ev.code !== 1000) this.o.onError("The tutor disconnected" + why + ".");
+    this.o.onStatus("ended");
   }
 
   send(obj) { if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(obj)); }
@@ -80,8 +96,15 @@ export class LiveSession {
   async onMessage(ev) {
     const raw = typeof ev.data === "string" ? ev.data : await ev.data.text();
     let m; try { m = JSON.parse(raw); } catch { return; }
-    if (m.setupComplete) { this.o.onStatus("live"); await this.startMic(); this.send({ realtimeInput: { text: "Hallo! Bitte beginnen Sie die heutige Übung." } }); return; }
-    if (m.goAway) this.o.onError("The session will end soon. Start a new one to continue.");
+    if (m.setupComplete) {
+      this.gotSetup = true; const first = !this.everLive; this.everLive = true; this.o.onStatus("live");
+      if (!this.micStarted) { this.micStarted = true; await this.startMic(); }
+      if (first) this.send({ realtimeInput: { text: this.o.starter || "Hallo! Bitte beginnen Sie die heutige Übung." } });
+      else if (this.o.onResumed) this.o.onResumed(!!this.handle && !this.lite);
+      return;
+    }
+    if (m.sessionResumptionUpdate) { const u = m.sessionResumptionUpdate; if (u.resumable && u.newHandle) this.handle = u.newHandle; }
+    if (m.goAway && this.o.onGoAway) this.o.onGoAway(m.goAway.timeLeft);
     const sc = m.serverContent;
     if (!sc) return;
     if (sc.interrupted) this.stopPlayback();
@@ -135,7 +158,7 @@ export class LiveSession {
 
   sendText(t) { this.send({ realtimeInput: { text: t } }); }
 
-  stop() { this.flush("you"); this.flush("tutor"); this.closed = true; try { this.ws && this.ws.close(1000, "done"); } catch {} this.cleanup(); this.o.onStatus("ended"); }
+  stop() { this.flush("you"); this.flush("tutor"); this.userClosed = true; this.closed = true; try { this.ws && this.ws.close(1000, "done"); } catch {} this.cleanup(); this.o.onStatus("ended"); }
 
   cleanup() {
     this.closed = true;

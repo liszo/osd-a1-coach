@@ -41,6 +41,15 @@ When you start a session, the app builds the tutor's instructions from: the day 
 
 Any static server works for the UI (`npx serve .`); the `/api` functions need `npx vercel dev`.
 
+## v9 — longer guided tutor sessions, fresh sentences, memory (Oct 2026)
+
+- **Tutor sessions of 15 / 25 / 30 minutes** (default 25), run by the app in timed phases (e.g. warm-up → weak spot 1 → weak spot 2 → words & phrases recall → speaking exam practice → recap). At each phase the app sends Gemini a hidden instruction note; a phase card shows the timer, "Next phase" and "+5 min".
+- **Trainer behaviour:** short turns, a question in almost every turn, feedback and repetition after each answer, 40–60 items per session, missed items recycled 2–3 minutes later, difficulty adapted, no early goodbye.
+- **No more cut-off sessions:** Gemini Live context-window compression (lifts the 15-minute audio limit) and session resumption (silent reconnect with a fresh token when Google closes the ~10-minute connection). Falls back automatically if a model refuses the options.
+- **Fresh sentences:** for every Words and Phrases lesson Gemini writes new A1 sentences per item (gap-fill in a new sentence, "what does this sentence mean?", "which sentence do you hear?", build the sentence, situation → which phrase); cached per day in the synced overlay and refreshed every third run. Plus a memory hook on each new-word card.
+- **Memory:** typed recall ("Write it in German"), words from each lesson are scheduled for review the next morning, and an evening **5-minute recap** card appears after 17:00.
+- Session analysis keeps only errors that match what Raam actually said; match-pair screens no longer create empty mistakes.
+
 ## v8 — tutor → app loop and speaking analytics (Oct 2026)
 
 - **Every tutor session is saved automatically** when you press End: the transcript (private storage folder), an ÖSD Sprechen score with the six criteria, corrections with error type, strengths, Teil 1 topics covered, words used, next focus, fixed / still-weak points, and fluency numbers measured from the transcript (words you said, words per turn, share of the talking, share of German, minutes).
