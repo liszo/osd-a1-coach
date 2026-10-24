@@ -169,7 +169,7 @@ async function onSession(session){
   const uid = session ? session.user.id : null;
   const changed = uid!==S.uid;
   S.uid=uid; S.email=session?session.user.email:"";
-  if(uid && changed){ S.att={}; await pullRemote(); }
+  if(uid && changed){ S.att={}; await pullRemote(); await pullLibrary(); }
   render();
 }
 async function initAuth(){
@@ -331,11 +331,12 @@ async function render(){
   const authed=!!(S.uid||S.offline);
   if(authed && !S.les && !S.blitz && !S.live && !(S.mock&&S.view==="exam")) checkBadges();
   const showCel = authed && !S.live && !S.les && !S.blitz && !S.fin && S.cel && S.cel.length && !(S.mock&&S.view==="exam");
-  const lesson = authed && !S.live && !!(S.les || S.blitz || S.fin || showCel || S.report || (S.view==="today" && S.step) || (S.view==="review" && S.fc));
+  const lesson = authed && !S.live && !!(S.eye || S.les || S.blitz || S.fin || showCel || S.report || (S.view==="today" && S.step) || (S.view==="review" && S.fc));
   document.body.classList.toggle("lesson-mode", lesson);
   try{
     if(!S.uid && !S.offline) html = vAuth();
     else if(S.live) html = vLive();
+    else if(S.eye && eyeData()) html = vEye();
     else if(S.les) html = vLesson();
     else if(S.blitz) html = vBlitz();
     else if(S.fin) html = vFinish();
@@ -595,40 +596,42 @@ function stHoeren(n,d){
     let sc=0; T.texts.forEach(t=>{ if(S.ans[g+":"+t.n]===t.answer) sc++; });
     h+=`<section class="card stack"><div class="label">Hören · Teil 1 · played once</div><h2>Welches Bild passt?</h2>
       <p class="small">${ex("You hear 5 short texts. Match each text to a picture. One picture is extra.","۵ متن کوتاه می‌شنوی. هر متن را به یک تصویر وصل کن. یک تصویر اضافه است.")}</p>
-      ${pics(T.pictures)}
-      ${T.texts.map(t=>`<div class="row" style="padding-top:8px;border-top:1px solid var(--line)"><b style="width:56px">Text ${t.n}</b>${playBtn(g+"|"+t.n, t.script, 1)}
+      ${T.audio?offPlayer(g,d.set,T.audio):""}
+      ${pics(T.pictures, d.set)}
+      ${T.texts.map(t=>`<div class="row" style="padding-top:8px;border-top:1px solid var(--line)"><b style="width:56px">Text ${t.n}</b>${T.audio?"":playBtn(g+"|"+t.n, t.script, 1)}
         <select data-store="${g}:${t.n}" aria-label="Picture for text ${t.n}" style="width:auto;min-width:90px" class="${chk?(S.ans[g+":"+t.n]===t.answer?"inp-ok":"inp-bad"):""}" ${chk?"disabled":""}><option value="">–</option>${T.pictures.map(p=>`<option ${S.ans[g+":"+t.n]===p.id?"selected":""}>${esc(p.id)}</option>`).join("")}</select>
         ${chk&&S.ans[g+":"+t.n]!==t.answer?`<span class="chip ok">${esc(t.answer)}</span>`:""}</div>
-        ${chk?`<div class="sunk small">${t.script.map(l=>esc(l.text_de)).join("<br>")}</div>`:""}`).join("")}
+        ${chk&&t.script?`<div class="sunk small">${t.script.map(l=>esc(l.text_de)).join("<br>")}</div>`:""}`).join("")}
       ${checkRow(g, chk, sc, T.texts.length, n, "hoeren-1")}</section>`; }
   if(H.teil2){ const g=n+":h2"; const T=H.teil2; const chk=S.checked[g]; let sc=0;
-    const okField=(f,i)=>{ const v=S.ans[g+":"+i]||""; const acc=(f.accept&&f.accept.length?f.accept:[f.answer]); if(f.digits) return acc.concat([f.answer]).some(a=>String(a).replace(/\D/g,"")===v.replace(/\D/g,"")&&v.replace(/\D/g,"")!==""); return f.exact? acc.some(a=>normKeepUml(a)===normKeepUml(v)) : acc.some(a=>norm(a)===norm(v)); };
+    const okField=(f,i)=>noteOk(f, S.ans[g+":"+i]||"");
     T.note_fields.forEach((f,i)=>{ if(okField(f,i)) sc++; });
     h+=`<section class="card stack"><div class="label">Hören · Teil 2 · played twice</div><h2>Notizen</h2>
       <p class="small">${ex((T.intro_de?T.intro_de+" ":"")+"Write the key information on the note sheet. Spelled names and phone numbers must be 100% correct, or the line gets 0 points.","اطلاعات مهم را روی برگه یادداشت بنویس. اسم‌های هجی‌شده و شماره تلفن باید کاملاً درست باشند، وگرنه آن خط صفر می‌گیرد.")}</p>
-      <div>${playBtn(g+"|msg", T.script, 2, "Play message")}</div>
-      <div class="sunk stack"><div class="label">Notizblatt</div>${T.note_fields.map((f,i)=>`<div class="field"><label for="nf${i}">${esc(f.label_de)}${f.exact?' <span class="chip warn">exact</span>':""}</label>
+      ${T.audio?offPlayer(g,d.set,T.audio):`<div>${playBtn(g+"|msg", T.script, 2, "Play message")}</div>`}
+      <div class="sunk stack"><div class="label">Notizblatt</div>${T.given?`<div class="small"><i>${esc(T.given)}</i> <span class="muted">(example, already filled in)</span></div>`:""}${T.note_fields.map((f,i)=>`<div class="field"><label for="nf${i}">${esc(f.label_de)}${f.exact?' <span class="chip warn">exact</span>':""}</label>
         <input type="text" id="nf${i}" data-store="${g}:${i}" value="${attr(S.ans[g+":"+i]||"")}" ${chk?"disabled":""} class="${chk?(okField(f,i)?"inp-ok":"inp-bad"):""}" autocomplete="off" spellcheck="false">
         ${chk&&!okField(f,i)?`<span class="small" style="color:var(--ok)">→ ${esc(f.answer)}</span>`:""}</div>`).join("")}</div>
-      ${chk?`<div class="sunk small">${T.script.map(l=>esc(l.text_de)).join("<br>")}</div>`:""}
+      ${chk&&T.script?`<div class="sunk small">${T.script.map(l=>esc(l.text_de)).join("<br>")}</div>`:""}
       ${checkRow(g, chk, sc, T.note_fields.length, n, "hoeren-2")}</section>`; }
   if(H.teil3){ const g=n+":h3"; const T=H.teil3; const chk=S.checked[g]; let sc=0; T.people.forEach((p,i)=>{ if(S.ans[g+":"+i]===p.answer) sc++; });
-    const allLines = T.people.map(p=>({voice:p.voice, text_de:p.name.replace(/Person/,"Person")+". "+p.text_de}));
+    const allLines = T.audio?[]:T.people.map(p=>({voice:p.voice, text_de:p.name.replace(/Person/,"Person")+". "+p.text_de}));
     h+=`<section class="card stack"><div class="label">Hören · Teil 3 · played once</div><h2>${esc(T.question_de)}</h2>
       <p class="small">${ex("Five people answer the same question. Tick one answer per person. Watch out: people sometimes mention an option and then reject it.","پنج نفر به یک سؤال جواب می‌دهند. برای هر نفر فقط یک گزینه علامت بزن. مراقب باش: گاهی کسی گزینه‌ای را نام می‌برد ولی ردش می‌کند.")}</p>
-      <div>${playBtn(g+"|all", allLines, 1, "Play all 5")}</div>
+      ${T.audio?offPlayer(g,d.set,T.audio):`<div>${playBtn(g+"|all", allLines, 1, "Play all 5")}</div>`}
       <div class="matrix"><table><tr><th></th>${T.options.map(o=>`<th>${esc(o)}</th>`).join("")}</tr>
-      ${T.people.map((p,i)=>`<tr><td><b>${esc(p.name)}</b>${chk?`<div class="small muted" style="max-width:220px">${esc(p.text_de)}</div>`:""}</td>${T.options.map(o=>{ const sel=S.ans[g+":"+i]===o; const mark=chk?(o===p.answer?"background:var(--ok-soft)":sel?"background:var(--bad-soft)":""):"";
+      ${T.people.map((p,i)=>`<tr><td><b>${esc(p.name)}</b>${chk&&p.text_de?`<div class="small muted" style="max-width:220px">${esc(p.text_de)}</div>`:""}</td>${T.options.map(o=>{ const sel=S.ans[g+":"+i]===o; const mark=chk?(o===p.answer?"background:var(--ok-soft)":sel?"background:var(--bad-soft)":""):"";
         return `<td style="${mark}"><input type="radio" name="${g}-${i}" data-store="${g}:${i}" value="${attr(o)}" ${sel?"checked":""} ${chk?"disabled":""} aria-label="${attr(p.name+": "+o)}"></td>`; }).join("")}</tr>`).join("")}</table></div>
       ${checkRow(g, chk, sc, T.people.length, n, "hoeren-3")}</section>`; }
   return h;
 }
-function pics(list){ return `<div class="pics">${list.map(p=>`<div class="pic"><div class="id">${esc(p.id)}</div><div class="e" aria-hidden="true">${esc(p.emoji||"▢")}</div><div class="lb">${esc(p.label_en||"")}</div></div>`).join("")}</div>`; }
+function pics(list, set){ return `<div class="pics ${set?"real":""}">${list.map(p=>{ const im=picImg(p,set); return `<div class="pic"><div class="id">${esc(p.id)}</div>${im||`<div class="e" aria-hidden="true">${esc(p.emoji||"▢")}</div>`}${im?"":`<div class="lb">${esc(p.label_en||"")}</div>`}</div>`; }).join("")}</div>`; }
 function isTest(g){ return S.testPrefix && String(g).startsWith(S.testPrefix); }
 function checkRow(g, chk, sc, total, n, rk){
   if(isTest(g) && !chk) return "";
   if(chk){ const k=n+":"+rk; if(!S.st.results[k]||S.st.results[k].score!==sc){ S.st.results[k]={score:sc,total,at:Date.now()}; save(); } }
-  return `<div class="row">${chk?`<span class="chip ${sc>=total*0.6?"ok":"bad"} tnum">${sc} / ${total} · ${sc*2} pts of ${total*2}</span><button class="btn sm" data-act="uncheck" data-g="${g}">Try again</button>`:`<button class="btn primary" data-act="check" data-g="${g}">Check answers</button>`}</div>`;
+  const tp=taskPts(sc,total);
+  return `<div class="row">${chk?`<span class="chip ${sc>=total*0.6?"ok":"bad"} tnum">${sc} / ${total}${tp!=null?` · ${tp} of 10 pts`:""}</span><button class="btn sm" data-act="uncheck" data-g="${g}">Try again</button>`:`<button class="btn primary" data-act="check" data-g="${g}">Check answers</button>`}</div>`;
 }
 
 /* Diktat */
@@ -661,7 +664,7 @@ function stLesen(n,d){
       <div class="grid2">${T.ads.map(a=>`<div class="notice"><b>${a.n}. ${esc(a.title||"")}</b>\n${esc(a.text_de)}</div>`).join("")}</div>
       ${T.situations.map(s=>`<div class="row" style="flex-wrap:nowrap;align-items:flex-start;border-top:1px solid var(--line);padding-top:8px"><b>${esc(s.id)}</b><div class="grow">${esc(s.text_de)}</div>
         <select data-store="${g}:${s.id}" style="width:auto" ${chk?"disabled":""} class="${chk?(String(S.ans[g+":"+s.id])===String(T.answers[s.id])?"inp-ok":"inp-bad"):""}" aria-label="Ad for ${attr(s.id)}"><option value="">–</option>${T.ads.map(a=>`<option ${String(S.ans[g+":"+s.id])===String(a.n)?"selected":""}>${a.n}</option>`).join("")}</select>
-        ${chk&&String(S.ans[g+":"+s.id])!==String(T.answers[s.id])?`<span class="chip ok">${esc(T.answers[s.id])}</span>`:""}</div>`).join("")}
+        ${chk&&String(S.ans[g+":"+s.id])!==String(T.answers[s.id])?`<span class="chip ok">${esc(T.answers[s.id])}</span>`:""}</div>${chk&&T.why&&T.why[s.id]?`<div class="small muted" style="margin:-2px 0 4px 22px">${esc(T.why[s.id])}</div>`:""}`).join("")}
       ${checkRow(g,chk,sc,T.situations.length,n,"lesen-1")}</section>`; }
   else h+=`<div class="banner"><div>${ex("Lesen Teil 1 (match situations to ads) starts on Day 8, once you know enough words.","بخش اول خواندن (وصل کردن موقعیت به آگهی) از روز ۸ شروع می‌شود.")}</div></div>`;
   if(L.teil2){ const g=n+":l2"; const chk=S.checked[g]; let sc=0, tot=0;
@@ -674,7 +677,7 @@ function stLesen(n,d){
       ${checkRow(g,chk,sc,tot,n,"lesen-2")}</section>`; }
   if(L.teil3){ const g=n+":l3"; const T=L.teil3; const chk=S.checked[g]; let sc=0; T.texts.forEach(t=>{ if(S.ans[g+":"+t.n]===T.answers[t.n]) sc++; });
     h+=`<section class="card stack"><div class="label">Lesen · Teil 3</div><h2>Welches Bild passt?</h2><p class="small">${ex("Match each short notice to a picture. One picture is extra.","هر متن کوتاه را به یک تصویر وصل کن. یک تصویر اضافه است.")}</p>
-      ${pics(T.pictures)}
+      ${pics(T.pictures, d.set)}
       ${T.texts.map(t=>`<div class="row" style="flex-wrap:nowrap;border-top:1px solid var(--line);padding-top:8px"><b>${t.n}</b><div class="grow notice" style="padding:8px 10px">${esc(t.text_de)}</div>
         <select data-store="${g}:${t.n}" style="width:auto" ${chk?"disabled":""} class="${chk?(S.ans[g+":"+t.n]===T.answers[t.n]?"inp-ok":"inp-bad"):""}" aria-label="Picture for notice ${t.n}"><option value="">–</option>${T.pictures.map(p=>`<option ${S.ans[g+":"+t.n]===p.id?"selected":""}>${esc(p.id)}</option>`).join("")}</select>
         ${chk&&S.ans[g+":"+t.n]!==T.answers[t.n]?`<span class="chip ok">${esc(T.answers[t.n])}</span>`:""}</div>`).join("")}
@@ -686,39 +689,42 @@ function stLesen(n,d){
 function stSchreiben(n,d){
   const W=d.schreiben; let h="";
   if(W.teil1){ const g=n+":s1"; const T=W.teil1; const chk=S.checked[g]; let sc=0;
-    const fOk=f=>{ const v=S.ans[g+":"+f.id]; if(f.type==="multi"){ const arr=(v||[]).slice().sort(); return JSON.stringify(arr)===JSON.stringify((f.answer||[]).slice().sort()); } if(f.type==="choice") return v===f.answer; const acc=f.accept&&f.accept.length?f.accept:[f.answer]; return acc.some(a=>norm(a)===norm(v)); };
-    T.fields.forEach(f=>{ if(fOk(f)) sc++; });
-    if(chk&&!isTest(g)){ const rk=n+":schreiben-1"; if(!S.st.results[rk]||S.st.results[rk].score!==sc){ S.st.results[rk]={score:sc,total:T.fields.length,at:Date.now()}; save(); } }
-    h+=`<section class="card stack"><div class="label">Schreiben · Teil 1 · Formular</div><h2>Formular ausfüllen</h2>
+    const fOk=f=>formOk(f,S.ans[g+":"+f.id]);
+    T.fields.forEach(f=>{ sc+=formPts(f,S.ans[g+":"+f.id]); }); const tot=T.fields.reduce((s,f)=>s+formMax(f),0);
+    if(chk&&!isTest(g)){ const rk=n+":schreiben-1"; if(!S.st.results[rk]||S.st.results[rk].score!==sc){ S.st.results[rk]={score:sc,total:tot,at:Date.now()}; save(); } }
+    h+=`<section class="card stack"><div class="label">Schreiben · Teil 1 · Formular</div><h2>${esc(T.title||"Formular ausfüllen")}</h2>
       <p>${esc(T.situation_de)}</p><p class="small muted">${esc(T.situation_en||"")}</p>
       <div class="notice">${esc(T.profile_de)}</div>
       <div class="grid2">${T.fields.map(f=>{ const v=S.ans[g+":"+f.id]; const cls=chk?(fOk(f)?"inp-ok":"inp-bad"):"";
         let ctl="";
-        if(f.type==="text") ctl=`<input type="text" id="${g}-${f.id}" data-store="${g}:${f.id}" value="${attr(v||"")}" ${chk?"disabled":""} class="${cls}" autocomplete="off">`;
+        if(f.type==="given") ctl=`<input type="text" value="${attr(f.answer)}" disabled aria-label="${attr(f.label_de)}">`;
+        else if(f.type==="text") ctl=`<input type="text" id="${g}-${f.id}" data-store="${g}:${f.id}" value="${attr(v||"")}" ${chk?"disabled":""} class="${cls}" autocomplete="off">`;
         else if(f.type==="choice") ctl=`<div class="checks ${cls}" style="padding:6px;border-radius:8px">${f.options.map(o=>`<label><input type="radio" name="${g}-${f.id}" data-store="${g}:${f.id}" value="${attr(o)}" ${v===o?"checked":""} ${chk?"disabled":""}> ${esc(o)}</label>`).join("")}</div>`;
         else ctl=`<div class="checks ${cls}" style="padding:6px;border-radius:8px">${f.options.map(o=>`<label><input type="checkbox" data-multi="${g}:${f.id}" value="${attr(o)}" ${(v||[]).includes(o)?"checked":""} ${chk?"disabled":""}> ${esc(o)}</label>`).join("")}</div>`;
         return `<div class="field"><span class="lb">${esc(f.label_de)}</span>${ctl}${chk&&!fOk(f)?`<span class="small" style="color:var(--ok)">→ ${esc(Array.isArray(f.answer)?f.answer.join(", "):f.answer)}</span>`:""}</div>`; }).join("")}</div>
-      <div class="row">${chk?`<span class="chip ${sc>=T.fields.length*0.6?"ok":"bad"} tnum">${sc}/${T.fields.length} · ${(sc*0.5).toFixed(1)} pts</span><button class="btn sm" data-act="uncheck" data-g="${g}">Try again</button>`:isTest(g)?"":`<button class="btn primary" data-act="check" data-g="${g}">Check form</button>`}</div></section>`; }
+      <div class="row">${chk?`<span class="chip ${sc>=tot*0.6?"ok":"bad"} tnum">${sc}/${tot}${tot===10?` · ${PSA1(sc)} of 5 pts`:""}</span><button class="btn sm" data-act="uncheck" data-g="${g}">Try again</button>`:isTest(g)?"":`<button class="btn primary" data-act="check" data-g="${g}">Check form</button>`}</div></section>`; }
   if(W.teil2){ const T=W.teil2; const dk=n+":email"; const txt=S.st.drafts[dk]||""; const wc=(txt.match(/[A-Za-zÄÖÜäöüß0-9-]+/g)||[]).length; const gr=S.st.grades[dk];
     h+=`<section class="card stack"><div class="label">Schreiben · Teil 2 · E-Mail · 10 points, you need 4</div><h2>Antworten Sie ${esc(T.email_from||"")}</h2>
-      <div class="mail"><div class="hd">Von: ${esc(T.email_from||"")}</div><div class="bd">${esc(T.email_de)}</div></div>
+      ${T.situation_de?`<p class="small">${esc(T.situation_de)}</p>`:""}
+      <div class="mail"><div class="hd">Von: ${esc(T.email_from||"")}${T.subject?` · Betreff: ${esc(T.subject)}`:""}</div><div class="bd">${esc(T.email_de)}</div></div>
       <p><b>${esc(T.task_de)}</b></p><p class="small muted">${esc(T.task_en||"")}</p>
       <div class="row">${(T.points_de||[]).map(p=>`<span class="chip acc">${esc(p)}</span>`).join("")}</div>
-      <textarea id="emailTxt" data-draft="${dk}" aria-label="Your email" placeholder="Hallo ${attr(T.email_from||"")}, …" spellcheck="false">${esc(txt)}</textarea>
-      <div id="wcheck" class="wcheck">${writeCheckHtml(txt)}</div>
+      ${T.intro_de?`<div class="mail preprint"><div class="bd">${esc(T.intro_de)}</div><div class="small muted">${ex("Printed on the answer sheet. Not counted: write about 30 words of your own below, then a sign-off.","روی برگه چاپ شده و شمرده نمی‌شود: حدود ۳۰ کلمه خودت زیرش بنویس و بعد خداحافظی.")}</div></div>`:""}
+      <textarea id="emailTxt" data-draft="${dk}" ${T.intro_de?'data-intro="1"':""} aria-label="Your email" placeholder="${T.intro_de?"Ich …":"Hallo "+attr(T.email_from||"")+", …"}" spellcheck="false">${esc(txt)}</textarea>
+      <div id="wcheck" class="wcheck">${writeCheckHtml(txt, T.intro_de)}</div>
       <div class="checks">${(T.points_de||[]).map((p,pi)=>`<label><input type="checkbox" data-pt="${dk}:${pi}" ${S.st.drafts[dk+":p"+pi]?"checked":""}> ${esc(p)} answered</label>`).join("")}</div>
       <div class="row between"><span class="small tnum" id="wc" style="color:${wc>=25?"var(--ok)":"var(--muted)"}">${wc} words · aim for 30, at least 25</span>
         <div class="row">${isTest(dk)?"":S.ai&&S.uid?`<button class="btn primary" data-act="grade" data-n="${n}" ${S.gradeBusy?"disabled":""}>${S.gradeBusy?"The examiner is reading…":"Get examiner feedback"}</button>`:`<span class="small muted">${S.uid?"Feedback needs GEMINI_API_KEY on the server.":"Sign in to get feedback."}</span>`}</div></div>
       ${gr&&!isTest(dk)?gradeView(gr):""}
       ${isTest(dk)?"":`<details class="acc"><summary>Useful phrases</summary><div class="in stack">${(T.useful_phrases||[]).map(p=>`<div class="row" style="flex-wrap:nowrap">${sayBtn(p.replace(/…/g,""))}<span>${esc(p)}</span></div>`).join("")}</div></details>
-      <details class="acc"><summary>Model answer (try first!)</summary><div class="in stack"><div class="mail"><div class="bd">${esc(T.model_answer_de)}</div></div>${ex(T.notes_en,T.notes_fa)}</div></details>`}
+      <details class="acc"><summary>Model answer (try first!)</summary><div class="in stack"><div class="mail"><div class="bd">${esc(T.intro_de&&/^(hallo|hi|liebe|lieber)\b/i.test(T.model_answer_de||"")?String(T.model_answer_de).split("\n").slice(1).join("\n"):T.model_answer_de)}</div></div>${ex(T.notes_en,T.notes_fa)}</div></details>`}
     </section>`; }
   return h;
 }
 function wordCount(t){ return (String(t||"").match(/[A-Za-zÄÖÜäöüß0-9-]+/g)||[]).length; }
-function writeCheckHtml(txt){
+function writeCheckHtml(txt, intro){
   const lines=String(txt||"").trim().split(/\n+/).filter(Boolean); const wc=wordCount(txt);
-  const greet=/^(hallo|hi|liebe|lieber|sehr geehrte|grüß|servus)/i.test(lines[0]||"");
+  const greet=!!intro||/^(hallo|hi|liebe|lieber|sehr geehrte|grüß|servus)/i.test(lines[0]||"");
   const bye=/(grüße|gruß|bis bald|bis morgen|bis samstag|bis dann|tschüss|baba|servus|liebe grüße)/i.test(lines.slice(-3).join(" "));
   const wtxt = wc>=25 ? ["ok","Length OK (no deduction)"] : wc>=20 ? ["warn","20–24 words: −1 point"] : wc>=15 ? ["warn","15–19 words: −2 points"] : ["bad","Under 15 words: not graded (0 points)"];
   const item=(ok,t)=>`<span class="chip ${ok===true?"ok":ok===false?"bad":ok}">${ok===true?"✓":ok===false?"✗":"!"} ${esc(t)}</span>`;
@@ -736,21 +742,22 @@ async function gradeEmail(n){
   if(txt.length<10){ toast("Write your email first"); return; }
   S.gradeBusy=true; render();
   try{
-    const r=await api("/api/ai",{mode:"grade", payload:{from:T.email_from, email:T.email_de, task:T.task_de, points:T.points_de, wordTarget:T.word_target||30, text:txt, day:n}});
+    const r=await api("/api/ai",{mode:"grade", payload:{from:T.email_from, email:T.email_de, task:T.task_de, points:T.points_de, wordTarget:T.word_target||30, text:txt, intro:T.intro_de||"", day:n}});
     const g=r.result; if(g && typeof g==="object"){ g.score=Number(g.score)||0; S.st.grades[dk]=g; save(); }
   }catch(e){ toast("Feedback failed: "+e.message); }
   S.gradeBusy=false; render();
 }
 /* Sprechen */
 function stSprechen(n,d){
-  const P=d.sprechen; let h=tutorCard(n);
+  const P=d.sprechen; let h=tutorCard(n)+oralVideoCard(n===27||n===39);
   if(P.teil1){ const T=P.teil1;
     h+=`<section class="card stack"><div class="label">Sprechen · Teil 1 · Sich vorstellen</div><h2>Introduce yourself</h2>
-      <p class="small">${ex("In the exam you pick 4 of these 6 topics and say a few sentences about each. The examiner may then ask follow-up questions, often 'please spell your name'. This script grows every day; by Day 21 it covers all six topics.","در آزمون ۴ موضوع از این ۶ موضوع را انتخاب می‌کنی و درباره هر کدام چند جمله می‌گویی. ممتحن بعد سؤال می‌پرسد، معمولاً «اسمتان را هجی کنید». این متن هر روز کامل‌تر می‌شود تا روز ۲۱ هر شش موضوع را پوشش دهد.")}</p>
+      <p class="small">${ex("In the exam you pick 4 of these 6 topics and say a few sentences about each. The examiner may then ask follow-up questions, often 'please spell your name'. The sentences below are a model, not a text to memorise: under the 2026 ÖSD rules a memorised ready-made text counts as plagiarism. Practise saying it in your own words from the keywords.","در آزمون ۴ موضوع از این ۶ موضوع را انتخاب می‌کنی و درباره هر کدام چند جمله می‌گویی. ممتحن بعد سؤال می‌پرسد، معمولاً «اسمتان را هجی کنید». جمله‌های زیر نمونه‌اند، نه متنی برای حفظ کردن: طبق قوانین ۲۰۲۶ ÖSD، متن آماده حفظ‌شده سرقت ادبی حساب می‌شود. با کلیدواژه‌ها و با جمله‌های خودت تمرین کن.")}</p>
       <div class="row">${T.topics.map(t=>`<span class="chip ${(T.today_topics||[]).includes(t)?"acc":""}">${esc(t)}</span>`).join("")}</div>
-      <div class="sunk stack"><div class="row between"><div class="label">My script today</div>${(()=>{const i=SAY_BANK.push({lines:T.my_script.map(l=>({text_de:l.tts||l.de}))})-1; return `<button class="btn sm primary" data-act="sayall" data-i="${i}">${ICONS.play}Play all</button>`;})()}</div>
+      <div class="sunk stack"><div class="row between"><div class="label">Model sentences</div>${(()=>{const i=SAY_BANK.push({lines:T.my_script.map(l=>({text_de:l.tts||l.de}))})-1; return `<button class="btn sm primary" data-act="sayall" data-i="${i}">${ICONS.play}Play all</button>`;})()}</div>
         ${T.my_script.map((l,li)=>{ const pk=n+":pron:"+li; return `<div class="stack" style="gap:4px"><div class="row" style="flex-wrap:nowrap;align-items:flex-start">${sayBtn(l.tts||l.de,{slow:true})}<button class="say" data-act="pron" data-k="${pk}" data-t="${attr(l.de)}" title="Say it and check" aria-label="Say it and check">${ICONS.mic}</button>${recBtns(pk, l.tts||l.de)}<div><b>${esc(l.de)}</b><br><span class="small muted">${esc(l.en)}</span></div></div>${pronView(pk)}</div>`; }).join("")}</div>
-      <p class="small">${ex("Shadowing: play a sentence, pause, say it aloud yourself. Do the whole script 5 times.","سایه‌خوانی: یک جمله را پخش کن، مکث کن و خودت بلند تکرار کن. کل متن را ۵ بار انجام بده.")}</p>
+      ${speakKeywords(T.my_script).length?`<div class="sunk small"><b>${ex("Your keywords","کلیدواژه‌های تو")}:</b> ${speakKeywords(T.my_script).map(esc).join(" · ")}</div>`:""}
+      <p class="small">${ex("1) Shadow each model sentence twice. 2) Hide the sentences and talk about each topic from the keywords only, with your own words. 3) Change one detail each time (another hobby, another time), the way the examiner's follow-up questions will push you.","۱) هر جمله نمونه را دو بار سایه‌خوانی کن. ۲) جمله‌ها را نبین و فقط با کلیدواژه‌ها و جمله‌های خودت درباره هر موضوع حرف بزن. ۳) هر بار یک جزئیات را عوض کن، همان‌طور که سؤال‌های ممتحن تو را وادار می‌کند.")}</p>
       ${T.examiner_questions_de&&T.examiner_questions_de.length?`<div class="stack" style="gap:6px"><div class="label">The examiner may ask</div>${T.examiner_questions_de.map(q=>`<div class="row" style="flex-wrap:nowrap">${sayBtn(q)}<span>${esc(q)}</span></div>`).join("")}</div>`:""}</section>`; }
   if(P.teil2){ const T=P.teil2;
     h+=`<section class="card stack"><div class="label">Sprechen · Teil 2 · Situation beschreiben</div><h2>Describe a photo</h2><div class="notice">${esc(T.photo_scene_en||"")}</div>
@@ -819,7 +826,7 @@ Output ONLY one JSON code block:
  "day": ${n},
  "schreiben": {
    "teil1": {"situation_de":"","situation_en":"","profile_de":"","fields":[{"id":"f1","label_de":"","type":"text|choice|multi","options":[""],"answer":"","accept":[""]}]},
-   "teil2": {"email_from":"","email_de":"","task_de":"Antworten Sie … Schreiben Sie circa 30 Wörter.","task_en":"","points_de":["","",""],"word_target":30,"model_answer_de":"","useful_phrases":[""],"notes_en":"","notes_fa":""}
+   "teil2": {"email_from":"","email_de":"","task_de":"Antworten Sie … Schreiben Sie circa 30 Wörter.","task_en":"","points_de":["","",""],"word_target":30,"intro_de":"","model_answer_de":"","useful_phrases":[""],"notes_en":"","notes_fa":""}
  },
  "sprechen": {
    "teil1": {"topics":["Sprachen","Hobbys","Sport","Familie","Beruf","Lieblingsessen"],"today_topics":[""],"my_script":[{"de":"","en":""}],"examiner_questions_de":[""]},
@@ -831,9 +838,9 @@ Output ONLY one JSON code block:
 }
 Rules:
 - schreiben.teil1: I help a friend fill in a form. 10 fields mixing text, choice and multi; profile_de contains all the information needed. For multi, answer is an array.
-- schreiben.teil2: reply to a short PERSONAL email (informal, du) with exactly 3 guiding points. Model answer 30–40 words, with greeting and sign-off.
-- sprechen.teil1.my_script: 4–6 sentences about ME on today's topics, building on earlier days.
-- live_brief: an English prompt for Gemini Live: act as my ÖSD A1 examiner, today's topics, slow A1 German, correct my mistakes, give a score out of 25 at the end.
+- schreiben.teil2: reply to a short PERSONAL email (informal, du) with exactly 3 questions, like the official ÖSD task. intro_de is the opening the exam prints on the answer sheet, e.g. "Liebe Anna,\nvielen Dank für dein E-Mail. …" (one short sentence). model_answer_de continues after intro_de: about 30 words, one sentence per question, then a sign-off (Liebe Grüße + name).
+- sprechen.teil1.my_script: 4–6 short MODEL sentences about ME on today's topics (simple patterns I can vary). The 2026 ÖSD rules treat memorised ready-made texts as plagiarism, so keep them flexible, not a speech.
+- live_brief: an English prompt for Gemini Live: act as my ÖSD A1 examiner, today's topics, slow A1 German, ask follow-up questions so I can't just recite, correct my mistakes, give a score out of 25 at the end.
 - review_quiz: 8 items, 5 from today and 3 from earlier days.`; }
 function promptCards(n){ const p=PLAN[n-1]; return `DATA TABLE (Studio → Data Table → describe):
 Flashcards for Day ${n} of my ÖSD A1 plan: ${p.t}. ${dayHours()>=3?20:15} rows, A1 high-frequency only. Columns: German (nouns with der/die/das) | Plural | English | Persian | Example (short A1 sentence).
@@ -983,10 +990,10 @@ const DAYRES={
  23:{t:"Übungstest A: the full interactive practice exam in the app (Exam → Übungstest A). Do it in one sitting, like the real exam.",k:[]},
  24:{t:"Lesen strategies: read the task first, find the keyword, one ad is always a distractor.",k:[]},
  25:{t:"Hören strategies: read the note sheet first and predict what kind of word goes in each line (day, time, number, name).",k:["ythoeren","kurs"]},
- 26:{t:"Write 3 messages of ~30 words and compare them with the Mustertexte.",k:["muster"]},
+ 26:{t:"Write 3 messages of ~30 words. Then mark the real learner emails in Examiner's eye (Exam tab) to see what examiners reward.",k:["muster"]},
  27:{t:"Official oral video + 2 samples. Then a 25-minute exam-mode session with the tutor.",k:["oral","ytsprech","ytsprech2","sprechpdf"]},
  28:{t:"Buffer: repeat your weakest exam part from an earlier day, then clear My mistakes.",k:[]},
- 29:{t:"MOCK 1: official ÖSD ZA1 Modellsatz. Download the ZIP, then run it in Exam → Mocks.",k:["osd"]},
+ 29:{t:"MOCK 1: the official ÖSD ZA1 Modellsatz with its real recordings, marked automatically. Add the ZIP files once in Exam → Official ÖSD model tests. Afterwards: Examiner's eye E-Mails A–C (same task).",k:["osd"]},
  30:{t:"Work only on what mock 1 showed: redo the wrong items and drill the weakest part.",k:[]},
  31:{t:"Vocabulary sweep: Review cards in both directions, then Wörter-Blitz until 20+.",k:[]},
  32:{t:"Vocabulary sweep: the Austrian words deck plus Days 16–21.",k:["kurs"]},
@@ -994,7 +1001,7 @@ const DAYRES={
  34:{t:"Timed Lesen and Hören sets: Sprachportal practice tests.",k:["sptests"]},
  35:{t:"Write two emails, then speak Teil 1–3 with the tutor in exam mode.",k:["muster","oral"]},
  36:{t:"Buffer day: catch up first, then rest.",k:[]},
- 37:{t:"MOCK 2: official ÖSD ZA1/Österreich Modellsatz (different content).",k:["osd"]},
+ 37:{t:"MOCK 2: the official ÖSD ZA1/Österreich Modellsatz (different content) with its real recordings. From now on Hören days replay both official recordings slowly with transcripts.",k:["osd"]},
  38:{t:"Fix mock 2: redo the wrong items, drill the weakest part.",k:[]},
  39:{t:"Speaking day: 10-minute prep → oral with the tutor, three times.",k:["oral","ytsprech","ytsprech2"]},
  40:{t:"Hören intensive: notes, numbers, spelled names.",k:["goethe","ythoeren"]},
@@ -1016,8 +1023,8 @@ function resCard(n){ const r=DAYRES[n]; if(!r) return "";
 
 /* ---------- mock exams (ÖSD scoring) ---------- */
 const MOCKS=[
- {id:"m1", day:29, short:"Mock 1", title:"Mock 1 · Official ÖSD ZA1 Modellsatz", kind:"paper", how:"Download the free ZA1 Modellsatz ZIP from osd.at (PDF + MP3). Do it on paper with the app's timers, then enter how many answers you got right.", links:["osd"]},
- {id:"m2", day:37, short:"Mock 2", title:"Mock 2 · Official ÖSD ZA1/Österreich Modellsatz", kind:"paper", how:"The second official set has different content. Same flow: paper + app timers + scoring.", links:["osd"]},
+ {id:"m1", day:29, short:"Mock 1", title:"Mock 1 · Official ÖSD ZA1 Modellsatz", kind:"paper", official:"za1", how:"The official ZA1 model test with the real recordings, marked with the official key. Add the ZIP files once in the Exam tab; without them you can do it on paper and enter your results.", links:["osd"]},
+ {id:"m2", day:37, short:"Mock 2", title:"Mock 2 · Official ÖSD ZA1/Österreich Modellsatz", kind:"paper", official:"za1oe", how:"The second official set (Austrian variant, different content), with its real recordings and official marking.", links:["osd"]},
  {id:"m3", day:43, short:"Mock 3", title:"Mock 3 · ÖSD Übungsmaterialien Band 1, Übungssatz 1", kind:"paper", alt:true, how:"From the ÖSD practice book (audio on testsam.at). No book? Take Übungstest A in the app instead.", links:["testsam","modell"]},
  {id:"m4", day:47, short:"Final mock", title:"Final mock · Übungssatz 2 or ÖSD Digital Test-Training", kind:"paper", how:"Do it at the same time of day as your exam, without breaks except after Hören.", links:["testsam","digital"]},
  {id:"ta", day:23, short:"Übungstest A", title:"Übungstest A · interactive, in the app", kind:"app", file:"days/mock-a.json", how:"An original practice test written for this app in the exact ZA1 format, marked automatically."}
@@ -1042,8 +1049,7 @@ function computeResult(c){
     grade:W>=66?"sehr gut":W>=56?"gut":W>=38?"bestanden":"nicht bestanden",
     oGrade:sp==null?"":sp>=22?"sehr gut":sp>=19?"gut":sp>=12?"bestanden":"nicht bestanden"};
 }
-function noteOk(f,v){ v=v||""; const acc=(f.accept&&f.accept.length?f.accept:[f.answer]); if(f.digits){ const d=v.replace(/\D/g,""); return d!==""&&acc.concat([f.answer]).some(x=>String(x).replace(/\D/g,"")===d); } return f.exact? acc.some(x=>normKeepUml(x)===normKeepUml(v)) : acc.some(x=>norm(x)===norm(v)); }
-function formOk(f,v){ if(f.type==="multi") return JSON.stringify((v||[]).slice().sort())===JSON.stringify((f.answer||[]).slice().sort()); if(f.type==="choice") return v===f.answer; const acc=f.accept&&f.accept.length?f.accept:[f.answer]; return acc.some(x=>norm(x)===norm(v)); }
+function noteOk(f,v){ v=String(v||""); const acc=(f.accept&&f.accept.length?f.accept:[f.answer]); if(f.digits){ const d=v.replace(/\D/g,""); if(d!=="") return acc.concat([f.answer]).some(x=>String(x).replace(/\D/g,"")===d); return acc.some(x=>!/\d/.test(x)&&norm(x)===norm(v)&&norm(v)!==""); } if(f.exact) return acc.some(x=>normKeepUml(x)===normKeepUml(v)); return acc.some(x=>closeEnough(x,v)); }
 function countApp(id, D){ const a=S.ans, c={}; const L=D.lesen, H=D.hoeren;
   c.la1=L.teil1.situations.filter(s=>String(a[id+":l1:"+s.id])===String(L.teil1.answers[s.id])).length;
   c.la2=0; L.teil2.forEach((t,ti)=>t.items.forEach((it,ii)=>{ if(a[id+":l2:"+ti+":"+ii]===it.answer) c.la2++; }));
@@ -1051,25 +1057,27 @@ function countApp(id, D){ const a=S.ans, c={}; const L=D.lesen, H=D.hoeren;
   c.ha1=H.teil1.texts.filter(t=>a[id+":h1:"+t.n]===t.answer).length;
   c.ha2=H.teil2.note_fields.filter((f,i)=>noteOk(f,a[id+":h2:"+i])).length;
   c.ha3=H.teil3.people.filter((p,i)=>a[id+":h3:"+i]===p.answer).length;
-  c.sa1=D.schreiben.teil1.fields.filter(f=>formOk(f,a[id+":s1:"+f.id])).length;
+  c.sa1=D.schreiben.teil1.fields.reduce((s,f)=>s+formPts(f,a[id+":s1:"+f.id]),0);
   return c; }
 function answeredApp(id, D){ const a=S.ans, out={};
   out.lesen=[D.lesen.teil1.situations.filter(s=>a[id+":l1:"+s.id]).length+"/5", D.lesen.teil2.reduce((n,t,ti)=>n+t.items.filter((x,ii)=>a[id+":l2:"+ti+":"+ii]).length,0)+"/6", D.lesen.teil3.texts.filter(t=>a[id+":l3:"+t.n]).length+"/5"];
   out.hoeren=[D.hoeren.teil1.texts.filter(t=>a[id+":h1:"+t.n]).length+"/5", D.hoeren.teil2.note_fields.filter((f,i)=>(a[id+":h2:"+i]||"").trim()).length+"/5", D.hoeren.teil3.people.filter((p,i)=>a[id+":h3:"+i]).length+"/5"];
-  out.schreiben=[D.schreiben.teil1.fields.filter(f=>{ const v=a[id+":s1:"+f.id]; return Array.isArray(v)?v.length:v; }).length+"/10", wordCount(S.st.drafts[id+":email"])+" words"];
+  const sf=D.schreiben.teil1.fields.filter(f=>f.type!=="given"); out.schreiben=[sf.filter(f=>{ const v=a[id+":s1:"+f.id]; return Array.isArray(v)?v.length:v; }).length+"/"+sf.length, wordCount(S.st.drafts[id+":email"])+" words"];
   return out; }
 
-async function openMock(id){ const m=MOCKS.find(x=>x.id===id); if(!m) return;
-  if(m.kind==="app"&&!S.mockData[id]){ try{ const r=await fetch(m.file); S.mockData[id]=await r.json(); }catch(e){ toast("Couldn't load the test. Check your connection."); return; } }
+function mk(m){ return m.official&&offReady(m.official)?"app":m.kind; }
+async function openMock(id){ const m=MOCKS.find(x=>x.id===id); if(!m) return; stopOffAudio();
+  if(m.official&&S.uid){ if(!offData(m.official)) await pullLibrary(); await offStatus(m.official); if(offReady(m.official)){ S.mockData[id]=offData(m.official); await offUrls(m.official); } }
+  if(mk(m)==="app"&&!S.mockData[id]){ try{ const r=await fetch(m.file); S.mockData[id]=await r.json(); }catch(e){ toast("Couldn't load the test. Check your connection."); return; } }
   const pre=id+":"; [S.ans,S.checked,S.plays].forEach(o=>Object.keys(o).forEach(k=>{ if(k.startsWith(pre)) delete o[k]; }));
-  if(m.kind==="app") delete S.st.drafts[id+":email"];
+  if(mk(m)==="app") delete S.st.drafts[id+":email"];
   S.mock={id, phase:"intro", flags:{}, counts:{la1:0,la2:0,la3:0,ha1:0,ha2:0,ha3:0,sa1:0}, rub:{k:1,t:1,l:2,f:2,points:3,len:30}, sp:{a1:2,a2:2,a3:2,lex:3,aus:2,form:2}, spOverride:null, sa2:null, photo:0, endAt:0, startedAt:Date.now()};
-  S.testPrefix = m.kind==="app" ? pre : "";
+  S.testPrefix = mk(m)==="app" ? pre : "";
   S.view="exam"; render(); window.scrollTo(0,0); }
 const ORDER={app:["intro","lesen","hoeren","schreiben","sheet","sprechen","result"], paper:["intro","lesen","hoeren","schreiben","enter","sprechen","result"]};
 function mockGo(phase, keepTime){ const M=S.mock; M.phase=phase; if(!keepTime) M.endAt = PH_MIN[phase]? Date.now()+PH_MIN[phase]*60000 : 0;
   if(phase==="result") saveMockResult(); render(); window.scrollTo(0,0); }
-function mockNext(){ const M=S.mock, m=MOCKS.find(x=>x.id===M.id), o=ORDER[m.kind]; const i=o.indexOf(M.phase); if(i<o.length-1) mockGo(o[i+1]); }
+function mockNext(){ const M=S.mock, m=MOCKS.find(x=>x.id===M.id), o=ORDER[mk(m)]; const i=o.indexOf(M.phase); if(i<o.length-1) mockGo(o[i+1]); }
 function tickMock(){ clearInterval(tickMock._i); if(!S.mock||!S.mock.endAt) return;
   tickMock._i=setInterval(()=>{ const M=S.mock; const el=$("#mockTimer"); if(!M||!M.endAt){ clearInterval(tickMock._i); return; }
     const left=M.endAt-Date.now(); if(el) el.textContent=fmtMs(Math.max(0,left));
@@ -1083,7 +1091,7 @@ async function submitApp(){ const M=S.mock, D=S.mockData[M.id];
   M.counts=countApp(M.id, D); const txt=(S.st.drafts[M.id+":email"]||"").trim();
   mockGo("sprechen");
   if(S.ai&&S.uid&&txt.length>10){ M.grading=true; render();
-    try{ const T=D.schreiben.teil2; const r=await api("/api/ai",{mode:"grade",payload:{from:T.email_from,email:T.email_de,task:T.task_de,points:T.points_de,wordTarget:30,text:txt,day:currentDay()}}); M.sa2=Math.max(0,Math.min(10,Number(r.result.score)||0)); M.sa2Detail=r.result; }
+    try{ const T=D.schreiben.teil2; const r=await api("/api/ai",{mode:"grade",payload:{from:T.email_from,email:T.email_de,task:T.task_de,points:T.points_de,wordTarget:30,text:txt,intro:T.intro_de||"",day:currentDay()}}); M.sa2=Math.max(0,Math.min(10,Number(r.result.score)||0)); M.sa2Detail=r.result; }
     catch(e){ toast("Writing grade failed: "+e.message+". Rate it yourself below."); }
     M.grading=false; render(); } }
 async function gradePaperEmail(){ const M=S.mock; const txt=(S.st.drafts[M.id+":email"]||"").trim(); const task=(M.task||"").trim();
@@ -1092,7 +1100,7 @@ async function gradePaperEmail(){ const M=S.mock; const txt=(S.st.drafts[M.id+":
   try{ const r=await api("/api/ai",{mode:"grade",payload:{from:"the writer of the prompt email",email:task||"(task text not provided; judge whether 3 guiding points seem answered)",task:"Antworten Sie. Schreiben Sie circa 30 Wörter. Schreiben Sie zu allen drei Punkten.",points:[],wordTarget:30,text:txt,day:currentDay()}}); M.sa2=Math.max(0,Math.min(10,Number(r.result.score)||0)); M.sa2Detail=r.result; }
   catch(e){ toast("Grading failed: "+e.message); }
   M.grading=false; render(); }
-function phaseBar(M, m){ const labels={intro:"Start",lesen:"Lesen",hoeren:"Hören",schreiben:"Schreiben",sheet:"Check",enter:"Enter score",sprechen:"Sprechen",result:"Results"}; const o=ORDER[m.kind]; const cur=o.indexOf(M.phase);
+function phaseBar(M, m){ const labels={intro:"Start",lesen:"Lesen",hoeren:"Hören",schreiben:"Schreiben",sheet:"Check",enter:"Enter score",sprechen:"Sprechen",result:"Results"}; const o=ORDER[mk(m)]; const cur=o.indexOf(M.phase);
   return `<div class="phases">${o.map((p,i)=>`<span class="ph ${i<cur?"done":i===cur?"cur":""}">${labels[p]}</span>`).join("")}</div>`; }
 function selN(attrName, key, val, max, min=0){ let o=""; for(let i=min;i<=max;i++) o+=`<option ${+val===i?"selected":""}>${i}</option>`; return `<select ${attrName}="${key}" style="width:auto">${o}</select>`; }
 function a2Panel(M, withText){ const txt=S.st.drafts[M.id+":email"]||""; const has=txt.trim().length>0; const res=mockSa2();
@@ -1138,18 +1146,19 @@ async function vMock(){
     body=`<section class="card stack"><h2>Exam conditions</h2>
       <div class="grid2"><div class="sunk"><b>Lesen</b> · 25 min · 30 pts · min 6</div><div class="sunk"><b>Hören</b> · ≈10 min · 30 pts · min 6 · audio once (Teil 2 twice)</div><div class="sunk"><b>Schreiben</b> · 20 min · 15 pts · Aufgabe 2 min 4</div><div class="sunk"><b>Sprechen</b> · 10 min prep + ≈10 min · 25 pts · min 12</div></div>
       <p class="small">${ex("Pass the written module with 38/75 and every minimum. No dictionary. Don't leave answers blank: wrong answers cost nothing.","قبولی کتبی: ۳۸ از ۷۵ و رسیدن به حداقل هر بخش. دیکشنری ممنوع. هیچ جوابی را خالی نگذار.")}</p>
-      ${m.kind==="paper"?`<div class="banner info"><div>${esc(m.how)}<br>${ex("Write your answers on paper. After Schreiben you check with the answer key and enter how many you got right; the app converts them into official points.","جواب‌ها را روی کاغذ بنویس. بعد از نوشتن با کلید جواب چک کن و تعداد درست‌ها را وارد کن؛ اپ آن‌ها را به امتیاز رسمی تبدیل می‌کند.")}</div></div>
+      ${m.official&&!offReady(m.official)&&S.uid?`<div class="banner"><div>${ex("To take this test with the real recordings, add the official ZIP files once in the Exam tab (Official ÖSD model tests). Until then you can do it on paper.","برای انجام این آزمون با فایل‌های صوتی واقعی، یک بار فایل‌های ZIP رسمی را در تب Exam اضافه کن. تا آن موقع می‌توانی روی کاغذ انجامش بدهی.")}</div></div>`:""}
+      ${mk(m)==="paper"?`<div class="banner info"><div>${esc(m.how)}<br>${ex("Write your answers on paper. After Schreiben you check with the answer key and enter how many you got right; the app converts them into official points.","جواب‌ها را روی کاغذ بنویس. بعد از نوشتن با کلید جواب چک کن و تعداد درست‌ها را وارد کن؛ اپ آن‌ها را به امتیاز رسمی تبدیل می‌کند.")}</div></div>
         <div class="stack">${(m.links||[]).map(k=>`<a class="reslink" href="${LINKS[k][1]}" target="_blank" rel="noopener">${esc(LINKS[k][0])}</a>`).join("")}</div>`
       :`<div class="banner info"><div>${esc(m.how)} ${ex("In test mode you get no feedback until you submit, exactly like the exam.","در حالت آزمون تا پایان هیچ بازخوردی نمی‌گیری، مثل آزمون واقعی.")}</div></div>`}
       <div><button class="btn primary" data-act="mock-next">Start Lesen (25:00)</button></div></section>`;
   } else if(M.phase==="lesen"){
-    body = m.kind==="app" ? stLesen(M.id, D)+`<section class="card stack"><div class="label">Flag for review</div>${flagRow("L",3)}<div><button class="btn primary" data-act="mock-next">Next: Hören</button></div></section>`
+    body = mk(m)==="app" ? stLesen(M.id, D)+`<section class="card stack"><div class="label">Flag for review</div>${flagRow("L",3)}<div><button class="btn primary" data-act="mock-next">Next: Hören</button></div></section>`
       : `<section class="card stack center-card"><h2>Lesen · 25 minutes</h2><p>${ex("Work through Lesen Aufgabe 1–3 in the PDF. Write answers on paper.","خواندن بخش ۱ تا ۳ را در PDF انجام بده و جواب‌ها را روی کاغذ بنویس.")}</p><div><button class="btn primary" data-act="mock-next">Done · go to Hören</button></div></section>`;
   } else if(M.phase==="hoeren"){
-    body = m.kind==="app" ? stHoeren(M.id, D)+`<section class="card stack"><div class="label">Flag for review</div>${flagRow("H",3)}<div><button class="btn primary" data-act="mock-next">Next: Schreiben</button></div></section>`
+    body = mk(m)==="app" ? stHoeren(M.id, D)+`<section class="card stack"><div class="label">Flag for review</div>${flagRow("H",3)}<div><button class="btn primary" data-act="mock-next">Next: Schreiben</button></div></section>`
       : `<section class="card stack center-card"><h2>Hören · about 10 minutes</h2><p>${ex("Play the Modellsatz MP3 files in order without pausing. Teil 1 and 3 once, Teil 2 twice. 30 seconds to look at the tasks before each part.","فایل‌های صوتی را به ترتیب و بدون توقف پخش کن. بخش ۱ و ۳ یک بار، بخش ۲ دو بار.")}</p><div><button class="btn primary" data-act="mock-next">Done · go to Schreiben</button></div></section>`;
   } else if(M.phase==="schreiben"){
-    body = m.kind==="app" ? stSchreiben(M.id, D)+`<section class="card stack"><div><button class="btn primary" data-act="mock-next">Review my answers</button></div></section>`
+    body = mk(m)==="app" ? stSchreiben(M.id, D)+`<section class="card stack"><div><button class="btn primary" data-act="mock-next">Review my answers</button></div></section>`
       : `<section class="card stack center-card"><h2>Schreiben · 20 minutes</h2><p>${ex("Aufgabe 1 (form) on paper. For Aufgabe 2 you can write on paper or type here so Gemini can grade it.","بخش ۱ (فرم) روی کاغذ. بخش ۲ را روی کاغذ بنویس یا اینجا تایپ کن تا Gemini نمره بدهد.")}</p>
         <textarea data-draft="${M.id}:email" placeholder="Liebe …," style="min-height:150px" spellcheck="false">${esc(S.st.drafts[M.id+":email"]||"")}</textarea><div id="wcheck">${writeCheckHtml(S.st.drafts[M.id+":email"]||"")}</div>
         <div><button class="btn primary" data-act="mock-next">Done · enter my results</button></div></section>`;
@@ -1171,12 +1180,12 @@ async function vMock(){
     const photos = D&&D.sprechen&&D.sprechen.teil2 ? D.sprechen.teil2.photos : null;
     const recent = Object.values(S.st.live||{}).flat().filter(x=>x.mode==="exam"&&x.at>M.startedAt&&x.score_25!=null).sort((a,b)=>b.at-a.at)[0];
     const s=M.sp;
-    body=`${m.kind==="app"&&M.sa2==null&&!M.grading?a2Panel(M,false):M.grading?`<div class="banner info">Gemini is grading your email…</div>`:""}
+    body=`${mk(m)==="app"&&M.sa2==null&&!M.grading?a2Panel(M,false):M.grading?`<div class="banner info">Gemini is grading your email…</div>`:""}
       <section class="card stack"><div class="row between"><h2>Sprechen · 10 minutes preparation</h2>${M.endAt?"":`<button class="btn sm" data-act="mock-prep">Start prep timer</button>`}</div>
       <p class="small">${ex("Prepare keywords (not full sentences). You may use your notes during the exam.","کلیدواژه آماده کن، نه جمله کامل. در آزمون می‌توانی از یادداشت‌ها استفاده کنی.")}</p>
-      <div><b>Aufgabe 1</b> · pick 4: ${["Sprachen","Hobbys","Sport","Familie","Beruf","Lieblingsessen"].map(t=>`<span class="chip">${t}</span>`).join(" ")}</div>
+      <div><b>Aufgabe 1</b> · pick 4: ${((D&&D.sprechen&&D.sprechen.teil1&&D.sprechen.teil1.topics)||["Sprachen","Hobbys","Sport","Familie","Beruf","Lieblingsessen"]).map(t=>`<span class="chip">${esc(t)}</span>`).join(" ")}</div>
       <div><b>Aufgabe 2</b> · ${photos?ex("choose one photo:","یک عکس انتخاب کن:"):ex("choose one of the three photos in your Modellsatz.","یکی از سه عکس Modellsatz را انتخاب کن.")} Was sehen Sie? · Wie viele Personen? · Wo? · Was machen sie?</div>
-      ${photos?`<div class="grid3">${photos.map((p,i)=>`<button class="photo ${M.photo===i?"sel":""}" data-act="mock-photo" data-i="${i}"><span class="e">${esc(p.emoji)}</span><span class="small">${esc(p.scene_en)}</span></button>`).join("")}</div>
+      ${photos?`<div class="grid3">${photos.map((p,i)=>`<button class="photo ${M.photo===i?"sel":""}" data-act="mock-photo" data-i="${i}">${picImg(p,D.set)||`<span class="e">${esc(p.emoji)}</span><span class="small">${esc(p.scene_en)}</span>`}</button>`).join("")}</div>
         <div class="sunk small"><b>Aufgabe 3 (role-play):</b> ${esc(photos[M.photo].roleplay_en)}<br>Examiner starts: <i>${esc(photos[M.photo].starter_de)}</i></div>`:""}
       <div class="row"><button class="btn primary" data-act="mock-tutor">${ICONS.mic}Do the oral exam with the tutor</button></div>
       ${recent?`<div class="banner info"><div>Tutor exam score: <b>${recent.score_25}/25</b>. <button class="btn sm" data-act="mock-use-tutor" data-v="${recent.score_25}">Use this score</button></div></div>`:""}
@@ -1190,7 +1199,7 @@ async function vMock(){
     const r=S.st.mocks[M.id];
     body=`<section class="card stack"><h2>Results</h2>${resultBlock(r)}</section>
       <section class="card stack"><h3>What to do next</h3>${weakAdvice(r)}</section>
-      ${m.kind==="app"?`<details class="acc"><summary>Show corrected answers</summary><div class="in stack">${stLesen(M.id,D)}${stHoeren(M.id,D)}${stSchreiben(M.id,D)}</div></details>`:""}
+      ${mk(m)==="app"?`<details class="acc" data-keep="corr" ${S.keep.corr?"open":""}><summary>Show corrected answers</summary><div class="in stack">${stLesen(M.id,D)}${stHoeren(M.id,D)}${stSchreiben(M.id,D)}</div></details>`:""}
       <div class="row"><button class="btn primary" data-act="mock-exit">Done</button><button class="btn" data-act="mock-open" data-id="${M.id}">Take it again</button></div>`;
   }
   return head + body;
@@ -1200,7 +1209,7 @@ async function vMock(){
 function mockList(){ return `<section class="stack"><div class="row between"><h2>Mock exams</h2><span class="small muted">scored like the real ÖSD</span></div>
   ${MOCKS.map(m=>{ const r=S.st.mocks[m.id]; return `<div class="card stack"><div class="row between"><div style="min-width:0"><div class="label">${m.day?`Day ${m.day} · ${dateOf(m.day).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}`:"Any time"}</div><b>${esc(m.title)}</b></div><button class="btn ${r?"":"primary"} sm" data-act="mock-open" data-id="${m.id}">${r?"Retake":"Start"}</button></div><p class="small muted">${esc(m.how)}</p>${r?resultMini(r):""}</div>`; }).join("")}</section>`; }
 function prepChecklist(){ const items=[
-  ["Download both official Modellsatz ZIPs (ZA1 and ZA1/Österreich) from osd.at/downloads","هر دو فایل ZIP نمونه آزمون رسمی را از osd.at دانلود کن","osd"],
+  ["Add both official Modellsatz ZIPs (ZA1 and ZA1/Österreich) in “Official ÖSD model tests” above","هر دو فایل ZIP نمونه آزمون رسمی را در بخش «Official ÖSD model tests» بالا اضافه کن","osd"],
   ["Download the Mustertexte ZA1 and the exam rules (Durchführungsbestimmungen)","نمونه نوشته‌ها و قوانین آزمون را دانلود کن","muster"],
   ["Check osd.at for the new 2026 Modellsatz brochure and note any changes","بروشور جدید ۲۰۲۶ را در osd.at بررسی کن","osdpage"],
   [`Ask Divan: is ${examLong()} on paper or digital? Is the oral exam the same day?`,"از مؤسسه دیوان بپرس: آزمون کاغذی است یا دیجیتال؟ شفاهی همان روز است؟",""],
@@ -1217,7 +1226,7 @@ function scoringCard(){ return `<details class="acc"><summary>How ÖSD scores yo
 function resourcesCard(){ return `<details class="acc"><summary>All official and free resources</summary><div class="in stack">${Object.values(LINKS).map(([t,u])=>`<a class="reslink" href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`).join("")}
   <p class="small muted">${ex("Official ÖSD files are for your personal study. YouTube may need a VPN in Iran.","فایل‌های رسمی ÖSD فقط برای مطالعه شخصی‌اند. یوتیوب در ایران ممکن است فیلتر باشد.")}</p></div></details>`; }
 function vExam(){ return `<div><h1>Exam centre</h1><p class="muted">ÖSD Zertifikat A1 · ${examLong()} · <span class="fa">${examFa()}</span> · Divan Institute, Tehran</p></div>
-  ${mockList()}${prepChecklist()}${scoringCard()}${resourcesCard()}${examFacts()}`; }
+  ${officialCard()}${mockList()}${eyeCard()}${prepChecklist()}${oralVideoCard(false)}${examDayCard()}${scoringCard()}${resourcesCard()}${examFacts()}`; }
 
 /* ---------- Review ---------- */
 async function vReview(){
@@ -1399,6 +1408,7 @@ function buildTutorBrief(n, d, mode, plan){ plan=plan||sessionPlan(n, mode, tuto
   L.push(`SESSION LENGTH: about ${total} minutes, run by the app in ${plan.length} phases: `+plan.map((p,i)=>`${i+1}) ${p.t} (${p.min} min)`).join("; ")+". The app sends you a note that starts with [APP NOTE] at the start of every phase with the exact instructions. Those notes come from the app, not from Raam: never read them aloud or mention them, just move on smoothly.");
   L.push("SPEED MATTERS: answer immediately; never think aloud. "+(S.st.talkMode==="auto"?"He speaks hands-free and may pause while searching for a word: if his sentence sounds unfinished, wait.":"He holds a button while he speaks, so every turn you get is complete: reply straight away.")+" If you could not understand him, say „Wie bitte?“ and repeat your question more slowly.");
   L.push("YOUR ROLE: an energetic, demanding but kind personal trainer, not a chat partner. You lead all the time. Keep each turn short (at most 2 sentences) and end almost every turn with a question or task for him. After every answer: quick feedback (richtig / fast / nein), the correct form if needed, and he repeats it; then the next item. Aim for 40–60 questions in a session. Use spaced retrieval: anything he gets wrong comes back 2–3 minutes later in a new sentence. Raise the difficulty after 3 correct answers in a row (full sentences, faster, new context); simplify when he struggles. If he answers in English, help him say it in German. Never end the session, summarise it or say goodbye before the final phase. If the app has not sent a new note yet, keep drilling the current phase with new items.");
+  L.push("NO RECITATION: under the 2026 ÖSD rules a memorised ready-made text counts as plagiarism. If he recites his script, interrupt kindly with a follow-up question or a changed detail so he must build his own sentences.");
   L.push("RULES: Speak slow, clear Austrian standard German (Grüß Gott, Jänner) in very short A1 sentences. Use only today's and earlier vocabulary. Explain in short simple English; use Persian only if he asks. In coaching mode, correct every mistake immediately: say the correct sentence once, ask him to repeat it, then continue. If he is silent or lost, give him the first words. Keep your turns short so he speaks more than you.");
   return L.join("\n");
 }
@@ -1494,7 +1504,7 @@ function examFacts(){
     <p class="small muted">${ex("The two modules are graded separately and can be taken or retaken separately.","دو بخش جداگانه نمره‌دهی می‌شوند و می‌توان جداگانه آن‌ها را داد یا تکرار کرد.")}</p></div>
   ${mod("Lesen","25 min","30 pts","6 of 30",[["1","Match 5 situations (A–E) to 6 ads","5 × 2 pts","one ad is extra"],["2","3 short texts, 2 statements each","6 items, 10 pts","answer <b>JA</b> or <b>NEIN</b>"],["3","Match 5 short notices to 6 pictures","5 × 2 pts","one picture is extra"]])}
   ${mod("Hören","≈ 10 min","30 pts","6 of 30",[["1","5 short texts → 6 pictures","5 × 2 pts","played <b>once</b>; 30 s to look at the pictures first"],["2","1 answering-machine message → note sheet","5 × 2 pts","played <b>twice</b>; spelled names and numbers must be fully correct"],["3","5 short interviews → tick one answer per person","5 × 2 pts","played <b>once</b>; 10 s to read"]])}
-  ${mod("Schreiben","20 min","15 pts","4 of 10 in Teil 2",[["1","Fill in a form for a friend","10 fields × 0.5","copy information exactly"],["2","Reply to a personal email","10 pts","≈ 30 words, 3 guiding points, greeting + sign-off"]])}
+  ${mod("Schreiben","20 min","15 pts","4 of 10 in Teil 2",[["1","Fill in a form for a friend","10 answers → 5 pts (10 = 5, 9–8 = 4, 7–6 = 3, 5–4 = 2, 3–2 = 1)","names and streets spelled exactly; any clear date format"],["2","Reply to a personal email","10 pts","the greeting and first sentence are printed; you write ≈ 30 words (min. 25), answer all 3 questions, end with a sign-off"]])}
   ${mod("Sprechen","≈ 10 min + 10 min prep","25 pts","12 of 25",[["1","Introduce yourself: pick 4 of 6 topics (Sprachen, Hobbys, Sport, Familie, Beruf, Lieblingsessen)","","examiner asks follow-ups, e.g. spelling your name"],["2","Choose 1 of 3 photos: Was sehen Sie? Wie viele Personen? Wo? Was machen sie?","",""],["3","Role-play with the examiner about your photo","","du/Sie, taking turns"]],"One-to-one with the examiner; recorded.")}
   <section class="card stack"><h2>Strategy</h2>${[
     ["Do Schreiben Teil 2 early enough. It is the only part with a hard minimum (4/10), and it's where most beginners lose the written module.","بخش ۲ نوشتن را دیر شروع نکن؛ تنها بخش با حداقل نمره سخت است (۴ از ۱۰)."],
@@ -1653,6 +1663,8 @@ async function startNode(n, i){ const d=await getDay(n); if(!d) return; const nd
   if(nd.kind==="tutor"){ S.liveMode=nd.mode||(hasReportData(n)?"review":"coach"); S.dayN=n; startLive(n); return; }
   if(nd.kind==="blitz"){ S.blitzFor=n; startBlitz(); return; }
   if(nd.kind==="mock"){ S.view="exam"; openMock(nd.mock); return; }
+  if(nd.kind==="eye"){ const E=eyeData(); if(!E) return; const i=Math.max(0,E.items.findIndex(x=>eyeUnlocked(x)&&!(S.st.eye||{})[x.id])); S.eye={i:eyeUnlocked(E.items[i])?i:E.items.findIndex(eyeUnlocked), step:"rate", picks:{}, band:null, n}; render(); window.scrollTo(0,0); return; }
+  if(d.set) await offUrls(d.set);
   if(nd.kind==="lesson"){ const screens=buildScreens(n,d,nd); if(!screens.length){ toast("Nothing to practise here yet"); return; }
     startLesson({n, step:nd.step, part:nd.part, parts:nd.parts, key:nodeKey(n,nd), title:nd.title, screens, node:i}); }
   else if(nd.kind==="review"){ for(const k of Object.keys(S.st.intro)) await getDay(+k); startFc("de");
@@ -2312,15 +2324,15 @@ function readinessCard(){ const snap=Object.assign({}, S.st.reports||{});
 /* ====================== v9: guided long tutor sessions, varied sentences, memory ====================== */
 /* --- tutor session conductor: the app runs a timed lesson plan and steers Gemini phase by phase --- */
 function tutorMinutes(){ return +S.st.tutorMin||25; }
-function sessionPlan(n, mode, total){ let R=null; try{ if(hasReportData(n)) R=dayReport(n); }catch(e){} const weak=R?R.weak:[]; const late=n>=8;
+function sessionPlan(n, mode, total){ const X=S.mock?S.examCtx:null; let R=null; try{ if(hasReportData(n)) R=dayReport(n); }catch(e){} const weak=R?R.weak:[]; const late=n>=8;
   const speak = late ? "ÖSD Sprechen: Teil 1 (introduce himself on 4 of the 6 topics, follow-up questions, spell his name, say a phone number), then one Teil 2 photo description (Was sehen Sie? Wer? Wo? Was machen die Leute?) and a short Teil 3 role-play where he must ask you questions too."
     : "ÖSD Sprechen Teil 1: he introduces himself (name, country, city, languages, job, family). Ask follow-up questions, make him spell his name and say his phone number in pairs of digits. Push him from single words to full sentences.";
   let P;
   if(mode==="exam") P=[
-    ["Warm-up",1,"Greet him as the examiner. In one English sentence explain how the oral exam works. Then begin."],
-    ["Teil 1 · introduce yourself",4,"Exam conditions, Sie, no corrections: he introduces himself on 4 of: Sprachen, Hobbys, Sport, Familie, Beruf, Lieblingsessen. Ask 2–3 follow-up questions, including spelling his surname."],
-    ["Teil 2 · describe a picture",4,"Describe a simple everyday photo in words (for example a family at breakfast, people at a bus stop). Ask: Was sehen Sie? Wie viele Personen? Wo sind sie? Was machen sie? No corrections yet."],
-    ["Teil 3 · role-play",4,"Short role-play linked to the picture: you are the other person; he must ask at least 3 questions and answer yours. No corrections yet."],
+    ["Warm-up",1,"Greet him as the examiner and have a short, relaxed, unscored chat (how he is, how he got here), exactly like the real exam. In one English sentence explain the three parts. Then begin."],
+    ["Teil 1 · introduce yourself",4,`Exam conditions, Sie, no corrections: he introduces himself on 4 of these 6 topics: ${(X&&X.topics||TEIL1_TOPICS).join(", ")}. Ask 2–3 follow-up questions, including spelling his surname.`],
+    ["Teil 2 · describe a picture",4,X&&X.photo?`He has chosen this photo from the official model test. He can see it, you cannot; it shows: ${X.photo.scene_en} Let him describe it with the four questions: Was sehen Sie? Wie viele Personen? Wo sind sie? Was machen sie? Then one or two simple follow-up questions. No corrections yet.`:"Describe a simple everyday photo in words (for example a family at breakfast, people at a bus stop). Ask: Was sehen Sie? Wie viele Personen? Wo sind sie? Was machen sie? No corrections yet."],
+    ["Teil 3 · role-play",4,X&&X.photo?`Role-play in the situation of his photo: ${X.photo.roleplay_en} You play the other person and start with: „${X.photo.starter_de}“ He must ask at least 3 questions himself and answer yours. No corrections yet.`:"Short role-play linked to the picture: you are the other person; he must ask at least 3 questions and answer yours. No corrections yet."],
     ["Feedback & score",4,"Switch to English. Give his score out of 25 with the six criteria (Teil 1, 2, 3 each 0–4, vocabulary 0–5, pronunciation 0–4, grammar 0–4). Name his 3 most important errors; for each, say the correct sentence and make him repeat it twice."],
     ["Second attempt",5,"Repeat his weakest exam part with NEW questions. He must use the corrections. Praise every improvement."],
     ["Final recap",2,"Ask 4 quick questions he struggled with today. Tell him what improved. Say goodbye only now."]];
@@ -2532,12 +2544,23 @@ document.addEventListener("click", async e=>{
   else if(a==="mock-submit"){ submitApp(); }
   else if(a==="mock-prep"){ S.mock.endAt=Date.now()+10*60000; render(); }
   else if(a==="mock-photo"){ S.mock.photo=+b.dataset.i; render(); }
-  else if(a==="mock-tutor"){ S.liveMode="exam"; startLive(currentDay()); }
+  else if(a==="mock-tutor"){ S.liveMode="exam"; const D=S.mock&&S.mockData[S.mock.id]; const ph=D&&D.sprechen&&D.sprechen.teil2&&D.sprechen.teil2.photos; S.examCtx=D&&D.official?{topics:(D.sprechen.teil1&&D.sprechen.teil1.topics)||TEIL1_TOPICS, photo:ph?ph[S.mock.photo||0]:null}:null; startLive(currentDay()); }
   else if(a==="mock-use-tutor"){ S.mock.spOverride=b.dataset.v===""?null:+b.dataset.v; render(); }
   else if(a==="mock-a2-self"){ S.mock.sa2=null; S.mock.sa2Detail=null; render(); }
   else if(a==="mock-grade"){ gradePaperEmail(); }
   else if(a==="mock-result"){ mockGo("result"); }
-  else if(a==="mock-exit"){ S.mock=null; S.testPrefix=""; render(); window.scrollTo(0,0); }
+  else if(a==="mock-exit"){ stopOffAudio(); S.mock=null; S.testPrefix=""; S.examCtx=null; render(); window.scrollTo(0,0); }
+  else if(a==="offplay"){ offPlay(b); }
+  else if(a==="offrate"){ const au=b.closest(".offplayer")&&b.closest(".offplayer").querySelector("audio"); if(au){ au.playbackRate=+b.dataset.r; try{ au.preservesPitch=true; }catch(_){} b.parentElement.querySelectorAll('[data-act="offrate"]').forEach(x=>x.classList.toggle("sel",x===b)); } }
+  else if(a==="offtr"){ offTranscript(b.dataset.set,b.dataset.key,b.dataset.g); }
+  else if(a==="offseek"){ const au=b.closest(".offplayer")&&b.closest(".offplayer").querySelector("audio"); if(au){ au.currentTime=+b.dataset.s; au.play().catch(()=>{}); } }
+  else if(a==="vid-on"){ S.vidOn=true; render(); }
+  else if(a==="eye-open"){ S.eye={i:+b.dataset.i, step:"rate", picks:{}, band:null, n:b.dataset.n?+b.dataset.n:null}; render(); window.scrollTo(0,0); }
+  else if(a==="eye-pick"){ S.eye.picks[+b.dataset.q]=b.dataset.v==="1"; render(); }
+  else if(a==="eye-band"){ S.eye.band=+b.dataset.v; render(); }
+  else if(a==="eye-reveal"){ S.eye.step="reveal"; const x=eyeData().items[S.eye.i]; S.st.eye=S.st.eye||{}; S.st.eye[x.id]=Date.now(); addXp(5); save(); render(); }
+  else if(a==="eye-next"){ const E=eyeData(); let j=S.eye.i+1; while(j<E.items.length&&!eyeUnlocked(E.items[j])) j++; if(j<E.items.length){ S.eye={i:j, step:"rate", picks:{}, band:null, n:S.eye.n}; } else { if(S.eye.n){ S.st.done[S.eye.n+":eye"]=Date.now(); save(); } S.eye=null; toast("Nice work, examiner!"); } render(); window.scrollTo(0,0); }
+  else if(a==="eye-close"){ S.eye=null; render(); }
   else if(a==="auth-toggle"){ S.authMode=S.authMode==="signup"?"signin":"signup"; S.authMsg=""; render(); }
   else if(a==="auth-offline"){ S.offline=true; lsSet("osd-a1-offline","1"); render(); }
   else if(a==="auth-show"){ S.offline=false; lsSet("osd-a1-offline","0"); render(); }
@@ -2570,7 +2593,7 @@ document.addEventListener("input", e=>{
   const t=e.target;
   if(t.dataset.les==="text" && S.les){ S.les.text=t.value; const lb=$("#lesBtn"); if(lb) lb.disabled=!t.value.trim(); }
   if(t.dataset.store && t.type!=="radio") S.ans[t.dataset.store]=t.value;
-  if(t.dataset.draft){ S.st.drafts[t.dataset.draft]=t.value; const wc=wordCount(t.value); const el=$("#wc"); if(el){ el.textContent=wc+" words · aim for 30, at least 25"; el.style.color=wc>=25?"var(--ok)":"var(--muted)"; } const wk=$("#wcheck"); if(wk) wk.innerHTML=writeCheckHtml(t.value); clearTimeout(t._s); t._s=setTimeout(save,800); }
+  if(t.dataset.draft){ S.st.drafts[t.dataset.draft]=t.value; const wc=wordCount(t.value); const el=$("#wc"); if(el){ el.textContent=wc+" words · aim for 30, at least 25"; el.style.color=wc>=25?"var(--ok)":"var(--muted)"; } const wk=$("#wcheck"); if(wk) wk.innerHTML=writeCheckHtml(t.value, t.dataset.intro); clearTimeout(t._s); t._s=setTimeout(save,800); }
   if(t.dataset.imp) S.importText[t.dataset.imp]=t.value;
   if(t.dataset.cards) S.cardText[t.dataset.cards]=t.value;
   if(t.dataset.mtask&&S.mock) S.mock.task=t.value;
@@ -2607,6 +2630,7 @@ document.addEventListener("change", e=>{
   if(t.dataset.set==="voice"){ S.st.voice=t.value; save(); speak("Grüß Gott!"); }
   if(t.dataset.set==="strict"){ S.st.strict=t.checked; save(); }
   if(t.dataset.set==="sfx"){ S.st.sfx=t.checked; save(); if(t.checked) sfx("ok"); }
+  if(t.dataset.offimport&&t.files&&t.files.length){ importOfficial([...t.files]); t.value=""; }
   if(t.dataset.set==="exam"){ if(/^\d{4}-\d{2}-\d{2}$/.test(t.value)){ S.st.exam=t.value; schedule._k=null; S.dayN=currentDay(); save(); render(); } else toast("Use the format YYYY-MM-DD"); }
   if(t.dataset.set==="start"){ if(/^\d{4}-\d{2}-\d{2}$/.test(t.value)){ S.st.start=t.value; schedule._k=null; S.dayN=currentDay(); save(); render(); } else toast("Use the format YYYY-MM-DD"); }
 });
@@ -2688,12 +2712,12 @@ function hearOk(s, v){ const digits=x=>String(x).replace(/\D/g,"");
 
 /* --- writing tasks for review days (graded by the examiner AI, like Schreiben Teil 2) --- */
 const EMAIL_TASKS=[
- {email_from:"Lukas",email_de:"Hallo!\nAm Samstag mache ich eine Party in meiner Wohnung. Kommst du auch? Bitte schreib mir bald.\nViele Grüße\nLukas",task_de:"Antworten Sie Lukas. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Lukas.",points_de:["Danke für die Einladung","Wann kommen Sie?","Was bringen Sie mit?"],model_answer_de:"Hallo Lukas,\ndanke für die Einladung! Ich komme gern. Ich komme am Samstag um acht Uhr. Ich bringe einen Kuchen mit. Bis Samstag!\nLiebe Grüße\nRaam",useful_phrases:["Danke für …","Ich komme gern …","Ich bringe … mit."]},
- {email_from:"Anna",email_de:"Liebe Freunde,\nich habe jetzt eine neue Wohnung in Graz! Sie ist klein, aber schön. Besuch mich bald!\nAnna",task_de:"Antworten Sie Anna. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Anna.",points_de:["Gratulieren Sie","Wann können Sie kommen?","Fragen Sie nach der Adresse"],model_answer_de:"Liebe Anna,\nsuper, gratuliere zur neuen Wohnung! Ich kann am Sonntag kommen. Wie ist deine Adresse? Ich freue mich!\nLiebe Grüße\nRaam",useful_phrases:["Gratuliere!","Ich kann am … kommen.","Wie ist deine Adresse?"]},
- {email_from:"Thomas",email_de:"Hallo Raam,\ndu lernst jetzt Deutsch, oder? Wie ist dein Kurs? Erzähl mal!\nThomas",task_de:"Antworten Sie Thomas. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Thomas.",points_de:["Wo ist der Kurs?","Wann lernen Sie?","Wie ist der Lehrer / die Lehrerin?"],model_answer_de:"Hallo Thomas,\nja, ich lerne Deutsch! Der Kurs ist in Teheran. Ich lerne jeden Tag drei Stunden. Die Lehrerin ist sehr nett. Deutsch ist schwer, aber schön!\nViele Grüße\nRaam",useful_phrases:["Der Kurs ist in …","Ich lerne jeden Tag …","Die Lehrerin ist …"]},
- {email_from:"Sarah",email_de:"Hi!\nWas machst du am Wochenende? Ich habe am Samstag Zeit.\nSarah",task_de:"Antworten Sie Sarah. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Sarah.",points_de:["Was machen Sie am Wochenende?","Laden Sie Sarah ins Kino ein","Wann treffen Sie sich?"],model_answer_de:"Hallo Sarah,\nam Samstag lerne ich Deutsch, aber am Abend habe ich Zeit. Gehen wir ins Kino? Wir treffen uns um sieben Uhr am Kino. Bis Samstag!\nLiebe Grüße\nRaam",useful_phrases:["Am Wochenende …","Gehen wir …?","Wir treffen uns um …"]},
- {email_from:"Peter",email_de:"Hallo!\nAm Freitag habe ich Geburtstag und mache ein Fest. Kommst du?\nPeter",task_de:"Antworten Sie Peter. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Peter.",points_de:["Gratulieren Sie zum Geburtstag","Sie können nicht kommen – warum?","Schlagen Sie einen anderen Tag vor"],model_answer_de:"Lieber Peter,\nalles Gute zum Geburtstag! Leider kann ich am Freitag nicht kommen, ich arbeite bis zehn Uhr. Hast du am Samstag Zeit? Dann trinken wir einen Kaffee.\nLiebe Grüße\nRaam",useful_phrases:["Alles Gute zum Geburtstag!","Leider kann ich nicht …","Hast du am … Zeit?"]},
- {email_from:"Maria",email_de:"Hallo Raam,\nim Dezember besuche ich Teheran! Was kann ich dort machen?\nMaria",task_de:"Antworten Sie Maria. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Maria.",points_de:["Freuen Sie sich","Was kann Maria in Teheran sehen?","Geben Sie Ihre Telefonnummer"],model_answer_de:"Hallo Maria,\ntoll, ich freue mich! In Teheran kannst du den Basar und die Berge sehen. Das Essen ist sehr gut. Meine Telefonnummer ist 0912 345 6789. Ruf mich an!\nLiebe Grüße\nRaam",useful_phrases:["Ich freue mich!","Du kannst … sehen.","Meine Telefonnummer ist …"]}];
+ {email_from:"Lukas",intro_de:"Lieber Lukas,\nvielen Dank für dein E-Mail.",email_de:"Hallo!\nAm Samstag mache ich eine Party in meiner Wohnung. Kommst du auch? Bitte schreib mir bald.\nViele Grüße\nLukas",task_de:"Antworten Sie Lukas. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Lukas.",points_de:["Danke für die Einladung","Wann kommen Sie?","Was bringen Sie mit?"],model_answer_de:"Hallo Lukas,\ndanke für die Einladung! Ich komme gern. Ich komme am Samstag um acht Uhr. Ich bringe einen Kuchen mit. Bis Samstag!\nLiebe Grüße\nRaam",useful_phrases:["Danke für …","Ich komme gern …","Ich bringe … mit."]},
+ {email_from:"Anna",intro_de:"Liebe Anna,\nvielen Dank für dein E-Mail.",email_de:"Liebe Freunde,\nich habe jetzt eine neue Wohnung in Graz! Sie ist klein, aber schön. Besuch mich bald!\nAnna",task_de:"Antworten Sie Anna. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Anna.",points_de:["Gratulieren Sie","Wann können Sie kommen?","Fragen Sie nach der Adresse"],model_answer_de:"Liebe Anna,\nsuper, gratuliere zur neuen Wohnung! Ich kann am Sonntag kommen. Wie ist deine Adresse? Ich freue mich!\nLiebe Grüße\nRaam",useful_phrases:["Gratuliere!","Ich kann am … kommen.","Wie ist deine Adresse?"]},
+ {email_from:"Thomas",intro_de:"Lieber Thomas,\nvielen Dank für dein E-Mail.",email_de:"Hallo Raam,\ndu lernst jetzt Deutsch, oder? Wie ist dein Kurs? Erzähl mal!\nThomas",task_de:"Antworten Sie Thomas. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Thomas.",points_de:["Wo ist der Kurs?","Wann lernen Sie?","Wie ist der Lehrer / die Lehrerin?"],model_answer_de:"Hallo Thomas,\nja, ich lerne Deutsch! Der Kurs ist in Teheran. Ich lerne jeden Tag drei Stunden. Die Lehrerin ist sehr nett. Deutsch ist schwer, aber schön!\nViele Grüße\nRaam",useful_phrases:["Der Kurs ist in …","Ich lerne jeden Tag …","Die Lehrerin ist …"]},
+ {email_from:"Sarah",intro_de:"Liebe Sarah,\nvielen Dank für dein E-Mail.",email_de:"Hi!\nWas machst du am Wochenende? Ich habe am Samstag Zeit.\nSarah",task_de:"Antworten Sie Sarah. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Sarah.",points_de:["Was machen Sie am Wochenende?","Laden Sie Sarah ins Kino ein","Wann treffen Sie sich?"],model_answer_de:"Hallo Sarah,\nam Samstag lerne ich Deutsch, aber am Abend habe ich Zeit. Gehen wir ins Kino? Wir treffen uns um sieben Uhr am Kino. Bis Samstag!\nLiebe Grüße\nRaam",useful_phrases:["Am Wochenende …","Gehen wir …?","Wir treffen uns um …"]},
+ {email_from:"Peter",intro_de:"Lieber Peter,\nvielen Dank für dein E-Mail.",email_de:"Hallo!\nAm Freitag habe ich Geburtstag und mache ein Fest. Kommst du?\nPeter",task_de:"Antworten Sie Peter. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Peter.",points_de:["Gratulieren Sie zum Geburtstag","Sie können nicht kommen – warum?","Schlagen Sie einen anderen Tag vor"],model_answer_de:"Lieber Peter,\nalles Gute zum Geburtstag! Leider kann ich am Freitag nicht kommen, ich arbeite bis zehn Uhr. Hast du am Samstag Zeit? Dann trinken wir einen Kaffee.\nLiebe Grüße\nRaam",useful_phrases:["Alles Gute zum Geburtstag!","Leider kann ich nicht …","Hast du am … Zeit?"]},
+ {email_from:"Maria",intro_de:"Liebe Maria,\nvielen Dank für dein E-Mail.",email_de:"Hallo Raam,\nim Dezember besuche ich Teheran! Was kann ich dort machen?\nMaria",task_de:"Antworten Sie Maria. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Maria.",points_de:["Freuen Sie sich","Was kann Maria in Teheran sehen?","Geben Sie Ihre Telefonnummer"],model_answer_de:"Hallo Maria,\ntoll, ich freue mich! In Teheran kannst du den Basar und die Berge sehen. Das Essen ist sehr gut. Meine Telefonnummer ist 0912 345 6789. Ruf mich an!\nLiebe Grüße\nRaam",useful_phrases:["Ich freue mich!","Du kannst … sehen.","Meine Telefonnummer ist …"]}];
 
 /* --- review, buffer, mock and rest days build themselves from earlier days --- */
 function learnedBefore(n){ const out={vocab:[],phrases:[],ex:[],quiz:[]}; for(let k=1;k<n;k++){ const d=S.days[k]; if(!d||d.synthetic) continue;
@@ -2707,6 +2731,7 @@ async function buildSynthetic(n){ for(let k=1;k<n;k++) await getDay(k); const p=
   if(/lesen/.test(t)&&withL.length){ const m=withL[hashStr("l"+n)%withL.length]; d.lesen=JSON.parse(JSON.stringify(S.days[m].lesen)); d.lesenFrom=m; }
   const dk_=src.flatMap(k=>S.days[k].diktat||[]); if(dk_.length) d.diktat=shuffled(dk_,"dk"+n).slice(0,6);
   if(/schreiben|bootcamp|buffer|fix/.test(t)||p.k==="review"&&n%3===0){ d.schreiben={teil2:Object.assign({word_target:30},EMAIL_TASKS[n%EMAIL_TASKS.length])}; }
+  if(/hören/.test(t)){ const off=await officialPractice(n); if(off){ d.hoeren=JSON.parse(JSON.stringify(off.hoeren)); d.set=off.set; d.hoerenFrom="ÖSD"; } }
   return d; }
 function synthNodes(n,d){ const p=PLAN[n-1], t=p.t.toLowerCase(), H=dayHours()/3; const N=[];
   const add=(step,title,icon,min,desc,kind,extra)=>N.push(Object.assign({step,part:0,parts:1,title,icon,min:Math.max(3,Math.round(min*H)),desc,kind},extra||{}));
@@ -2719,10 +2744,11 @@ function synthNodes(n,d){ const p=PLAN[n-1], t=p.t.toLowerCase(), H=dayHours()/3
   add("words","Words recall","book",vocab?30:15,["Write and recognise earlier words from memory.","لغات قبلی را از حفظ بنویس و تشخیص بده."],"lesson");
   add("drill","Grammar gym","bulb",gram?30:15,[NODE_INFO.drill[1],NODE_INFO.drill[2]],"lesson");
   add("hoertrainer","Hör-Trainer","headph",hoer?20:10,[NODE_INFO.hoertrainer[1],NODE_INFO.hoertrainer[2]],"lesson");
-  if(d.hoeren) add("hoeren",`Hören (from Day ${d.hoerenFrom})`,"headph",20,["The listening tasks of an earlier day, again. Use the slow button if you need it.","تمرین شنیدن یک روز قبل، دوباره."],"task");
+  if(d.hoeren) add("hoeren",d.hoerenFrom==="ÖSD"?"Hören · real ÖSD audio":`Hören (from Day ${d.hoerenFrom})`,"headph",20,d.hoerenFrom==="ÖSD"?["The official model test recordings again: first at exam speed, then slowly with the transcript.","فایل‌های صوتی نمونه آزمون رسمی، دوباره: اول با سرعت آزمون، بعد آهسته با متن."]:["The listening tasks of an earlier day, again. Use the slow button if you need it.","تمرین شنیدن یک روز قبل، دوباره."],"task");
   if(d.diktat) add("diktat","Dictation","pencil",10,[NODE_INFO.diktat[1],NODE_INFO.diktat[2]],"lesson");
   if(d.lesen) add("lesen",`Lesen (from Day ${d.lesenFrom})`,"bookopen",15,[NODE_INFO.lesen[1],NODE_INFO.lesen[2]],"task");
   if(d.schreiben) add("schreiben","Email practice","mail",20,["Write a 30-word email; the examiner AI grades it.","یک ایمیل ۳۰ کلمه‌ای بنویس؛ هوش مصنوعی نمره می‌دهد."],"task");
+  if(/schreiben|email/.test(t)&&eyeData()) add("eye","Examiner's eye","pencil",10,["Mark real A1 learner emails with the official criteria.","ایمیل‌های واقعی داوطلبان A1 را با معیارهای رسمی نمره بده."],"eye");
   if((S.st.mistakes||[]).some(m=>m.q&&m.right)) add("repair","Repair lesson","pencil",15,["Your recent mistakes, asked again.","اشتباهات اخیرت، دوباره."],"lesson");
   add("blitz","Wörter-Blitz","bolt",5,["60 seconds, as many words as you can.","۶۰ ثانیه، هر چند کلمه که می‌توانی."],"blitz");
   add("tutor",sp?"Tutor: oral exam":"Tutor session","mic",sp?30:25,[NODE_INFO.tutor[1],NODE_INFO.tutor[2]],"tutor",sp?{mode:"exam"}:{});
@@ -2766,6 +2792,185 @@ async function migratePlan(){ if((S.st.planV||1)>=2) return; S.st.exam=S.st.exam
   let fu=1; while(fu<PLAN.length&&S.days[fu]&&dayAllDone(fu)) fu++;
   if(fu>1&&dateOf(fu)<todayMid()) S.st.anchor={n:fu, date:dk(new Date())};
   S.st.planV=2; schedule._k=null; S.dayN=currentDay(); save(); }
+
+/* ====================== v11: official ÖSD Modellsätze with real audio, official marking, examiner's eye ====================== */
+// Official ÖSD content (texts, keys, learner samples) lives only in the private `library` table of the user's account,
+// and the recordings and pictures only in the user's private storage folder, imported from the ZIP files they downloaded.
+const OFF_SETS={za1:{title:"ÖSD Zertifikat A1 · Modellsatz", short:"ZA1", mock:"m1"}, za1oe:{title:"ÖSD Zertifikat A1/Österreich · Modellsatz", short:"ZA1/Ö", mock:"m2"}};
+S.keep={}; document.addEventListener("toggle", e=>{ const t=e.target; if(t&&t.dataset&&t.dataset.keep) S.keep[t.dataset.keep]=t.open; }, true);
+S.lib={}; S.offMedia={}; S.offUrls={}; S.offAudio=null; S.offImport=null; S.trOpen={}; S.trBusy=null; S.eye=null; S.vidOn=false; S.examCtx=null;
+try{ S.lib=JSON.parse(lsGet("osd-a1-lib")||"{}")||{}; }catch(e){ S.lib={}; }
+async function pullLibrary(){ if(!S.uid) return; try{ const r=await sb.from("library").select("key,content"); if(!r.error){ S.lib={}; (r.data||[]).forEach(x=>{ S.lib[x.key]=x.content; }); lsSet("osd-a1-lib", JSON.stringify(S.lib)); } }catch(e){} }
+function offData(set){ return S.lib["official:"+set]||null; }
+function offDir(set){ return `${S.uid}/official/${set}`; }
+async function offStatus(set, force){ if(!S.uid) return {audio:0,img:0,files:[],imgs:[]}; const c=S.offMedia[set]; if(c&&!force&&Date.now()-c.at<5*60000) return c;
+  try{ const a=await sb.storage.from("media").list(offDir(set),{limit:50}); const i=await sb.storage.from("media").list(offDir(set)+"/img",{limit:50});
+    const files=((a&&a.data)||[]).filter(f=>f.id).map(f=>f.name), imgs=((i&&i.data)||[]).filter(f=>f.id).map(f=>f.name);
+    S.offMedia[set]={at:Date.now(), audio:["A1","A2","A3"].filter(k=>files.includes(k+".mp3")).length, img:imgs.length, files, imgs}; }
+  catch(e){ S.offMedia[set]={at:Date.now(), audio:0, img:0, files:[], imgs:[]}; }
+  return S.offMedia[set]; }
+function offReady(set){ const m=S.offMedia[set]; return !!(offData(set)&&m&&m.audio===3&&m.img>=15); }
+async function offUrls(set){ const c=S.offUrls[set]; if(c&&Date.now()-c.at<5*3600e3) return c.map;
+  const st=await offStatus(set); const paths=[...(st.files||[]).filter(f=>/\.mp3$/.test(f)).map(f=>offDir(set)+"/"+f), ...(st.imgs||[]).map(f=>offDir(set)+"/img/"+f)];
+  const map={}; if(paths.length){ try{ const r=await sb.storage.from("media").createSignedUrls(paths, 6*3600); ((r&&r.data)||[]).forEach((x,i)=>{ if(x&&x.signedUrl) map[paths[i].split("/").pop().replace(/\.(mp3|jpg)$/,"")]=x.signedUrl; }); }catch(e){} }
+  S.offUrls[set]={at:Date.now(), map}; return map; }
+function offUrl(set,key){ const c=S.offUrls[set]; return (c&&c.map[key])||""; }
+
+/* importing the ZIP files: MP3s are uploaded as they are; the pictures are cut out of the Modellsatz PDF */
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=()=>rej(new Error("Couldn't load a helper library. Check your connection.")); document.head.appendChild(s); }); }
+async function loadPdfjs(){ if(!window.pdfjsLib){ await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"); window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; } return window.pdfjsLib; }
+function offFromName(name){ const m=String(name).match(/_A([123])_(\d{6})/); if(!m) return null;
+  for(const k of Object.keys(OFF_SETS)){ const D=offData(k); if(D&&(D.audio_codes||[]).includes(m[2])) return {set:k, part:"A"+m[1]}; }
+  return m[2]==="060917"?{set:"za1",part:"A"+m[1]}:m[2]==="150917"?{set:"za1oe",part:"A"+m[1]}:null; }
+async function importOfficial(fileList){
+  if(!S.uid){ toast("Sign in first"); return; }
+  const P=S.offImport={msg:"Reading the files…", done:[], err:""}; render();
+  try{
+    const groups=[];
+    for(const f of fileList){ const buf=new Uint8Array(await f.arrayBuffer());
+      if(/\.zip$/i.test(f.name)){ P.msg="Unpacking "+f.name+"…"; render(); const { unzipSync }=await import("https://cdn.jsdelivr.net/npm/fflate@0.8.2/esm/browser.js");
+        const ent=unzipSync(buf,{filter:x=>!/(^|\/)(__MACOSX|\._)/.test(x.name)&&/\.(mp3|pdf)$/i.test(x.name)});
+        groups.push({mp3:Object.entries(ent).filter(([n])=>/\.mp3$/i.test(n)).map(([name,data])=>({name,data})), pdf:Object.entries(ent).filter(([n])=>/\.pdf$/i.test(n)).map(([name,data])=>({name,data}))}); }
+      else if(/\.mp3$/i.test(f.name)) groups.push({mp3:[{name:f.name,data:buf}], pdf:[]});
+      else if(/\.pdf$/i.test(f.name)) groups.push({mp3:[], pdf:[{name:f.name,data:buf}]}); }
+    for(const g of groups){ let set=null;
+      for(const a of g.mp3){ const s=offFromName(a.name); if(!s) continue; set=s.set; P.msg=`Uploading ${OFF_SETS[s.set].short} · audio ${s.part}…`; render();
+        const {error}=await sb.storage.from("media").upload(`${offDir(s.set)}/${s.part}.mp3`, new Blob([a.data],{type:"audio/mpeg"}), {upsert:true, contentType:"audio/mpeg"}); if(error) throw error; P.done.push(OFF_SETS[s.set].short+" audio "+s.part); }
+      for(const p of g.pdf){ if(!/modellsatz|ms_hp|za1/i.test(p.name)) continue; const ps=set||(/Ö|Oe|Österreich|Ã|_oe/i.test(p.name)?"za1oe":"za1"); P.msg=`Cutting the pictures out of the ${OFF_SETS[ps].short} PDF…`; render(); await cropOfficialPdf(ps, p.data); P.done.push(OFF_SETS[ps].short+" pictures"); } }
+    Object.keys(OFF_SETS).forEach(k=>{ delete S.offUrls[k]; });
+    for(const k of Object.keys(OFF_SETS)) await offStatus(k,true);
+    P.msg=P.done.length?"Done.":"No ÖSD Modellsatz files found in what you chose.";
+  }catch(e){ P.err=e.message||String(e); P.msg=""; }
+  render(); }
+async function cropOfficialPdf(set, data){ const D=offData(set); const C=D&&D.crops; if(!C) throw new Error("The test content isn't loaded yet. Reload the app and try again.");
+  const lib=await loadPdfjs(); const pdf=await lib.getDocument({data}).promise;
+  for(const [key,spec] of Object.entries(C)){ if(!spec||!spec.page) continue;
+    const page=await pdf.getPage(spec.page); const vp1=page.getViewport({scale:1}); const vp=page.getViewport({scale:C.page_w/vp1.width});
+    const cv=document.createElement("canvas"); cv.width=Math.round(vp.width); cv.height=Math.round(vp.height); await page.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise;
+    for(let i=0;i<spec.boxes.length;i++){ const [x0,y0,x1,y1]=spec.boxes[i]; const w=x1-x0, h=y1-y0, k=Math.min(1,640/w); const out=document.createElement("canvas"); out.width=Math.round(w*k); out.height=Math.round(h*k);
+      const ctx=out.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,out.width,out.height); ctx.drawImage(cv,x0,y0,w,h,0,0,out.width,out.height);
+      const blob=await new Promise(r=>out.toBlob(r,"image/jpeg",0.82)); const {error}=await sb.storage.from("media").upload(`${offDir(set)}/img/${key}_${i+1}.jpg`, blob, {upsert:true, contentType:"image/jpeg"}); if(error) throw error; } } }
+function officialCard(){ if(!S.uid) return ""; const sets=Object.keys(OFF_SETS); if(!sets.some(k=>offData(k))) return ""; const P=S.offImport;
+  sets.forEach(k=>{ if(!S.offMedia[k]&&!S.offMedia["_l"+k]){ S.offMedia["_l"+k]=1; offStatus(k).then(()=>{ delete S.offMedia["_l"+k]; if(S.view==="exam"&&!S.mock) render(); }); } });
+  const all=sets.every(offReady), busy=P&&P.msg&&P.msg!=="Done."&&!P.err&&!/^No /.test(P.msg);
+  return `<section class="card stack"><div class="label">Official ÖSD model tests</div><h2>Real exam papers, real audio</h2>
+    <p class="small">${ex("Mock 1 and Mock 2 use the two official model tests you downloaded: the real texts, pictures and recordings, marked with the official answer key and point tables. The files stay private in your account.","آزمون ۱ و ۲ از دو نمونه آزمون رسمی که دانلود کردی استفاده می‌کنند: متن‌ها، تصاویر و فایل‌های صوتی واقعی، با کلید و جدول نمره رسمی. فایل‌ها خصوصی در حساب تو می‌مانند.")}</p>
+    ${sets.map(k=>{ const m=S.offMedia[k]||{}, ok=offReady(k); return `<div class="row between" style="flex-wrap:nowrap;gap:10px"><div style="min-width:0"><b>${esc(OFF_SETS[k].title)}</b><div class="small muted">${!offData(k)?"content not loaded":ok?"ready · real audio and pictures":`audio ${m.audio||0}/3 · pictures ${m.img||0}/15`}</div></div><span class="chip ${ok?"ok":"warn"}">${ok?"Ready":"Needs files"}</span></div>`; }).join("")}
+    ${all?"":`<p class="small">${ex("Once only: choose the ZIP files you downloaded from osd.at (ZA1_Modellsatz.zip and ZA1-Oe-Modellsatz-HP.zip). The app uploads the MP3s to your private folder and cuts the pictures out of the PDF.","فقط یک بار: فایل‌های ZIP را که از osd.at دانلود کردی انتخاب کن. اپ فایل‌های صوتی را در پوشه خصوصی‌ات آپلود و تصاویر را از PDF جدا می‌کند.")}</p>`}
+    <label class="btn ${all?"":"primary"}" style="align-self:flex-start">${busy?esc(P.msg):all?"Replace the files":"Add the ZIP files"}<input type="file" multiple accept=".zip,.mp3,.pdf,application/zip,audio/mpeg,application/pdf" data-offimport="1" hidden ${busy?"disabled":""}></label>
+    ${P&&P.done&&P.done.length?`<div class="small" style="color:var(--ok)">✓ ${esc(P.done.join(" · "))}</div>`:""}${P&&P.err?`<div class="small" style="color:var(--bad)">${esc(P.err)}</div>`:""}${P&&/^No /.test(P.msg||"")?`<div class="small" style="color:var(--bad)">${esc(P.msg)}</div>`:""}
+  </section>`; }
+
+/* the real recordings: once in exam mode (the file contains the instructions, pauses and Teil 2 repetition), freely afterwards */
+function offPlayer(g, set, key){ const url=offUrl(set,key); const chk=S.checked[g]; const oneShot=(S.st.strict||isTest(g))&&!chk; const pk=g+"|off"; const used=S.plays[pk]||0;
+  if(!url) return `<div class="banner"><div>${ex("The recording isn't added yet: add the official ZIP files in the Exam tab.","فایل صوتی هنوز اضافه نشده: فایل‌های ZIP رسمی را در تب Exam اضافه کن.")}</div></div>`;
+  if(oneShot){ const playing=S.offAudio&&S.offAudio.g===g&&!S.offAudio.ended;
+    return `<div class="stack" style="gap:6px"><div class="row"><button class="btn sm ${used?"":"primary"}" data-act="offplay" data-g="${attr(g)}" data-set="${set}" data-key="${key}" ${used?"disabled":""}>${ICONS.play}${playing?"Playing…":used?"Played":"Play the recording"}</button><span class="small tnum muted" id="offT">${playing?"":""}</span></div>
+      <p class="small muted">${ex("Real ÖSD recording with the instructions and pauses. It plays once, like in the exam (Teil 2 repeats inside the recording).","فایل صوتی واقعی ÖSD همراه با دستورالعمل‌ها و مکث‌ها. مثل آزمون یک بار پخش می‌شود (بخش ۲ داخل فایل تکرار می‌شود).")}</p></div>`; }
+  const tk=`transcript:${set}:${key}`, T=S.lib[tk], open=S.trOpen[g];
+  return `<div class="stack offplayer" style="gap:6px"><audio controls preload="none" src="${attr(url)}" style="width:100%"></audio>
+    <div class="row">${[0.75,0.9,1].map(r=>`<button class="opt" data-act="offrate" data-r="${r}">${r}×</button>`).join("")}<button class="btn sm" data-act="offtr" data-g="${attr(g)}" data-set="${set}" data-key="${key}" ${S.trBusy===tk?"disabled":""}>${S.trBusy===tk?"Writing the transcript…":open?"Hide transcript":"Transcript"}</button></div>
+    ${open&&T?trHtml(T):""}</div>`; }
+function trSec(t){ const m=String(t||"").match(/(\d+):(\d{2})/); return m?(+m[1])*60+(+m[2]):null; }
+function trHtml(T){ return `<div class="sunk stack transcript" style="gap:8px"><div class="small muted">${ex("Transcript made by Gemini from the recording; small errors are possible. Tap a time to jump there.","متن را Gemini از روی فایل نوشته؛ ممکن است اشتباه کوچکی داشته باشد. روی زمان بزن تا به آن‌جا بروی.")}</div>
+  ${(T.segments||[]).map(s=>`<div class="stack" style="gap:4px"><div class="label">${esc(s.label||"")}</div>${(s.lines||[]).map(l=>`<div class="row" style="flex-wrap:nowrap;align-items:flex-start;gap:8px">${trSec(l.t)!=null?`<button class="opt tnum" data-act="offseek" data-s="${trSec(l.t)}" style="flex:none;padding:2px 8px">${esc(l.t)}</button>`:""}<div><b>${l.speaker?esc(l.speaker)+": ":""}</b>${esc(l.de||"")}${l.en?`<br><span class="small muted">${esc(l.en)}</span>`:""}</div></div>`).join("")}</div>`).join("")}</div>`; }
+async function offTranscript(set,key,g){ const k=`transcript:${set}:${key}`; if(S.lib[k]){ S.trOpen[g]=!S.trOpen[g]; render(); return; }
+  if(!S.ai){ toast("Transcripts need the Gemini key on the server"); return; }
+  S.trBusy=k; render();
+  try{ const map=await offUrls(set); const r=await api("/api/ai",{mode:"transcribe", payload:{url:map[key], part:key}}); const c=r.result; if(!c||!c.segments) throw new Error("empty transcript");
+    S.lib[k]=c; lsSet("osd-a1-lib", JSON.stringify(S.lib)); S.trOpen[g]=true;
+    try{ await sb.from("library").upsert({user_id:S.uid, key:k, content:c, updated_at:new Date().toISOString()}); }catch(e){} }
+  catch(e){ toast("Couldn't make the transcript: "+e.message); }
+  S.trBusy=null; render(); }
+function offPlay(b){ const g=b.dataset.g, url=offUrl(b.dataset.set,b.dataset.key); if(!url) return; const pk=g+"|off"; if((S.plays[pk]||0)>=1) return;
+  stopSpeech(); if(S.offAudio&&S.offAudio.el){ try{ S.offAudio.el.pause(); }catch(e){} }
+  const el=new Audio(url); const A=S.offAudio={g, el, ended:false}; S.plays[pk]=1;
+  el.ontimeupdate=()=>{ const t=$("#offT"); if(t&&S.offAudio===A) t.textContent=`${fmtMs(el.currentTime*1000)} / ${isFinite(el.duration)?fmtMs(el.duration*1000):"…"}`; };
+  el.onended=()=>{ A.ended=true; if(S.offAudio===A) render(); };
+  el.onerror=()=>{ A.ended=true; S.plays[pk]=0; toast("The recording couldn't be played. Check your connection and try again."); render(); };
+  el.play().catch(()=>{ A.ended=true; S.plays[pk]=0; render(); }); render(); }
+function stopOffAudio(){ if(S.offAudio&&S.offAudio.el){ try{ S.offAudio.el.pause(); }catch(e){} } S.offAudio=null; }
+function picImg(p,set){ const u=p.img&&set?offUrl(set,p.img):""; return u?`<img src="${attr(u)}" alt="${attr(p.label_en||"")}" class="picimg">`:""; }
+
+/* official marking helpers (Modellsatz rules) */
+function lev(a,b){ a=String(a); b=String(b); const m=a.length, n=b.length; if(!m) return n; if(!n) return m; let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1)); prev=cur; } return prev[n]; }
+function closeEnough(a,b){ const x=norm(a), y=norm(b); if(!x||!y) return false; if(x===y) return true; return x.length>=4 && lev(x,y)<=Math.max(1,Math.floor(x.length/5)); }
+const MONTHS_DE=["jän|jan","feb","mär|mar|maer","apr","mai|may","jun","jul","aug","sep","okt|oct","nov","dez|dec"];
+function dateMatch(v, dmy){ const s=String(v||"").trim().toLowerCase(); if(!s||!dmy) return false;
+  let m=s.match(/^(\d{1,2})\s*[.\-\/ ]\s*(\d{1,2})\s*[.\-\/ ]\s*(\d{2}|\d{4})$/); if(m){ let y=+m[3]; if(y<100) y+=1900; return +m[1]===dmy[0]&&+m[2]===dmy[1]&&y===dmy[2]; }
+  m=s.match(/^(\d{1,2})\.?\s*([a-zäöü]+)\.?\s*(\d{4})$/); if(m){ const mi=MONTHS_DE.findIndex(p=>new RegExp("^("+p+")").test(m[2])); return +m[1]===dmy[0]&&mi+1===dmy[1]&&+m[3]===dmy[2]; }
+  return false; }
+function textOk(f,v){ const s=String(v||"").trim(); if(!s) return false; const acc=f.accept&&f.accept.length?f.accept:[f.answer];
+  if(f.check==="date") return dateMatch(s, f.date);
+  if(f.strict) return acc.some(a=>String(a).toLowerCase().replace(/\s+/g," ").trim()===s.toLowerCase().replace(/\s+/g," "));
+  if(acc.some(a=>norm(a)===norm(s))) return true;
+  return !!f.loose && acc.some(a=>closeEnough(a,s)); }
+function formMax(f){ return f.type==="given"?0:(f.pts||1); }
+function formPts(f,v){ if(f.type==="given") return 0; const max=formMax(f);
+  if(f.type==="multi"){ const sel=v||[], ans=f.answer||[]; if(!sel.length||sel.some(x=>!ans.includes(x))) return 0; return max===1?(sel.length===ans.length?1:0):Math.min(max, sel.length); }
+  if(f.type==="choice") return v===f.answer?max:0;
+  return textOk(f,v)?max:0; }
+function formOk(f,v){ return formPts(f,v)===formMax(f); }
+function taskPts(sc,total){ return total===6?PLA2(sc):total===5?P5(sc):null; }
+
+/* examiner's eye: real learner emails from the ÖSD Mustertexte, judged with the official criteria */
+function eyeData(){ return S.lib["official:muster"]||null; }
+function eyeUnlocked(x){ return !x.after||!!S.st.mocks[x.after]; }
+function eyeCard(){ const E=eyeData(); if(!E) return ""; const done=S.st.eye||{};
+  return `<section class="card stack"><div class="label">Schreiben · examiner's eye</div><h2>Mark real learner emails</h2>
+    <p class="small">${ex("Five real emails written by A1 candidates (from the ÖSD Mustertexte). Decide which questions were answered and how many points it gets, then compare with the official criteria. This is the fastest way to learn what examiners reward.","پنج ایمیل واقعی از داوطلبان A1 (از نمونه‌نوشته‌های ÖSD). تشخیص بده به کدام سؤال‌ها جواب داده شده و چند نمره می‌گیرد، بعد با معیارهای رسمی مقایسه کن.")}</p>
+    <div class="row">${E.items.map((x,i)=>{ const ok=eyeUnlocked(x); return `<button class="opt ${done[x.id]?"sel":""}" data-act="eye-open" data-i="${i}" ${ok?"":"disabled"} title="${ok?"":"Unlocks after Mock 1 (same task)"}">E-Mail ${esc(x.id)}${done[x.id]?" ✓":ok?"":" · after Mock 1"}</button>`; }).join("")}</div></section>`; }
+function vEye(){ const E=eyeData(), X=S.eye, x=E.items[X.i], T=E.tasks[x.task]||{}; const rev=X.step==="reveal";
+  const qs=(T.questions||[]).map((q,qi)=>{ const pick=X.picks[qi]; const truth=x.answered[qi]; let cls=""; if(rev) cls=pick===truth?"right":"wrong";
+    return `<div class="row" style="flex-wrap:nowrap;gap:8px"><div class="grow">${esc(q)}</div>${["answered","missing"].map(o=>{ const val=o==="answered"; let c=pick===val?"sel":""; if(rev) c=truth===val?"right":(pick===val?"wrong":""); return `<button class="opt ${c}" data-act="eye-pick" data-q="${qi}" data-v="${val?1:0}" ${rev?"disabled":""}>${o==="answered"?"answered":"missing"}</button>`; }).join("")}</div>`; }).join("");
+  const bands=["0–3","4–6","7–10"]; const c=x.crit||{};
+  return `<div class="les"><div class="les-top"><button class="xbtn" data-act="eye-close" aria-label="Close">${ICONS.x}</button><div class="grow"><div class="label">Examiner's eye · ${X.i+1} of ${E.items.length}</div><h2>E-Mail ${esc(x.id)}</h2></div></div>
+    <div class="les-body">
+      <section class="card stack"><div class="label">The task</div><p class="small">${esc(T.intro_en||"")}</p>${T.email_de?`<div class="mail"><div class="hd">Von: ${esc(T.from||"")}</div><div class="bd">${esc(T.email_de)}</div></div>`:""}
+        <div class="small"><b>Questions:</b> ${(T.questions||[]).map(esc).join(" · ")}</div></section>
+      <section class="card stack"><div class="label">What the candidate wrote (${x.words} words)</div>${T.printed?`<div class="mail preprint"><div class="bd">${esc(T.printed)}</div></div>`:""}<div class="mail"><div class="bd">${esc(x.text)}</div></div></section>
+      <section class="card stack"><h3>1 · Which questions are answered?</h3>${qs}
+        <h3>2 · How many points (of 10)?</h3><div class="row">${bands.map((b,bi)=>{ let cl=X.band===bi?"sel":""; if(rev) cl=x.band===bi?"right":(X.band===bi?"wrong":""); return `<button class="opt ${cl}" data-act="eye-band" data-v="${bi}" ${rev?"disabled":""}>${b}</button>`; }).join("")}</div></section>
+      ${rev?`<section class="card stack" style="border-color:var(--accent)"><div class="row between"><h3>Examiner's view</h3><span class="chip ${x.band>=1?"ok":"bad"}">about ${esc(x.est)} / 10</span></div>
+        <div class="tablewrap"><table class="gram"><tr><td>Length (${x.words} words)</td><td>${x.words>=25?"OK, no deduction":x.words>=20?"−1":x.words>=15?"−2":"not graded"}</td></tr>
+          <tr><td>Task (questions answered)</td><td>${x.answered.filter(Boolean).length}/3 ${(c.ded||[]).length?"· "+esc(c.ded.join("; ")):""}</td></tr>
+          <tr><td>Register & sign-off (0–1)</td><td>${c.k}</td></tr><tr><td>Structure (0–1)</td><td>${c.t}</td></tr><tr><td>Vocabulary (0–4)</td><td>${c.l}</td></tr><tr><td>Grammar & spelling (0–4)</td><td>${c.f}</td></tr></table></div>
+        <div class="stack" style="gap:6px">${(x.errors||[]).map(e=>`<div class="sunk small"><span style="color:var(--bad);text-decoration:line-through">${esc(e[0])}</span> → <b style="color:var(--ok)">${esc(e[1])}</b>${e[2]?`<br>${esc(e[2])}`:""}</div>`).join("")}</div>
+        <div>${ex(x.lesson_en, x.lesson_fa)}</div><p class="small muted">${ex("Estimate made with the official ÖSD criteria. ÖSD shows its own marking of these texts in its training video.","تخمین بر اساس معیارهای رسمی ÖSD. نمره‌گذاری خود ÖSD در ویدیوی آموزشی‌اش آمده است.")}</p></section>`:""}
+    </div>
+    <div class="les-foot"><div class="in">${rev?`<span></span><button class="btn primary big" id="lesBtn" data-act="eye-next">${X.i<E.items.length-1&&E.items.slice(X.i+1).some(eyeUnlocked)?"Next email":"Finish"}</button>`
+      :`<span class="small muted">${ex("Decide all three questions and a score band.","هر سه سؤال و بازه نمره را مشخص کن.")}</span><button class="btn primary big" id="lesBtn" data-act="eye-reveal" ${Object.keys(X.picks).length<(T.questions||[]).length||X.band==null?"disabled":""}>Show the examiner's view</button>`}</div></div></div>`; }
+
+/* the official oral exam video */
+function oralVideoCard(open){ const items=[
+  ["The first minute is a relaxed chat with the examiners. It is not scored.","دقیقه اول گفت‌وگوی آزاد با ممتحن‌هاست و نمره ندارد."],
+  ["Teil 1: the candidate picks 4 topics and says 2–3 simple sentences each, then answers follow-up questions.","بخش ۱: ۴ موضوع را انتخاب می‌کند، برای هر کدام ۲–۳ جمله ساده می‌گوید و بعد به سؤال‌ها جواب می‌دهد."],
+  ["Teil 2: the four questions about the photo: what, how many people, where, what are they doing.","بخش ۲: چهار سؤال درباره عکس: چه می‌بینی، چند نفر، کجا، چه می‌کنند."],
+  ["Teil 3: in the role-play the candidate also asks questions. That is part of the score.","بخش ۳: در نقش‌آفرینی خودش هم سؤال می‌پرسد؛ این بخشی از نمره است."],
+  ["Short, simple sentences and calm self-correction. Mistakes are allowed; long silence costs more.","جمله‌های کوتاه و ساده و اصلاح آرام اشتباه. اشتباه مجاز است؛ سکوت طولانی گران‌تر تمام می‌شود."],
+  ["Then do the same three parts with the tutor's Exam simulation.","بعد همین سه بخش را با شبیه‌سازی آزمون مربی تمرین کن."]];
+  return `<details class="acc" data-keep="vid" ${open||S.keep.vid?"open":""}><summary>Watch a real ÖSD A1 oral exam (official video)</summary><div class="in stack">
+    <p class="small">${ex("ÖSD published this as an example of a good A1 performance. Watch it once now and once in the last week. YouTube may need a VPN in Iran.","ÖSD این ویدیو را به عنوان نمونه یک اجرای خوب A1 منتشر کرده. یک بار حالا و یک بار در هفته آخر ببین. یوتیوب در ایران ممکن است فیلتر باشد.")}</p>
+    ${S.vidOn?`<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/d0RcmGpj5MY" title="ÖSD ZA1 oral exam example" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`:`<div class="row"><button class="btn sm primary" data-act="vid-on">${ICONS.play}Load the video</button><a class="btn sm" href="https://www.youtube.com/watch?v=d0RcmGpj5MY" target="_blank" rel="noopener">Open on YouTube</a></div>`}
+    <div class="label">Watch for</div>${items.map(([en,fa],i)=>`<label class="row" style="flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" data-chk="vid:${i}" ${S.st.done["vid:"+i]?"checked":""} style="margin-top:6px"><span>${ex(en,fa)}</span></label>`).join("")}</div></details>`; }
+
+/* exam-day rules from the ÖSD exam regulations (valid from 1 August 2026) and the ZA1 implementation rules */
+function examDayCard(){ const items=[
+  ["Bring a valid passport or national ID card. Without it you can't take the exam.","پاسپورت یا کارت ملی معتبر بیاور. بدون آن نمی‌توانی امتحان بدهی."],
+  ["Phones (even switched off), watches of any kind, smartwatches, earphones and earplugs, bags and notes are handed in before the exam. Leave your watch at home: the room has a clock.","گوشی (حتی خاموش)، هر نوع ساعت مچی، ساعت هوشمند، هدفون، گوش‌گیر، کیف و یادداشت قبل از امتحان تحویل داده می‌شود. ساعتت را خانه بگذار؛ اتاق ساعت دارد."],
+  ["Written part: Lesen 25 min → Hören ≈10 min → Schreiben 20 min, about 55 minutes without a break (a short break is possible after Hören). Write with a non-erasable pen; no dictionary.","بخش کتبی: خواندن ۲۵ دقیقه، شنیدن حدود ۱۰ دقیقه، نوشتن ۲۰ دقیقه؛ حدود ۵۵ دقیقه بدون استراحت. با خودکار پاک‌نشدنی و بدون دیکشنری."],
+  ["Oral part: 10 minutes to prepare alone. You may write keyword notes and use them in the exam. Then about 10 minutes with two examiners; it starts with a short unscored chat and is recorded.","بخش شفاهی: ۱۰ دقیقه آمادگی. می‌توانی کلیدواژه یادداشت کنی و در امتحان استفاده کنی. بعد حدود ۱۰ دقیقه با دو ممتحن؛ با یک گفت‌وگوی کوتاه بدون نمره شروع می‌شود و ضبط می‌شود."],
+  ["New rule: memorised ready-made texts in Schreiben or Sprechen count as plagiarism and can lead to exclusion. Learn phrases and patterns, not whole texts, and answer the actual questions.","قانون جدید: متن‌های آماده و حفظ‌شده در نوشتن یا صحبت سرقت ادبی حساب می‌شود و می‌تواند به اخراج از امتحان منجر شود. عبارت‌ها و الگوها را یاد بگیر، نه کل متن را، و به خود سؤال‌ها جواب بده."],
+  ["In Hören, don't fill in answers before you've heard the text; in Lesen, before you've read it. Both count as rule-breaking.","در شنیدن قبل از شنیدن متن و در خواندن قبل از خواندن متن جواب نده؛ هر دو تخلف حساب می‌شود."],
+  ["Results come as an official result notice first; a passed exam has a QR code you can verify. The certificate has no expiry date.","نتیجه اول به صورت اعلامیه رسمی می‌آید؛ آزمون قبول‌شده کد QR قابل‌بررسی دارد. مدرک تاریخ انقضا ندارد."],
+  ["Each module can be retaken as often as you like; ÖSD recommends waiting at least four weeks. You can ask to see your marking sheet within four weeks.","هر بخش را می‌توان هر چند بار تکرار کرد؛ ÖSD توصیه می‌کند حداقل چهار هفته صبر کنی. تا چهار هفته می‌توانی برگه نمره‌ات را ببینی."]];
+  return `<details class="acc"><summary>Exam-day rules (ÖSD 2026)</summary><div class="in stack">${items.map(([en,fa])=>`<div class="sunk small">${ex(en,fa)}</div>`).join("")}</div></details>`; }
+
+/* after a mock, its real recordings come back on Hören training days for slow, transcript-supported re-listening */
+async function officialPractice(n){ const ready=[]; for(const [set,o] of Object.entries(OFF_SETS)){ if(S.st.mocks[o.mock]&&offData(set)){ await offStatus(set); if(offReady(set)) ready.push(set); } }
+  return ready.length?offData(ready[n%ready.length]):null; }
+function speakKeywords(script){ const words=[]; (script||[]).forEach(l=>String(l.de||"").split(/\s+/).forEach((w,i)=>{ const c=w.replace(/[.,!?;:„“"()]/g,""); if(!c) return; if((/^[A-ZÄÖÜ]/.test(c)&&i>0)||/\d/.test(c)) words.push(c); })); return [...new Set(words)].slice(0,14); }
 
 /* ---------- boot ---------- */
 (async function boot(){

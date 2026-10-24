@@ -28,3 +28,15 @@ create policy "media update own" on storage.objects for update to authenticated
   using (bucket_id = 'media' and (storage.foldername(name))[1] = (select auth.uid())::text);
 create policy "media delete own" on storage.objects for delete to authenticated
   using (bucket_id = 'media' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- v11: private per-user content (official ÖSD model tests, learner samples, transcripts). Never public.
+create table if not exists public.library (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  key text not null check (char_length(key) between 1 and 80),
+  content jsonb not null,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, key)
+);
+alter table public.library enable row level security;
+create policy "own library" on public.library for all to authenticated
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);

@@ -555,3 +555,13 @@ button.prow:first-of-type{border-top:0}
 @keyframes dotp{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
 .comeback{border-color:var(--green);gap:12px}
 .comeback .speech b{display:block;font-size:1.1rem}
+
+/* v11: official model tests */
+.pics.real{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.pics.real .pic{padding:6px}
+.picimg{display:block;width:100%;height:auto;border-radius:8px;background:#fff}
+.photo .picimg{max-height:170px;object-fit:cover}
+.mail.preprint{border-style:dashed;opacity:.92}
+.vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--r);overflow:hidden;background:#000}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.transcript .label{margin-top:4px}
