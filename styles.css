@@ -538,3 +538,20 @@ button.prow:first-of-type{border-top:0}
 .hook{display:flex;gap:8px;align-items:flex-start;background:var(--gold-soft);border-radius:var(--r-sm);padding:10px 12px;font-size:.92rem;align-self:stretch}
 .hook svg{width:20px;height:20px;flex:none;color:var(--gold-ink)}
 .recap-card{border-color:var(--purple)}
+
+/* v10: push-to-talk, waiting indicator, comeback card */
+.pttbtn{appearance:none;position:relative;overflow:hidden;width:100%;min-height:84px;border:2px solid var(--blue-line);border-bottom-width:5px;border-radius:999px;background:var(--blue);color:#fff;font:inherit;font-weight:900;letter-spacing:.04em;text-transform:uppercase;display:flex;gap:12px;justify-content:center;align-items:center;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.pttbtn svg{width:30px;height:30px;flex:none}
+.pttbtn:disabled{opacity:.5;cursor:default}
+.pttbtn.on{background:var(--green);border-color:var(--green-d,var(--green));border-bottom-width:2px;transform:translateY(3px)}
+.pttbtn:focus-visible{outline:3px solid var(--blue-ink);outline-offset:3px}
+.pttlevel{position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(255,255,255,.18)}
+.pttlevel i{display:block;height:100%;background:#fff;transition:width .08s linear}
+.waitline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-radius:var(--r);background:var(--blue-soft);color:var(--blue-ink);font-weight:800}
+.waitline[hidden]{display:none}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.35}
+@media (prefers-reduced-motion:no-preference){ .dots i{animation:dotp 1s infinite ease-in-out} .dots i:nth-child(2){animation-delay:.15s} .dots i:nth-child(3){animation-delay:.3s} }
+@keyframes dotp{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+.comeback{border-color:var(--green);gap:12px}
+.comeback .speech b{display:block;font-size:1.1rem}

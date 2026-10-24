@@ -1,7 +1,7 @@
 {
   "name": "ÖSD A1 Coach",
   "short_name": "A1 Coach",
-  "description": "34-day study plan for the ÖSD Zertifikat A1 exam",
+  "description": "Day-by-day study plan for the ÖSD Zertifikat A1 exam",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

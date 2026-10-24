@@ -2,7 +2,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 import { CONFIG } from "./config.js";
 import { LiveSession } from "./live.js";
 /* ---------- constants ---------- */
-const EXAM = new Date(2026, 10, 14);           // Sat 14 Nov 2026 = 23 Aban 1405
+const DEFAULT_EXAM = "2026-12-12";             // Sat 12 Dec 2026 = 21 Azar 1405 (changeable in Settings)
 const DEFAULT_START = "2026-10-11";
 const NOTEBOOK_URL = "https://notebook.google.com/notebook/9637d072-33fc-4071-bd1f-732309a91656";
 const MODELSATZ_URL = "https://www.osd.at/wp-content/uploads/2024/09/ZA1-Modellsatzbroschure_WEB.pdf";
@@ -30,32 +30,53 @@ const PLAN = [
  {t:"Station, hotel, announcements", fa:"ایستگاه، هتل، اطلاعیه‌ها", g:"Perfekt with haben", k:"lesson"},
  {t:"Last weekend", fa:"آخر هفته گذشته", g:"Perfekt with sein, war / hatte", k:"lesson"},
  {t:"Post office, bank, filling in forms", fa:"پست، بانک، پر کردن فرم", g:"form vocabulary (Schreiben Teil 1)", k:"lesson"},
- {t:"MOCK 1: official ÖSD model test", fa:"آزمون آزمایشی ۱: نمونه رسمی ÖSD", g:"timed, all four skills", k:"mock"},
- {t:"Fix mock 1 + Lesen strategies", fa:"رفع اشکال آزمون ۱ + استراتژی خواندن", g:"", k:"review"},
+ {t:"Review + mini-test 3", fa:"مرور و آزمونک ۳", g:"everything from Days 16–21", k:"review"},
+ {t:"Übungstest A: first full practice exam", fa:"Übungstest A: اولین آزمون کامل تمرینی", g:"all four skills, in the app", k:"mock"},
+ {t:"Fix Übungstest A + Lesen strategies", fa:"رفع اشکال Übungstest A + استراتژی خواندن", g:"", k:"review"},
  {t:"Hören strategies: numbers, spelling, announcements", fa:"استراتژی شنیدن: اعداد، هجی، اطلاعیه", g:"", k:"review"},
  {t:"Schreiben drill: forms + emails", fa:"تمرین نوشتن: فرم و ایمیل", g:"", k:"review"},
- {t:"Sprechen: all three parts with Gemini Live", fa:"صحبت: هر سه بخش با Gemini Live", g:"", k:"review"},
- {t:"MOCK 2 + review", fa:"آزمون آزمایشی ۲ + مرور", g:"timed", k:"mock"},
+ {t:"Sprechen: all three parts with the tutor", fa:"صحبت: هر سه بخش با مربی", g:"", k:"review"},
  {t:"Buffer: weakest skill", fa:"روز جبرانی: ضعیف‌ترین مهارت", g:"", k:"buffer"},
- {t:"MOCK 3 + review", fa:"آزمون آزمایشی ۳ + مرور", g:"timed", k:"mock"},
- {t:"Weak spots + full vocabulary sweep", fa:"رفع ضعف‌ها + مرور کامل لغات", g:"", k:"review"},
+ {t:"MOCK 1: official ÖSD model test", fa:"آزمون آزمایشی ۱: نمونه رسمی ÖSD", g:"timed, all four skills", k:"mock"},
+ {t:"Fix mock 1", fa:"رفع اشکال آزمون ۱", g:"", k:"review"},
+ {t:"Vocabulary sweep 1: Days 1–13", fa:"مرور کامل لغات ۱: روزهای ۱ تا ۱۳", g:"", k:"review"},
+ {t:"Vocabulary sweep 2: Days 16–21", fa:"مرور کامل لغات ۲: روزهای ۱۶ تا ۲۱", g:"", k:"review"},
+ {t:"Grammar review: verb endings, articles, question words", fa:"مرور دستور: پایانه فعل، حروف تعریف، کلمات پرسشی", g:"", k:"review"},
+ {t:"Lesen + Hören timed sets", fa:"خواندن و شنیدن زمان‌دار", g:"", k:"review"},
+ {t:"Schreiben + Sprechen bootcamp", fa:"اردوی نوشتن و صحبت", g:"", k:"review"},
+ {t:"Buffer: catch up", fa:"روز جبرانی", g:"", k:"buffer"},
+ {t:"MOCK 2: official ZA1/Österreich model test", fa:"آزمون آزمایشی ۲: نمونه رسمی اتریش", g:"timed", k:"mock"},
+ {t:"Fix mock 2", fa:"رفع اشکال آزمون ۲", g:"", k:"review"},
+ {t:"Sprechen exam simulation day", fa:"روز شبیه‌سازی آزمون شفاهی", g:"", k:"review"},
+ {t:"Hören intensive: notes, numbers, spelling", fa:"تمرین فشرده شنیدن: یادداشت، اعداد، هجی", g:"", k:"review"},
+ {t:"Schreiben email bootcamp", fa:"اردوی ایمیل‌نویسی", g:"", k:"review"},
+ {t:"Buffer: weakest skill", fa:"روز جبرانی: ضعیف‌ترین مهارت", g:"", k:"buffer"},
+ {t:"MOCK 3: Übungssatz 1", fa:"آزمون آزمایشی ۳", g:"timed", k:"mock"},
+ {t:"Fix mock 3 + weak spots", fa:"رفع اشکال آزمون ۳ + نقاط ضعف", g:"", k:"review"},
+ {t:"Full vocabulary + phrases sweep", fa:"مرور کامل لغات و عبارات", g:"", k:"review"},
+ {t:"Lesen + Hören mixed practice", fa:"تمرین ترکیبی خواندن و شنیدن", g:"", k:"review"},
  {t:"FINAL timed mock", fa:"آزمون نهایی زمان‌دار", g:"exam conditions", k:"mock"},
- {t:"Buffer: targeted repair", fa:"روز جبرانی: رفع اشکال", g:"", k:"buffer"},
- {t:"Light review + speaking warm-up", fa:"مرور سبک + گرم کردن صحبت", g:"", k:"buffer"},
- {t:"Rest + exam logistics", fa:"استراحت + آماده‌سازی روز آزمون", g:"", k:"rest"}
+ {t:"Fix final mock: targeted repair", fa:"رفع اشکال آزمون نهایی", g:"", k:"review"},
+ {t:"Buffer: targeted repair", fa:"روز جبرانی", g:"", k:"buffer"},
+ {t:"Sprechen warm-up + light review", fa:"گرم کردن صحبت + مرور سبک", g:"", k:"buffer"},
+ {t:"Light review + exam logistics", fa:"مرور سبک + آماده‌سازی روز آزمون", g:"", k:"buffer"},
+ {t:"Rest", fa:"استراحت", g:"", k:"rest"}
 ];
 
-const STEPS = [
- {id:"review",   en:"Review cards",   de:"Wiederholen", min:20, has:()=>true},
- {id:"media",    en:"Listen & watch", de:"Einstimmen",  min:15, has:d=>d.media||d.watch},
- {id:"learn",    en:"Learn",          de:"Lernen",      min:45, has:d=>d.vocab||d.grammar||d.alphabet},
- {id:"practice", en:"Practice",       de:"Üben",        min:20, has:d=>d.exercises&&d.exercises.length},
- {id:"hoeren",   en:"Listening",      de:"Hören",       min:30, has:d=>d.hoeren},
- {id:"diktat",   en:"Dictation",      de:"Diktat",      min:10, has:d=>d.diktat&&d.diktat.length},
- {id:"lesen",    en:"Reading",        de:"Lesen",       min:25, has:d=>d.lesen},
- {id:"schreiben",en:"Writing",        de:"Schreiben",   min:30, has:d=>d.schreiben},
- {id:"sprechen", en:"Speaking",       de:"Sprechen",    min:35, has:d=>d.sprechen},
- {id:"quiz",     en:"Daily quiz",     de:"Quiz",        min:10, has:d=>d.review_quiz&&d.review_quiz.length}
+const STEPS = [   // minutes for a 3-hour day; scaled by Settings → daily study time
+ {id:"review",     en:"Review cards",   de:"Wiederholen", min:15, has:()=>true},
+ {id:"media",      en:"Listen & watch", de:"Einstimmen",  min:10, has:d=>d.media||d.watch},
+ {id:"learn",      en:"Learn",          de:"Lernen",      min:25, has:d=>d.vocab||d.grammar||d.alphabet},
+ {id:"practice",   en:"Practice",       de:"Üben",        min:15, has:d=>d.exercises&&d.exercises.length},
+ {id:"drill",      en:"Grammar gym",    de:"Grammatik",   min:10, has:d=>!!(d.vocab||d.exercises)},
+ {id:"hoertrainer",en:"Hör-Trainer",    de:"Zahlen & Namen", min:10, has:()=>true},
+ {id:"hoeren",     en:"Listening",      de:"Hören",       min:20, has:d=>d.hoeren},
+ {id:"diktat",     en:"Dictation",      de:"Diktat",      min:10, has:d=>d.diktat&&d.diktat.length},
+ {id:"lesen",      en:"Reading",        de:"Lesen",       min:10, has:d=>d.lesen},
+ {id:"schreiben",  en:"Writing",        de:"Schreiben",   min:15, has:d=>d.schreiben},
+ {id:"sprechen",   en:"Speaking",       de:"Sprechen",    min:10, has:d=>d.sprechen},
+ {id:"quiz",       en:"Daily quiz",     de:"Quiz",        min:5,  has:d=>d.review_quiz&&d.review_quiz.length},
+ {id:"tutor",      en:"Tutor session",  de:"Mit der Tutorin", min:25, has:()=>true}
 ];
 
 const LETTER_TTS = {A:"A",B:"Be",C:"Ze",D:"De",E:"E",F:"Eff",G:"Ge",H:"Ha",I:"I",J:"Jott",K:"Ka",L:"Ell",M:"Emm",N:"Enn",O:"O",P:"Pe",Q:"Ku",R:"Err",S:"Ess",T:"Te",U:"U",V:"Vau",W:"We",X:"Ix",Y:"Ypsilon",Z:"Zett","Ä":"Ä","Ö":"Ö","Ü":"Ü","ß":"Eszett"};
@@ -166,7 +187,7 @@ async function api(path, body){
   return j;
 }
 async function saveOverlay(n, content){
-  S.imported[n]=content; delete S.days[n];
+  S.imported[n]=content; delete S.days[n]; Object.keys(S.days).forEach(k=>{ if(S.days[k]&&S.days[k].synthetic) delete S.days[k]; });
   lsSet("osd-a1-imported", JSON.stringify(S.imported));
   if(S.uid){ const { error } = await sb.from("days").upsert({ user_id:S.uid, day:n, content, updated_at:new Date().toISOString() }); if(error) toast("Saved on this device. Sync failed: "+error.message); }
 }
@@ -175,18 +196,29 @@ const $ = s=>document.querySelector(s);
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function attr(s){ return esc(s); }
 function pad(n){ return String(n).padStart(2,"0"); }
-function startDate(){ const [y,m,d]=(S.st.start||DEFAULT_START).split("-").map(Number); return new Date(y,m-1,d); }
-const EXAM_EVE = new Date(2026, 10, 13);
-const SKIP_ORDER = [32, 28, 15];   // buffer days dropped first when the plan starts late
-function schedule(){ const key=S.st.start||DEFAULT_START; if(schedule._k===key) return schedule._v;
-  const span=Math.round((EXAM_EVE-startDate())/DAY_MS)+1; const extra=Math.max(0, Math.min(SKIP_ORDER.length, PLAN.length-span));
-  const drop=SKIP_ORDER.slice(0,extra); const list=[]; for(let n=1;n<=PLAN.length;n++) if(!drop.includes(n)) list.push(n);
-  schedule._k=key; schedule._v={list, drop, short:Math.max(0,PLAN.length-span-extra)}; return schedule._v; }
-function isSkipped(n){ return schedule().drop.includes(n); }
-function dateOf(n){ const {list}=schedule(); let i=list.indexOf(n); if(i<0){ i=list.findIndex(x=>x>n); if(i<0) i=list.length-1; } const s=startDate(); return new Date(s.getFullYear(), s.getMonth(), s.getDate()+i); }
 function todayMid(){ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); }
-function currentDay(){ const {list}=schedule(); const i=Math.floor((todayMid()-startDate())/DAY_MS); return list[Math.max(0,Math.min(list.length-1,i))]; }
-function daysLeft(){ return Math.round((EXAM - todayMid())/DAY_MS); }
+function startDate(){ const [y,m,d]=(S.st.start||DEFAULT_START).split("-").map(Number); return new Date(y,m-1,d); }
+const SKIP_ORDER = [49, 42, 36, 28, 15, 50, 45, 32, 31];   // buffers first, then sweeps, when time runs short
+function examDate(){ const [y,m,d]=(S.st.exam||DEFAULT_EXAM).split("-").map(Number); return new Date(y,m-1,d); }
+function examEve(){ const e=examDate(); return new Date(e.getFullYear(),e.getMonth(),e.getDate()-1); }
+function examShort(){ return examDate().toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"}); }
+function examLong(){ return examDate().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); }
+function examFa(){ try{ return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(examDate()); }catch(e){ return ""; } }
+function dayHours(){ return +S.st.dayHours||3; }
+function anchorInfo(){ const a=S.st.anchor; if(a&&a.n&&a.date){ const [y,m,d]=a.date.split("-").map(Number); return {n:a.n, date:new Date(y,m-1,d)}; } return {n:1, date:startDate()}; }
+function schedule(){ const key=[S.st.start||DEFAULT_START, S.st.anchor?S.st.anchor.n+"@"+S.st.anchor.date:"", S.st.exam||""].join("|"); if(schedule._k===key) return schedule._v;
+  const A=anchorInfo(); const span=Math.round((examEve()-A.date)/DAY_MS)+1; const remaining=PLAN.length-A.n+1;
+  const cand=SKIP_ORDER.filter(n=>n>=A.n); const extra=Math.max(0, Math.min(cand.length, remaining-span)); const drop=cand.slice(0,extra);
+  const list=[]; for(let n=A.n;n<=PLAN.length;n++) if(!drop.includes(n)) list.push(n);
+  schedule._k=key; schedule._v={list, drop, anchorN:A.n, anchorDate:A.date, short:Math.max(0,remaining-span-extra), spare:Math.max(0,span-remaining)}; return schedule._v; }
+function isSkipped(n){ return schedule().drop.includes(n); }
+function dateOf(n){ const P=schedule(); if(n<P.anchorN){ const s=startDate(); return new Date(s.getFullYear(), s.getMonth(), s.getDate()+n-1); }
+  let i=P.list.indexOf(n); if(i<0){ i=P.list.findIndex(x=>x>n); if(i<0) i=P.list.length-1; } const a=P.anchorDate; return new Date(a.getFullYear(), a.getMonth(), a.getDate()+i); }
+function currentDay(){ const P=schedule(); const t=todayMid();
+  if(t<P.anchorDate){ const n=Math.floor((t-startDate())/DAY_MS)+1; return Math.max(1,Math.min(Math.max(1,P.anchorN-1),n)); }
+  const i=Math.floor((t-P.anchorDate)/DAY_MS); return P.list[Math.max(0,Math.min(P.list.length-1,i))]; }
+function replanTo(n){ S.st.anchor={n, date:dk(new Date())}; schedule._k=null; S.dayN=currentDay(); save(); }
+function daysLeft(){ return Math.round((examDate() - todayMid())/DAY_MS); }
 function fmtDate(d){ return d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"}); }
 function fmtFa(d){ try{ return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{day:"numeric",month:"long"}).format(d); }catch(e){ return ""; } }
 function norm(s){ return String(s||"").toLowerCase().replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/[.,!?;:„“"'()\-–]/g," ").replace(/\s+/g," ").trim(); }
@@ -245,18 +277,19 @@ function sayBtn(text, opts={}){ const i=SAY_BANK.push({text, voice:opts.voice, l
 
 /* ---------- day data ---------- */
 async function loadIndex(){ try{ const r=await fetch("days/index.json",{cache:"no-store"}); if(r.ok){ const j=await r.json(); (j.available||[]).forEach(n=>S.published.add(n)); } }catch(e){} }
-function hasDay(n){ const o=S.imported[n]; return S.published.has(n) || !!(o && (o.vocab||o.lesen||o.hoeren||o.schreiben)); }
+function hasDay(n){ const o=S.imported[n]; if(PLAN[n-1]&&PLAN[n-1].k!=="lesson") return true; return S.published.has(n) || !!(o && (o.vocab||o.lesen||o.hoeren||o.schreiben)); }
 async function getDay(n){
   if(S.days[n]) return S.days[n];
   let base=null;
   if(S.published.has(n)){ try{ const r=await fetch(`days/day${pad(n)}.json`); if(r.ok) base=await r.json(); }catch(e){} }
   const ov=S.imported[n];
-  if(!base && !(ov && (ov.vocab||ov.lesen||ov.hoeren||ov.schreiben))) return null;
+  if(!base && !(ov && (ov.vocab||ov.lesen||ov.hoeren||ov.schreiben))){ if(PLAN[n-1]&&PLAN[n-1].k!=="lesson"){ const sd=await buildSynthetic(n); S.days[n]=sd; return sd; } return null; }
   S.days[n]=Object.assign({}, base||{}, ov||{});
   return S.days[n];
 }
 function stepsFor(d){ return STEPS.filter(s=>s.has(d)); }
 function dayProgress(n, d){ if(!d) return {done:0,total:0,min:0,minTotal:0};
+  if(d.synthetic){ const N=synthNodes(n,d); let done=0,min=0,minT=0; N.forEach(nd=>{ minT+=nd.min; if(nodeDone(n,nd)){ done++; min+=nd.min; } }); return {done,total:N.length,min,minTotal:minT}; }
   const st=stepsFor(d); let done=0,min=0,minT=0; st.forEach(s=>{ minT+=s.min; if(S.st.done[n+":"+s.id]){ done++; min+=s.min; }
     else if(s.id==="learn"||s.id==="practice"){ const parts=s.id==="learn"?learnParts(d):practiceParts(d); if(parts.length>1){ const k=parts.filter((p,pi)=>S.st.done[`${n}:${s.id}#${pi}`]).length; min+=Math.round(s.min*k/parts.length); } } });
   return {done,total:st.length,min,minTotal:minT}; }
@@ -266,7 +299,7 @@ function cardsForDay(n, d){ const out=[]; (d.vocab||[]).forEach(v=>out.push({id:
   (d.flashcards||[]).forEach(c=>out.push({id:"x:"+c.front, day:n, kind:"x", de:c.front, en:c.back, fa:c.fa||"", plural:c.plural||"", example_de:c.example||"", article:"-"})); return out; }
 function allCards(){ const out=[]; Object.keys(S.st.intro).forEach(k=>{ const n=+k; const d=S.days[n]; if(d) out.push(...cardsForDay(n,d)); });
   if(S.st.decks&&S.st.decks.austria&&S.austria) S.austria.cards.forEach(c=>out.push({id:"a:"+c.de, kind:"a", ...c}));
-  const seenQ=new Set(); (S.st.mistakes||[]).forEach(m=>{ if(m.q&&m.right&&!seenQ.has(m.q)&&seenQ.size<80){ seenQ.add(m.q); out.push({id:"m:"+m.q, kind:"m", de:m.kind==="speaking"?"Say it correctly: "+m.q:m.q, en:m.right, article:"-", fa:""}); } }); const seen=new Set(); return out.filter(c=>!seen.has(c.id)&&seen.add(c.id)); }
+  const seenQ=new Set(); (S.st.mistakes||[]).forEach(m=>{ if(m.q&&m.right&&!["number","phone","time","price","day","spelled_name"].includes(m.kind)&&!seenQ.has(m.q)&&seenQ.size<80){ seenQ.add(m.q); out.push({id:"m:"+m.q, kind:"m", de:m.kind==="speaking"?"Say it correctly: "+m.q:m.q, en:m.right, article:"-", fa:""}); } }); const seen=new Set(); return out.filter(c=>!seen.has(c.id)&&seen.add(c.id)); }
 function srsCounts(){ const now=Date.now(); let due=0,fresh=0,learned=0; allCards().forEach(c=>{ const r=S.st.srs[c.id]; if(!r) fresh++; else if(r.due<=now) due++; else learned++; }); return {due,fresh,learned}; }
 function grade(card, q){ const now=Date.now(); const r=S.st.srs[card.id]||{ef:2.5,ivl:0,reps:0,lapses:0,due:now};
   if(q<3){ r.reps=0; r.ivl=0; r.lapses++; r.due=now+10*60000; }
@@ -287,7 +320,7 @@ function renderCountdown(){ const top=$("#top"); if(!top) return; top.hidden=!S.
     <button class="stat streak ${studied?"on":""}" data-act="tab" data-v="progress" title="${st}-day streak" aria-label="${st}-day streak">${ICONS.flame}<span class="tnum">${st}</span></button>
     <button class="stat xp ${xp?"on":""}" data-act="tab" data-v="progress" title="XP today (goal ${goalXp()})" aria-label="${xp} XP today">${ICONS.bolt}<span class="tnum">${xp}</span>${boostOn()?`<em class="boost">2×</em>`:""}</button>
     <button class="stat coins" data-act="tab" data-v="shop" title="Schilling · open the shop" aria-label="${S.st.coins||0} Schilling, open shop">${COIN}<span class="tnum">${S.st.coins||0}</span></button>
-    <button class="stat cd" data-act="tab" data-v="exam" title="Days to the exam, Sat 14 Nov · ۲۳ آبان" aria-label="${n} days to the exam">${ICONS.cal}<span class="tnum">${n>0?n:n===0?"Heute":"✓"}</span></button>
+    <button class="stat cd" data-act="tab" data-v="exam" title="Days to the exam, ${examShort()} · ${fmtFa(examDate())}" aria-label="${n} days to the exam">${ICONS.cal}<span class="tnum">${n>0?n:n===0?"Heute":"✓"}</span></button>
     <button class="stat gear" data-act="tab" data-v="settings" aria-label="Settings" title="Settings">${ICONS.settings}</button>`; }
 
 async function render(){
@@ -336,13 +369,14 @@ async function vToday(){
     <div class="unit-row"><button class="navb" data-act="day" data-v="${n-1}" ${n<=1?"disabled":""} aria-label="Previous day">${ICONS.back}</button>
       <div class="grow"><div class="ul">Unit ${unitOf(n).i} · Day ${n} of ${PLAN.length} · ${fmtDate(date)}${n===currentDay()?" · today":""}</div><h1>${esc(d&&d.title||p.t)}</h1>${S.st.lang!=="en"?`<div class="fa">${esc(d&&d.title_fa||p.fa)} · ${fmtFa(date)}</div>`:""}</div>
       <button class="navb" data-act="day" data-v="${n+1}" ${n>=PLAN.length?"disabled":""} aria-label="Next day">${ICONS.next}</button></div>
-    ${d?`<div class="row" style="gap:12px;flex-wrap:nowrap"><div class="grow"><div class="ubar" role="progressbar" aria-label="Day progress" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><div class="small tnum" style="margin-top:4px;opacity:.92">${pr.done}/${pr.total} steps · ${pr.min} / ${pr.minTotal} min</div></div><button class="guide" data-act="step" data-v="guide">${ICONS.book}Guidebook</button></div>`:""}
+    ${d?`<div class="row" style="gap:12px;flex-wrap:nowrap"><div class="grow"><div class="ubar" role="progressbar" aria-label="Day progress" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><div class="small tnum" style="margin-top:4px;opacity:.92">${pr.done}/${pr.total} steps · ${pr.min} / ${pr.minTotal} min</div></div>${d.synthetic?"":`<button class="guide" data-act="step" data-v="guide">${ICONS.book}Guidebook</button>`}</div>`:""}
     ${p.g?`<div class="ug"><b>${p.k==="lesson"?"Grammar":"Focus"}:</b> ${esc(p.g)}</div>`:""}
     ${n!==currentDay()?`<div><button class="guide" data-act="day" data-v="${currentDay()}">Back to today</button></div>`:""}
   </section>`;
   if(!d) return banner + mockCta(n) + resCard(n) + pendingPanel(n);
   if(S.uid&&S.ai&&!S.varBusy) setTimeout(()=>ensureVariants(n),1500);
-  return draftBanner() + banner + (n===currentDay()?ediSays(n):"") + pathHtml(n,d) + recapCard(n) + reportCard(n) + questsCard(n,d) + leagueCard(true) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
+  const cb = n===currentDay() ? comebackCard(n) : "";
+  return draftBanner() + cb + (n===currentDay()?replanCard(n):"") + banner + (n===currentDay()&&!cb?ediSays(n):"") + (d.synthetic?synthIntro(n,d):"") + pathHtml(n,d) + recapCard(n) + reportCard(n) + questsCard(n,d) + leagueCard(true) + mockCta(n) + tutorMini(n) + resCard(n) + (installHint()?`<div class="row">${installHint()}<span class="small muted">Add the app to your home screen.</span></div>`:"");
 }
 function progressBar(n,d){ const pr=dayProgress(n,d); const pct=pr.minTotal?Math.round(pr.min/pr.minTotal*100):0;
   return `<div class="stack" style="gap:6px"><div class="row between small"><span>${pr.done}/${pr.total} steps</span><span class="tnum muted">${pr.min} / ${pr.minTotal} min</span></div><div class="meter" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>`; }
@@ -553,7 +587,7 @@ function playBtn(key, lines, max, label){
   const left = unlimited? "" : ` (${Math.max(0,max-used)} left)`;
   const dis = !unlimited && used>=max;
   const i=SAY_BANK.push({lines})-1;
-  return `<button class="btn sm ${dis?"":"primary"}" data-act="play" data-key="${key}" data-i="${i}" data-max="${max}" ${dis?"disabled":""}>${ICONS.play}${esc(label||"Play")}${left}</button>`;
+  return `<button class="btn sm ${dis?"":"primary"}" data-act="play" data-key="${key}" data-i="${i}" data-max="${max}" ${dis?"disabled":""}>${ICONS.play}${esc(label||"Play")}${left}</button>`+(unlimited?`<button class="btn sm" data-act="play" data-key="${key}" data-i="${i}" data-max="${max}" data-slow="1" title="Play slowly">${ICONS.turtle}slow</button>`:"");
 }
 function stHoeren(n,d){
   const H=d.hoeren; let h=`<div class="banner info"><div>${ex(`Exam mode is ${S.st.strict?"ON":"OFF"}: the audio plays exactly as often as in the real exam (Teil 1 and 3 once, Teil 2 twice). After you check your answers you can replay freely and read the transcript.`,"در حالت آزمون، صدا دقیقاً به تعداد آزمون واقعی پخش می‌شود (بخش ۱ و ۳ یک بار، بخش ۲ دو بار). بعد از تصحیح، می‌توانی آزادانه گوش کنی و متن را ببینی.")}</div></div>`;
@@ -734,8 +768,14 @@ function stSprechen(n,d){
 }
 
 /* ---------- pending day: prompts + import ---------- */
+const KIND_DESC={conjugation:"verb endings (ich -e, du -st, er/sie -t; the forms of sein and haben)",article:"der/die/das",question_word:"question words (wo / woher / wohin, wie / was / wer)",word_order:"word order (verb in position 2; verb first in yes/no questions)",gap:"choosing the right word or verb form in a sentence",translate:"translating short sentences into German",write:"writing words from memory with their article","hoeren-notes":"catching names, numbers and times in Hören Teil 2",number:"numbers",phone:"phone numbers",time:"clock times",price:"prices",day:"days of the week",spelled_name:"spelled names",speaking:"speaking accuracy",mcq:"recognising meanings",form:"filling in forms"};
+function weakForPrompt(){ const since=Date.now()-28*DAY_MS; const mis=(S.st.mistakes||[]).filter(m=>(m.at||0)>=since); const c={}; mis.forEach(m=>{ const k=mistakeKind(m); c[k]=(c[k]||0)+1; });
+  const top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k])=>KIND_DESC[k]||k); const rights=[...new Set(mis.filter(m=>m.right&&String(m.right).length<50&&m.kind!=="speaking").map(m=>m.right))].slice(0,10);
+  return {top: top.length?top:["verb endings","der/die/das","wo / woher","word order"], rights}; }
+function planLine(n){ return `Day ${n} of my ${PLAN.length}-day ÖSD Zertifikat A1 plan (${dayHours()} hours of study a day; exam on ${examLong()})`; }
 function prevThemes(n){ return PLAN.slice(0,n-1).filter(p=>p.k==="lesson").map(p=>p.t).join("; ") || "nothing yet"; }
-function prompt2A(n){ const p=PLAN[n-1]; return `Day ${n} of my 34-day ÖSD Zertifikat A1 plan. Theme: ${p.t}. Grammar: ${p.g||"review"}. Already covered: ${prevThemes(n)}.
+function prompt2A(n){ const p=PLAN[n-1]; const W=weakForPrompt(); return `${planLine(n)}. Theme: ${p.t}. Grammar: ${p.g||"review"}. Already covered: ${prevThemes(n)}.
+My weak points so far: ${W.top.join("; ")}.${W.rights.length?` Things I recently got wrong (correct versions): ${W.rights.join(" | ")}.`:""}
 Ground everything in my sources. Explanations: simple English plus Persian (fa). Give Austrian variants where they exist. Nouns always with article and plural.
 Output ONLY one JSON code block, no citation markers:
 {
@@ -748,7 +788,7 @@ Output ONLY one JSON code block, no citation markers:
  "exercises": [{"type":"mcq|gap|article|word_order|translate","prompt":"","options":[""],"answer":"","accept":[""],"explain_en":"","explain_fa":""}],
  "watch": [{"source_title":"exact title from my sources","why":""}]
 }
-Rules: vocab 20–25 high-frequency A1 items for this theme. phrases 10–15 ready-to-use chunks. pronunciation 1–2 items. exercises exactly 20, about 5 of them revising earlier days. For word_order, the prompt is the words separated by " · " and options is []. For translate, options is [] and accept lists every correct version.`; }
+Rules: I study ${dayHours()} hours a day, so keep it focused. vocab ${dayHours()>=4?"20–24":dayHours()>=3?"14–18":"10–12"} high-frequency A1 items for this theme (only words the ÖSD A1 exam really uses). phrases ${dayHours()>=3?"8–12":"6–8"} ready-to-use chunks. pronunciation 1 item. grammar 1–2 short topics. exercises exactly ${dayHours()>=3?16:12}: ${dayHours()>=3?"8":"6"} on today's theme, ${dayHours()>=3?"5":"4"} that train my weak points above using today's words (verb endings and der/die/das first), and ${dayHours()>=3?"3":"2"} revising earlier days. For word_order, the prompt is the words separated by " · " and options is []. For translate, options is [] and accept lists every correct version.`; }
 function prompt2B(n){ return `Now create the Lesen and Hören practice for Day ${n}, in the EXACT ÖSD Zertifikat A1 task formats below. Use only vocabulary and grammar from Days 1–${n}. Take the formats from official ÖSD material only and ignore Goethe/telc formats. Names, places and prices should feel Austrian.
 Output ONLY one JSON code block:
 {
@@ -770,9 +810,9 @@ Rules:
 - lesen.teil2: exactly 3 short texts (signs, notices, short messages), 2 JA/NEIN statements each.
 - lesen.teil3: 5 short public notices and 6 pictures A–F (one emoji + short English label each); one picture fits none.
 - hoeren.teil1: 5 very short everyday dialogues and 6 pictures; one picture is extra. Played once.
-- hoeren.teil2: ONE answering-machine message with 5 note fields (what, day, time, place, phone number or a spelled name). Played twice. Set "exact": true for spelled names and numbers. In "tts", write spelled letters as letter names (Pe. Ö. El.) and digits as words.
+- hoeren.teil2: ONE answering-machine message with 5 note fields (what, day, time, place, phone number or a spelled name). Played twice. Set "exact": true for spelled names and numbers, and "digits": true for phone numbers. In "tts", write spelled letters as letter names (Pe. Ö. El.) and digits as words; read phone numbers in pairs, the way Austrians do (null sechs sechs vier, zwölf, vierunddreißig …). This is my weakest part, so keep the message slow and clear.
 - hoeren.teil3: 5 people answer one question; 4 options; at least one person mentions an option and then rejects it. Played once.
-- diktat: 6 short sentences using today's words.`; }
+- diktat: 5 short sentences (5–8 words) using today's words and verb forms.`; }
 function prompt2C(n){ return `Now create the Schreiben, Sprechen and review quiz for Day ${n} in the EXACT ÖSD Zertifikat A1 formats below, using only language from Days 1–${n}. About me: my name is Raam, I'm from Tehran, Iran, I speak Persian and English, I'm married, I work as a web developer.
 Output ONLY one JSON code block:
 {
@@ -792,21 +832,21 @@ Output ONLY one JSON code block:
 Rules:
 - schreiben.teil1: I help a friend fill in a form. 10 fields mixing text, choice and multi; profile_de contains all the information needed. For multi, answer is an array.
 - schreiben.teil2: reply to a short PERSONAL email (informal, du) with exactly 3 guiding points. Model answer 30–40 words, with greeting and sign-off.
-- sprechen.teil1.my_script: 4–8 sentences about ME on today's topics, building on earlier days.
+- sprechen.teil1.my_script: 4–6 sentences about ME on today's topics, building on earlier days.
 - live_brief: an English prompt for Gemini Live: act as my ÖSD A1 examiner, today's topics, slow A1 German, correct my mistakes, give a score out of 25 at the end.
-- review_quiz: 10 items, half from today and half from earlier days.`; }
+- review_quiz: 8 items, 5 from today and 3 from earlier days.`; }
 function promptCards(n){ const p=PLAN[n-1]; return `DATA TABLE (Studio → Data Table → describe):
-Flashcards for Day ${n} of my ÖSD A1 plan: ${p.t}. 30 rows, A1 high-frequency only. Columns: German (nouns with der/die/das) | Plural | English | Persian | Example (short A1 sentence).
+Flashcards for Day ${n} of my ÖSD A1 plan: ${p.t}. ${dayHours()>=3?20:15} rows, A1 high-frequency only. Columns: German (nouns with der/die/das) | Plural | English | Persian | Example (short A1 sentence).
 Then: ⋮ → Export to Google Sheets → select the cells → copy → paste into the app (Day ${n} → Listen & watch → Add flashcards).`; }
 function promptStudio(n){ const p=PLAN[n-1]; return `AUDIO OVERVIEW (Brief, English):
-Day ${n}: ${p.t}${p.g?" + "+p.g:""}, for an absolute beginner (Persian native, English B2) preparing for ÖSD A1. Say every German word slowly, twice. Cover only this topic. End with 5 phrases for me to repeat.
+Day ${n}: ${p.t}${p.g?" + "+p.g:""}, for an absolute beginner (Persian native, English B2) preparing for ÖSD A1 on ${examLong()}. Keep it under 8 minutes. Say every German word slowly, twice. Cover only this topic. End with 5 phrases for me to repeat.
 
 VIDEO OVERVIEW (Explainer):
 Explain ${p.g||p.t} to an absolute beginner. Colour-code der = blue, die = red, das = green. 6 examples with English. Common mistakes.
 
 INFOGRAPHIC (Portrait):
 One-page cheat sheet for ${p.g||p.t} at A1 level, with a table and examples.`; }
-function promptMock(n){ return `Create a COMPLETE ÖSD Zertifikat A1 mock exam (mock for Day ${n} of 34), using only A1 language. Use the exact JSON shape from my Prompt 2B and 2C, but with full exam item counts: Lesen Teil 1 = 5 situations + 6 ads, Teil 2 = 3 texts × 2, Teil 3 = 5 texts + 6 pictures; Hören Teil 1 = 5 texts, Teil 2 = 1 message with 5 fields, Teil 3 = 5 people; Schreiben Teil 1 = 10 fields, Teil 2 = 1 email; Sprechen Teil 1–3 including the photo scene and a role-play. Skip vocab/exercises. Make it different from all earlier days.`; }
+function promptMock(n){ return `Create a COMPLETE ÖSD Zertifikat A1 mock exam (mock for Day ${n} of ${PLAN.length}), using only A1 language. Use the exact JSON shape from my Prompt 2B and 2C, but with full exam item counts: Lesen Teil 1 = 5 situations + 6 ads, Teil 2 = 3 texts × 2, Teil 3 = 5 texts + 6 pictures; Hören Teil 1 = 5 texts, Teil 2 = 1 message with 5 fields, Teil 3 = 5 people; Schreiben Teil 1 = 10 fields, Teil 2 = 1 email; Sprechen Teil 1–3 including the photo scene and a role-play. Skip vocab/exercises. Make it different from all earlier days.`; }
 
 function pendingPanel(n){
   const p=PLAN[n-1];
@@ -860,10 +900,10 @@ function vPlan(){
     const chip = isSkipped(n) ? `<span class="chip">optional</span>` : p.k==="mock" ? `<span class="chip at">mock</span>` : p.k==="buffer"||p.k==="rest" ? `<span class="chip warn">${p.k}</span>` : av ? (isDone?`<span class="chip gold">done</span>`:part?`<span class="chip acc tnum">${pct}%</span>`:`<span class="chip ok">ready</span>`) : `<span class="chip">prompts</span>`;
     return `<button class="pday ${n===cur?"today":""} ${isDone?"isdone":part?"part":""} kind-${p.k}" data-act="day" data-v="${n}"><span class="dn tnum">${isDone?ICONS.check.replace('<svg','<svg width="22" height="22"'):n}</span>
       <span style="min-width:0"><span class="dt">${dt.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}${n===cur?" · TODAY":""}${S.st.lang!=="en"?` · <span class="fa">${fmtFa(dt)}</span>`:""}</span><br><b>${esc(p.t)}</b>${p.g?`<br><span class="small muted">${esc(p.g)}</span>`:""}</span>${chip}</button>`; };
-  return `<div><h1>34 days to A1</h1><p class="muted">${ex("Five units, 31 lesson and mock days plus 3 buffer days. Tap a day to open its path.","پنج بخش: ۳۱ روز درس و آزمون + ۳ روز جبرانی. روی هر روز بزن تا مسیرش باز شود.")}</p></div>
+  return `<div><h1>${PLAN.length} days to A1</h1><p class="muted">${ex(`Five units: ${PLAN.filter(p=>p.k==="lesson").length} lesson days, ${PLAN.filter(p=>p.k==="mock").length} mock exams, review and buffer days, about ${dayHours()} hours a day. Review, buffer and mock days build themselves from what you have learned.`,`پنج بخش: ${PLAN.filter(p=>p.k==="lesson").length} روز درس، ${PLAN.filter(p=>p.k==="mock").length} آزمون آزمایشی و روزهای مرور، روزی حدود ${dayHours()} ساعت.`)}</p></div>
   ${UNITS.map(u=>`<section class="stack" style="--u:${u.c};--ud:${u.cd}"><div class="unit"><div class="ul">Unit ${u.i} · Days ${u.a}–${u.b}</div><h2>${esc(u.t)}</h2><div class="small" style="opacity:.92">${esc(u.d)}</div></div>
     <div class="plan">${PLAN.slice(u.a-1,u.b).map((p,j)=>row(p,u.a+j)).join("")}</div></section>`).join("")}
-  <div class="pday exam"><span class="dn">${ICONS.trophy.replace('<svg','<svg width="24" height="24"')}</span><span><span class="dt">Sat 14 Nov${S.st.lang!=="en"?` · <span class="fa">شنبه ۲۳ آبان ۱۴۰۵</span>`:""}</span><br><b>ÖSD Zertifikat A1</b><br><span class="small muted">Divan Institute, Tehran</span></span><span class="chip at">exam</span></div>`;
+  <div class="pday exam"><span class="dn">${ICONS.trophy.replace('<svg','<svg width="24" height="24"')}</span><span><span class="dt">${examShort()}${S.st.lang!=="en"?` · <span class="fa">${examFa()}</span>`:""}</span><br><b>ÖSD Zertifikat A1</b><br><span class="small muted">Divan Institute, Tehran</span></span><span class="chip at">exam</span></div>`;
 }
 
 /* ---------- Cards ---------- */
@@ -939,30 +979,48 @@ const DAYRES={
  19:{t:"DW travel lessons: station, hotel, announcements.",k:["nicos"]},
  20:{t:"Nicos Weg Perfekt lessons.",k:["nicos"]},
  21:{t:"Schritte Österreich forms unit. Aim for 10/10 on Schreiben Teil 1.",k:["hueber"]},
- 22:{t:"MOCK 1: official ÖSD ZA1 Modellsatz. Download the ZIP, then run it in Exam → Mocks.",k:["osd"]},
- 23:{t:"Lesen strategies: read the task first, find the keyword, one ad is always a distractor.",k:[]},
- 24:{t:"Hören strategies: predict the answer before listening; numbers and spelled names.",k:["ythoeren","kurs"]},
- 25:{t:"Write 5 messages of ~30 words and compare them with the Mustertexte.",k:["muster"]},
- 26:{t:"Official oral video + 2 samples. Then 10-min prep → 10-min oral with the tutor, three times.",k:["oral","ytsprech","ytsprech2","sprechpdf"]},
- 27:{t:"MOCK 2: official ÖSD ZA1/Österreich Modellsatz (different content).",k:["osd"]},
- 28:{t:"Buffer day.",k:[]},
- 29:{t:"MOCK 3: ÖSD Übungsmaterialien Band 1, Übungssatz 1. No book? Use Übungstest A in the app, or modellsatz.de.",k:["testsam","modell"]},
- 30:{t:"Weak spots: work from My mistakes and your mock results.",k:[]},
- 31:{t:"FINAL MOCK: Übungssatz 2, or the ÖSD Digital Test-Training, at the same time of day as your exam.",k:["testsam","digital"]},
- 32:{t:"Redo only the items you got wrong.",k:[]},
- 33:{t:"Cards only, plus listening to your Sprechen script.",k:[]},
- 34:{t:"Pack passport/ID and a non-erasable pen; check the route to Divan.",k:[]}
+ 22:{t:"Mini-test 3 covers Days 16–21. Clear My mistakes in Review first.",k:[]},
+ 23:{t:"Übungstest A: the full interactive practice exam in the app (Exam → Übungstest A). Do it in one sitting, like the real exam.",k:[]},
+ 24:{t:"Lesen strategies: read the task first, find the keyword, one ad is always a distractor.",k:[]},
+ 25:{t:"Hören strategies: read the note sheet first and predict what kind of word goes in each line (day, time, number, name).",k:["ythoeren","kurs"]},
+ 26:{t:"Write 3 messages of ~30 words and compare them with the Mustertexte.",k:["muster"]},
+ 27:{t:"Official oral video + 2 samples. Then a 25-minute exam-mode session with the tutor.",k:["oral","ytsprech","ytsprech2","sprechpdf"]},
+ 28:{t:"Buffer: repeat your weakest exam part from an earlier day, then clear My mistakes.",k:[]},
+ 29:{t:"MOCK 1: official ÖSD ZA1 Modellsatz. Download the ZIP, then run it in Exam → Mocks.",k:["osd"]},
+ 30:{t:"Work only on what mock 1 showed: redo the wrong items and drill the weakest part.",k:[]},
+ 31:{t:"Vocabulary sweep: Review cards in both directions, then Wörter-Blitz until 20+.",k:[]},
+ 32:{t:"Vocabulary sweep: the Austrian words deck plus Days 16–21.",k:["kurs"]},
+ 33:{t:"Grammar review: verb endings (ich/du/er), der/die/das, wo/woher/wohin, word order.",k:["nicos"]},
+ 34:{t:"Timed Lesen and Hören sets: Sprachportal practice tests.",k:["sptests"]},
+ 35:{t:"Write two emails, then speak Teil 1–3 with the tutor in exam mode.",k:["muster","oral"]},
+ 36:{t:"Buffer day: catch up first, then rest.",k:[]},
+ 37:{t:"MOCK 2: official ÖSD ZA1/Österreich Modellsatz (different content).",k:["osd"]},
+ 38:{t:"Fix mock 2: redo the wrong items, drill the weakest part.",k:[]},
+ 39:{t:"Speaking day: 10-minute prep → oral with the tutor, three times.",k:["oral","ytsprech","ytsprech2"]},
+ 40:{t:"Hören intensive: notes, numbers, spelled names.",k:["goethe","ythoeren"]},
+ 41:{t:"Email bootcamp: 4 short emails, each checked by the examiner AI.",k:["muster"]},
+ 42:{t:"Buffer day.",k:[]},
+ 43:{t:"MOCK 3: ÖSD Übungsmaterialien Band 1, Übungssatz 1. No book? Redo Übungstest A, or modellsatz.de.",k:["testsam","modell"]},
+ 44:{t:"Weak spots: work from My mistakes and your mock results.",k:[]},
+ 45:{t:"Full sweep: all cards, all phrases, your Sprechen script.",k:[]},
+ 46:{t:"Mixed Lesen + Hören practice.",k:["sptests"]},
+ 47:{t:"FINAL MOCK: Übungssatz 2, or the ÖSD Digital Test-Training, at the same time of day as your exam.",k:["testsam","digital"]},
+ 48:{t:"Redo only the items you got wrong.",k:[]},
+ 49:{t:"Buffer: targeted repair.",k:[]},
+ 50:{t:"Cards only, plus listening to your Sprechen script.",k:[]},
+ 51:{t:"Pack passport/ID and a non-erasable pen; check the route to Divan.",k:[]},
+ 52:{t:"Rest. Sleep well.",k:[]}
 };
 function resCard(n){ const r=DAYRES[n]; if(!r) return "";
   return `<details class="acc" ${PLAN[n-1].k!=="lesson"?"open":""}><summary>Extra resources for Day ${n}</summary><div class="in stack"><p class="small">${esc(r.t)}</p>${r.k.map(k=>`<a class="reslink" href="${LINKS[k][1]}" target="_blank" rel="noopener">${esc(LINKS[k][0])}</a>`).join("")}</div></details>`; }
 
 /* ---------- mock exams (ÖSD scoring) ---------- */
 const MOCKS=[
- {id:"m1", day:22, short:"Mock 1", title:"Mock 1 · Official ÖSD ZA1 Modellsatz", kind:"paper", how:"Download the free ZA1 Modellsatz ZIP from osd.at (PDF + MP3). Do it on paper with the app's timers, then enter how many answers you got right.", links:["osd"]},
- {id:"m2", day:27, short:"Mock 2", title:"Mock 2 · Official ÖSD ZA1/Österreich Modellsatz", kind:"paper", how:"The second official set has different content. Same flow: paper + app timers + scoring.", links:["osd"]},
- {id:"m3", day:29, short:"Mock 3", title:"Mock 3 · ÖSD Übungsmaterialien Band 1, Übungssatz 1", kind:"paper", alt:true, how:"From the ÖSD practice book (audio on testsam.at). No book? Take Übungstest A in the app instead.", links:["testsam","modell"]},
- {id:"m4", day:31, short:"Final mock", title:"Final mock · Übungssatz 2 or ÖSD Digital Test-Training", kind:"paper", how:"Do it at the same time of day as your exam, without breaks except after Hören.", links:["testsam","digital"]},
- {id:"ta", day:null, short:"Übungstest A", title:"Übungstest A · interactive, in the app", kind:"app", file:"days/mock-a.json", how:"An original practice test written for this app in the exact ZA1 format, marked automatically."}
+ {id:"m1", day:29, short:"Mock 1", title:"Mock 1 · Official ÖSD ZA1 Modellsatz", kind:"paper", how:"Download the free ZA1 Modellsatz ZIP from osd.at (PDF + MP3). Do it on paper with the app's timers, then enter how many answers you got right.", links:["osd"]},
+ {id:"m2", day:37, short:"Mock 2", title:"Mock 2 · Official ÖSD ZA1/Österreich Modellsatz", kind:"paper", how:"The second official set has different content. Same flow: paper + app timers + scoring.", links:["osd"]},
+ {id:"m3", day:43, short:"Mock 3", title:"Mock 3 · ÖSD Übungsmaterialien Band 1, Übungssatz 1", kind:"paper", alt:true, how:"From the ÖSD practice book (audio on testsam.at). No book? Take Übungstest A in the app instead.", links:["testsam","modell"]},
+ {id:"m4", day:47, short:"Final mock", title:"Final mock · Übungssatz 2 or ÖSD Digital Test-Training", kind:"paper", how:"Do it at the same time of day as your exam, without breaks except after Hören.", links:["testsam","digital"]},
+ {id:"ta", day:23, short:"Übungstest A", title:"Übungstest A · interactive, in the app", kind:"app", file:"days/mock-a.json", how:"An original practice test written for this app in the exact ZA1 format, marked automatically."}
 ];
 const PH_MIN={lesen:25,hoeren:12,schreiben:20,sprechen:10};
 const P5=c=>Math.max(0,Math.min(5,c|0))*2;
@@ -1019,7 +1077,7 @@ function tickMock(){ clearInterval(tickMock._i); if(!S.mock||!S.mock.endAt) retu
 function mockSa2(){ const M=S.mock; if(M.sa2!=null) return {score:M.sa2, ded:(M.sa2Detail&&M.sa2Detail.deductions)||[]}; const txt=S.st.drafts[M.id+":email"]||""; const words=txt.trim()?wordCount(txt):+M.rub.len; return sa2Score(M.rub, words); }
 function mockSp(){ const M=S.mock; if(M.spOverride!=null) return M.spOverride; const s=M.sp; return (+s.a1)+(+s.a2)+(+s.a3)+(+s.lex)+(+s.aus)+(+s.form); }
 function saveMockResult(){ const M=S.mock; const c=Object.assign({}, M.counts, {sa2:mockSa2().score, sp:mockSp()}); const r=computeResult(c);
-  S.st.mocks[M.id]=Object.assign({at:Date.now(), counts:c}, r); save(); }
+  S.st.mocks[M.id]=Object.assign({at:Date.now(), counts:c}, r); { const mm=MOCKS.find(x=>x.id===M.id); if(mm&&mm.day) S.st.done[mm.day+":mock"]=S.st.done[mm.day+":mock"]||Date.now(); } save(); }
 async function submitApp(){ const M=S.mock, D=S.mockData[M.id];
   ["l1","l2","l3","h1","h2","h3","s1"].forEach(g=>S.checked[M.id+":"+g]=true);
   M.counts=countApp(M.id, D); const txt=(S.st.drafts[M.id+":email"]||"").trim();
@@ -1145,7 +1203,7 @@ function prepChecklist(){ const items=[
   ["Download both official Modellsatz ZIPs (ZA1 and ZA1/Österreich) from osd.at/downloads","هر دو فایل ZIP نمونه آزمون رسمی را از osd.at دانلود کن","osd"],
   ["Download the Mustertexte ZA1 and the exam rules (Durchführungsbestimmungen)","نمونه نوشته‌ها و قوانین آزمون را دانلود کن","muster"],
   ["Check osd.at for the new 2026 Modellsatz brochure and note any changes","بروشور جدید ۲۰۲۶ را در osd.at بررسی کن","osdpage"],
-  ["Ask Divan: is 14 November on paper or digital? Is the oral exam the same day?","از مؤسسه دیوان بپرس: آزمون کاغذی است یا دیجیتال؟ شفاهی همان روز است؟",""],
+  [`Ask Divan: is ${examLong()} on paper or digital? Is the oral exam the same day?`,"از مؤسسه دیوان بپرس: آزمون کاغذی است یا دیجیتال؟ شفاهی همان روز است؟",""],
   ["Ask Divan if they sell or lend ÖSD Übungsmaterialien Band 1 (for Mock 3 and 4)","از دیوان بپرس کتاب Übungsmaterialien Band 1 را می‌فروشند یا امانت می‌دهند",""],
   ["Watch the official ÖSD oral exam video once","ویدیوی رسمی آزمون شفاهی را یک بار ببین","oral"]];
   return `<details class="acc" open><summary>Before you start · checklist</summary><div class="in stack">${items.map(([en,fa,k],i)=>`<label class="row" style="flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" data-chk="prep:${i}" ${S.st.done["prep:"+i]?"checked":""} style="margin-top:6px"><span>${ex(en,fa)}${k?` <a href="${LINKS[k][1]}" target="_blank" rel="noopener" class="small">open</a>`:""}</span></label>`).join("")}</div></details>`; }
@@ -1158,7 +1216,7 @@ function scoringCard(){ return `<details class="acc"><summary>How ÖSD scores yo
   <div class="sunk small"><b>Grades:</b> written 75–66 sehr gut · 65–56 gut · 55–38 bestanden. Oral 25–22 · 21–19 · 18–12. You can take the written and oral modules separately and retake each.</div></div></details>`; }
 function resourcesCard(){ return `<details class="acc"><summary>All official and free resources</summary><div class="in stack">${Object.values(LINKS).map(([t,u])=>`<a class="reslink" href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`).join("")}
   <p class="small muted">${ex("Official ÖSD files are for your personal study. YouTube may need a VPN in Iran.","فایل‌های رسمی ÖSD فقط برای مطالعه شخصی‌اند. یوتیوب در ایران ممکن است فیلتر باشد.")}</p></div></details>`; }
-function vExam(){ return `<div><h1>Exam centre</h1><p class="muted">ÖSD Zertifikat A1 · Saturday 14 November 2026 · Divan Institute, Tehran</p></div>
+function vExam(){ return `<div><h1>Exam centre</h1><p class="muted">ÖSD Zertifikat A1 · ${examLong()} · <span class="fa">${examFa()}</span> · Divan Institute, Tehran</p></div>
   ${mockList()}${prepChecklist()}${scoringCard()}${resourcesCard()}${examFacts()}`; }
 
 /* ---------- Review ---------- */
@@ -1203,7 +1261,7 @@ async function vProgress(){
   <section class="card stack"><div class="row between"><h2>XP this week</h2><span class="chip gold tnum">${wk.reduce((a,x)=>a+x.v,0)} XP</span></div>
     <div class="xpchart">${wk.map(x=>`<div class="xpcol ${x.today?"today":""}"><span class="tnum">${x.v||""}</span><i style="height:${Math.round(x.v/mx*100)}%"></i><b>${x.lb}</b></div>`).join("")}</div>
     <p class="small muted">Daily goal: ${goalXp()} XP · change it in Settings</p></section>
-  <section class="card stack"><h2>Latest mock</h2>${last?`<div class="small muted">${esc((MOCKS.find(m=>m.id===last[0])||{}).title||last[0])}</div>${resultBlock(last[1])}`:`<p class="small muted">${ex("No mock yet. Try Übungstest A in the Exam tab any time; the official mocks are on Days 22, 27, 29 and 31.","هنوز آزمون آزمایشی نداده‌ای. Übungstest A را هر وقت خواستی در تب Exam امتحان کن.")}</p><div><button class="btn sm" data-act="mock-open" data-id="ta">Start Übungstest A</button></div>`}</section>
+  <section class="card stack"><h2>Latest mock</h2>${last?`<div class="small muted">${esc((MOCKS.find(m=>m.id===last[0])||{}).title||last[0])}</div>${resultBlock(last[1])}`:`<p class="small muted">${ex("No mock yet. Try Übungstest A in the Exam tab any time; the official mocks are on Days 23, 29, 37, 43 and 47.","هنوز آزمون آزمایشی نداده‌ای. Übungstest A را هر وقت خواستی در تب Exam امتحان کن.")}</p><div><button class="btn sm" data-act="mock-open" data-id="ta">Start Übungstest A</button></div>`}</section>
   ${(()=>{ const reps=Object.entries(S.st.reports||{}).sort((a,b)=>b[0]-a[0]); if(!reps.length) return ""; return `<section class="card stack"><h2>Day reports</h2>${reps.map(([k,r])=>`<button class="prow rbtn" data-act="rep-show" data-n="${k}"><div><b>Day ${k}</b><div class="small muted">${r.weak&&r.weak.length?"Weak: "+esc(r.weak.slice(0,3).join(" · ")):"no weak spots recorded"}</div></div><div class="row" style="gap:6px;justify-content:flex-end">${r.W!=null?`<span class="chip ${r.wPass?"ok":"bad"} tnum">W ${r.W}/75</span>`:r.L!=null||r.H!=null?`<span class="chip tnum">L ${r.L??"–"} · H ${r.H??"–"}</span>`:""}${r.sp!=null?`<span class="chip ${r.sp>=12?"ok":"bad"} tnum">S ${r.sp}/25</span>`:""}</div></button>`).join("")}</section>`; })()}
   ${badgesCard()}
   <section class="card stack"><h2>Accuracy by skill</h2>
@@ -1299,6 +1357,7 @@ function tutorCard(n){
   return `<section class="card stack tutor-card"><div class="label">Live tutor · Gemini · about ${tutorMinutes()} min, guided in phases</div><h2>Talk to your tutor</h2>
     <p class="small">${ex("The tutor already knows which day you're on, today's words and script, your recent mistakes and the notes from your last session. Use headphones.","مربی می‌داند روز چندم هستی، لغات و متن امروز، اشتباهات اخیر و یادداشت‌های جلسه قبل را. از هدفون استفاده کن.")}</p>
     <div class="row">${[["review","Fix my weak spots"],["coach","Coach: teach today"],["exam","Exam simulation"]].map(([v,l])=>`<button class="opt ${S.liveMode===v?"sel":""}" data-act="live-mode" data-v="${v}">${l}</button>`).join("")}</div>
+    <div class="row"><span class="small muted">Talking</span>${[["ptt","Hold to talk · fastest"],["auto","Hands-free"]].map(([v,l])=>`<button class="opt ${(S.st.talkMode||"ptt")===v?"sel":""}" data-act="talk-mode" data-v="${v}">${l}</button>`).join("")}</div>
     <div class="row"><span class="small muted">Length</span>${[15,25,30].map(m=>`<button class="opt ${tutorMinutes()===m?"sel":""}" data-act="tutor-min" data-v="${m}">${m} min</button>`).join("")}</div>
     ${ready?`<div><button class="btn primary" data-act="live-start" data-n="${n}">${ICONS.mic}Start speaking session</button></div>`:`<div class="banner"><div>${S.uid?"The tutor needs GEMINI_API_KEY in Vercel → Settings → Environment Variables.":"Sign in to use the tutor."}</div></div>`}
     ${last?`<div class="sunk stack" style="gap:4px"><div class="label">Last session · ${new Date(last.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}${last.score_25!=null?` · ${esc(last.score_25)}/25`:""}</div><div class="small">${esc(last.summary_en||"")}</div>
@@ -1313,11 +1372,11 @@ function buildTutorBrief(n, d, mode, plan){ plan=plan||sessionPlan(n, mode, tuto
   const next=PLAN[n]?PLAN[n].t:"exam";
   const L=[];
   L.push(`You are Frau Berger, a friendly Austrian ÖSD examiner and Raam's personal German tutor. You run a ${mode==="exam"?"strict exam simulation":mode==="review"?"personal review session that repairs his weak points from today":"coaching session"} by voice.`);
-  L.push(`LEARNER: Raam, 30, from Tehran, native Persian, English B2, absolute beginner who started German on 11 October 2026. Goal: pass ÖSD Zertifikat A1 on Saturday 14 November 2026 at Divan Institute, Tehran (${left} days left).`);
-  L.push(`PLAN POSITION: Day ${n} of 34 — "${p.t}"${p.g?` (grammar: ${p.g})`:""}. Earlier days covered: ${done.join("; ")||"nothing yet"}. Tomorrow: ${next}.`);
-  if(d){
-    if(d.vocab&&d.vocab.length) L.push("TODAY'S WORDS: "+d.vocab.map(v=>`${v.article&&v.article!=="-"?v.article+" ":""}${v.de}${v.plural&&v.plural!=="-"?` (${v.plural})`:""} = ${v.en}`).join("; ")+".");
-    if(d.phrases&&d.phrases.length) L.push("TODAY'S PHRASES: "+d.phrases.map(x=>x.de).join(" | "));
+  L.push(`LEARNER: Raam, 30, from Tehran, native Persian, English B2, beginner who started German on 12 October 2026. Goal: pass ÖSD Zertifikat A1 on ${examLong()} at Divan Institute, Tehran (${left} days left).`);
+  L.push(`PLAN POSITION: Day ${n} of ${PLAN.length} — "${p.t}"${p.g?` (grammar: ${p.g})`:""}. Earlier days covered: ${done.join("; ")||"nothing yet"}. Tomorrow: ${next}.`);
+  if(d&&!d.synthetic){
+    if(d.vocab&&d.vocab.length) L.push("TODAY'S WORDS: "+d.vocab.slice(0,28).map(v=>`${v.article&&v.article!=="-"?v.article+" ":""}${v.de}${v.plural&&v.plural!=="-"?` (${v.plural})`:""} = ${v.en}`).join("; ")+".");
+    if(d.phrases&&d.phrases.length) L.push("TODAY'S PHRASES: "+d.phrases.slice(0,12).map(x=>x.de).join(" | "));
     if(d.grammar&&d.grammar.length) L.push("TODAY'S GRAMMAR: "+d.grammar.map(g=>`${g.topic}: ${g.explain_en}`).join(" "));
     if(d.pronunciation&&d.pronunciation.length) L.push("PRONUNCIATION FOCUS: "+d.pronunciation.map(x=>`${x.focus} (${(x.words||[]).join(", ")})`).join("; "));
     const sp=d.sprechen||{};
@@ -1326,15 +1385,19 @@ function buildTutorBrief(n, d, mode, plan){ plan=plan||sessionPlan(n, mode, tuto
     if(sp.teil3) L.push("ROLE-PLAY FOR TEIL 3: "+sp.teil3.roleplay_en+" "+(sp.teil3.examiner_role_de||""));
   } else {
     L.push("Today has no new lesson (review, mock or buffer day). Revise everything from the earlier days, with most time on Sprechen Teil 1–3.");
+    const LB=learnedBefore(n); if(LB.vocab.length){ L.push("WORDS FROM EARLIER DAYS TO RECYCLE (TODAY'S WORDS for this session): "+shuffled(LB.vocab,"tb"+n).slice(0,30).map(v=>`${vfull(v)} = ${v.en}`).join("; ")+"."); L.push("PHRASES FROM EARLIER DAYS: "+shuffled(LB.phrases,"tp"+n).slice(0,10).map(x=>x.de).join(" | ")); }
+    const sc=[]; for(let k=n-1;k>=1&&sc.length<1;k--){ const x=S.days[k]; if(x&&x.sprechen&&x.sprechen.teil1) sc.push(x.sprechen.teil1); } if(sc[0]) L.push("HIS SPEAKING SCRIPT (Teil 1): "+sc[0].my_script.map(x=>x.de).join(" "));
   }
   const TR=tutorResults(n); if(TR.text) L.push(TR.text);
   const mis=S.st.mistakes.filter(m=>m.day!==n).slice(0,6).map(m=>`${m.q} → ${m.right} (he said: ${m.your||"–"})`);
   if(mis.length) L.push("OLDER MISTAKES TO RECYCLE: "+mis.join(" | "));
   const ws=weakSpots(); if(ws.length) L.push("WEAK EXERCISE SCORES: "+ws.join(", "));
-  const notes=Object.entries(S.st.live).flatMap(([day,arr])=>arr.map(x=>({day:+day,...x}))).sort((a,b)=>a.at-b.at).slice(-3);
-  if(notes.length) L.push("NOTES FROM EARLIER TUTOR SESSIONS: "+notes.map(x=>`Day ${x.day}: ${x.summary_en||""} Errors: ${(x.errors||[]).map(e=>e.wrong+" → "+e.right).join(", ")}. Next focus: ${(x.next_focus||[]).join("; ")}`).join(" || "));
+  const notes=Object.entries(S.st.live).flatMap(([day,arr])=>arr.map(x=>({day:+day,...x}))).sort((a,b)=>a.at-b.at).slice(-2);
+  if(notes.length) L.push("NOTES FROM EARLIER TUTOR SESSIONS: "+notes.map(x=>`Day ${x.day}: Errors: ${(x.errors||[]).slice(0,4).map(e=>e.wrong+" → "+e.right).join(", ")}. Next focus: ${(x.next_focus||[]).slice(0,3).join("; ")}`).join(" || "));
+  const gap=S.st.comeback&&S.st.comeback.date===dk(new Date())?S.st.comeback.gap:0; if(gap>=3) L.push(`He was away for ${gap} days and is just coming back: start gently, recycle older words, and praise him for coming back.`);
   const total=plan.reduce((x,p)=>x+p.min,0);
   L.push(`SESSION LENGTH: about ${total} minutes, run by the app in ${plan.length} phases: `+plan.map((p,i)=>`${i+1}) ${p.t} (${p.min} min)`).join("; ")+". The app sends you a note that starts with [APP NOTE] at the start of every phase with the exact instructions. Those notes come from the app, not from Raam: never read them aloud or mention them, just move on smoothly.");
+  L.push("SPEED MATTERS: answer immediately; never think aloud. "+(S.st.talkMode==="auto"?"He speaks hands-free and may pause while searching for a word: if his sentence sounds unfinished, wait.":"He holds a button while he speaks, so every turn you get is complete: reply straight away.")+" If you could not understand him, say „Wie bitte?“ and repeat your question more slowly.");
   L.push("YOUR ROLE: an energetic, demanding but kind personal trainer, not a chat partner. You lead all the time. Keep each turn short (at most 2 sentences) and end almost every turn with a question or task for him. After every answer: quick feedback (richtig / fast / nein), the correct form if needed, and he repeats it; then the next item. Aim for 40–60 questions in a session. Use spaced retrieval: anything he gets wrong comes back 2–3 minutes later in a new sentence. Raise the difficulty after 3 correct answers in a row (full sentences, faster, new context); simplify when he struggles. If he answers in English, help him say it in German. Never end the session, summarise it or say goodbye before the final phase. If the app has not sent a new note yet, keep drilling the current phase with new items.");
   L.push("RULES: Speak slow, clear Austrian standard German (Grüß Gott, Jänner) in very short A1 sentences. Use only today's and earlier vocabulary. Explain in short simple English; use Persian only if he asks. In coaching mode, correct every mistake immediately: say the correct sentence once, ask him to repeat it, then continue. If he is silent or lost, give him the first words. Keep your turns short so he speaks more than you.");
   return L.join("\n");
@@ -1346,41 +1409,62 @@ async function startLive(n){
   let outCtx, inCtx;
   try{ outCtx=new AudioContext({sampleRate:24000}); inCtx=new AudioContext(); }catch(e){ toast("Audio is not available: "+e.message); return; }
   const plan=sessionPlan(n, S.liveMode, tutorMinutes());
-  S.live={ n, status:"starting", log:[], partial:null, started:Date.now(), mode:S.liveMode, muted:false, error:"", plan, phase:0, phaseEnd:Date.now()+plan[0].min*60000, complete:false };
+  S.live={ n, status:"starting", log:[], partial:null, started:Date.now(), mode:S.liveMode, muted:false, error:"", plan, phase:0, phaseUsed:0, phaseTurns:0, lastTick:0, complete:false, ptt:(S.st.talkMode||"ptt")!=="auto", waiting:0, lat:[], note:null, holding:false };
   render();
   try{
     const tk=await api("/api/live-token");
     const LL=S.live;
-    const sess=new LiveSession({ token:tk.token, apiVersion:tk.apiVersion, model:tk.model, systemText:buildTutorBrief(n,d,S.liveMode,plan), voice:S.st.tutorVoice||"Kore", outCtx, inCtx,
+    const sess=new LiveSession({ token:tk.token, apiVersion:tk.apiVersion, model:tk.model, systemText:buildTutorBrief(n,d,S.liveMode,plan), voice:S.st.tutorVoice||"Kore", outCtx, inCtx, talkMode:S.st.talkMode||"ptt",
+      onMode:m=>{ if(S.live!==LL) return; const ch=LL.ptt!==m.ptt; LL.ptt=m.ptt; if(ch) render(); },
+      onWaiting:t=>{ if(S.live!==LL) return; LL.waiting=t; drawWait(); },
+      onLatency:ms=>{ if(S.live!==LL) return; LL.lat.push(ms); if(LL.lat.length>200) LL.lat.shift(); },
+      onTurnComplete:()=>{ if(S.live!==LL) return; if(LL.note) setTimeout(()=>flushNote(LL),250); },
       starter: regie(LL,0,"Begin now."), getToken:()=>api("/api/live-token"),
       onResumed:kept=>{ if(S.live!==LL) return; if(!kept) try{ LL.sess.sendText(regie(LL,LL.phase,"The connection was renewed. Continue naturally from where you were; do not greet him again.")); }catch(e){} },
       onGoAway:()=>{},
-      onStatus:st=>{ if(!S.live) return; S.live.status=st; const el=$("#liveStatus"); if(el) el.textContent=liveStatusText(); if(st==="ended") render(); },
-      onTranscript:(role,text,final)=>{ if(!S.live) return; if(final){ S.live.log.push({role,text}); S.live.partial=null; saveDraft(); } else S.live.partial={role,text}; drawLiveLog(); },
+      onStatus:st=>{ if(!S.live) return; S.live.status=st; const el=$("#liveStatus"); if(el) el.textContent=liveStatusText(); if(st==="ended"||(st==="live"&&!S.live.holding)) render(); },
+      onTranscript:(role,text,final)=>{ if(!S.live) return; if(final){ S.live.log.push({role,text}); S.live.partial=null; if(role==="you") S.live.phaseTurns++; saveDraft(); } else S.live.partial={role,text}; drawLiveLog(); },
       onError:msg=>{ if(!S.live) return; S.live.error=msg; const el=$("#liveErr"); if(el){ el.textContent=msg; el.hidden=false; } },
       onLevel:v=>{ const el=$("#liveLevel"); if(el) el.style.width=Math.min(100,Math.round(v*400))+"%"; } });
     S.live.sess=sess;
-    await sess.start(); LL.phaseEnd=Date.now()+plan[0].min*60000; livePhaseTick();
+    await sess.start(); LL.lastTick=Date.now(); livePhaseTick();
   }catch(e){ if(S.live){ S.live.status="error"; S.live.error=e.message; } try{ outCtx.close(); inCtx.close(); }catch(_){} render(); }
 }
-function liveStatusText(){ const L=S.live; if(!L) return ""; return {starting:"Getting a secure connection…",connecting:"Connecting to Gemini…",live:L.muted?"Microphone muted":"Live · speak any time",reconnecting:"Reconnecting… (keeps your conversation)",ended:"Session ended",error:"Couldn't start",summarizing:"Saving session notes…"}[L.status]||L.status; }
+function liveStatusText(){ const L=S.live; if(!L) return ""; return {starting:"Getting a secure connection…",connecting:"Connecting to Gemini…",live:L.muted?"Microphone muted":L.ptt?"Live · hold to talk":"Live · speak any time",reconnecting:"Reconnecting… (keeps your conversation)",ended:"Session ended",error:"Couldn't start",summarizing:"Saving session notes…"}[L.status]||L.status; }
 function vLive(){
   const L=S.live; const p=PLAN[L.n-1];
   const over = L.status==="ended"||L.status==="error";
   return `<div class="live">
     <div class="row between"><div><div class="label">Day ${L.n} · ${L.mode==="exam"?"Exam simulation":L.mode==="review"?"Fixing your weak spots":"Coaching"} · saved automatically</div><h2>${esc(p.t)}</h2></div><span class="chip ${L.status==="live"?"ok":L.status==="error"?"bad":"acc"}" id="liveStatus">${liveStatusText()}</span></div>
     ${phaseBlock(L)}
-    <div class="meter" aria-hidden="true"><i id="liveLevel" style="width:0%"></i></div>
     <div class="banner" id="liveErr" ${L.error?"":"hidden"}>${esc(L.error)}</div>
     <div class="live-log" id="liveLog" aria-live="polite"></div>
+    <div class="waitline" id="liveWait" ${L.waiting?"":"hidden"} role="status"></div>
+    ${!over&&L.ptt?`<button class="pttbtn ${L.holding?"on":""}" id="pttBtn" ${L.status!=="live"?"disabled":""} aria-label="Hold to talk">${ICONS.mic}<span id="pttLbl">${L.holding?"Speak now · let go when you're done":"Hold to talk"}</span><span class="pttlevel" aria-hidden="true"><i id="liveLevel" style="width:0%"></i></span></button><p class="small muted" style="text-align:center;margin:-4px 0 0">${ex("Hold the button (or the Space bar) while you speak. Let go and the tutor answers at once.","دکمه (یا Space) را نگه دار و صحبت کن. رها کنی، مربی فوراً جواب می‌دهد.")}</p>`
+      :`<div class="meter" aria-hidden="true"><i id="liveLevel" style="width:0%"></i></div>`}
     <form id="liveText" class="row" style="flex-wrap:nowrap"><input type="text" id="liveTextIn" placeholder="Type instead of speaking…" autocomplete="off" ${L.status!=="live"?"disabled":""}><button class="btn" type="submit" ${L.status!=="live"?"disabled":""}>Send</button></form>
     <div class="row between">
-      ${over?`<span></span>`:`<button class="btn" data-act="live-mute">${L.muted?"Unmute mic":"Mute mic"}</button>`}
+      ${over||L.ptt?`<span></span>`:`<button class="btn" data-act="live-mute">${L.muted?"Unmute mic":"Mute mic"}</button>`}
       <button class="btn primary" data-act="live-end" ${L.status==="summarizing"?"disabled":""}>${over?"Save & close":"End session"}</button>
     </div>
-    <p class="small muted">${ex("Speak German freely; the tutor waits about a second of silence before answering. Say „Wie bitte?“ if you don't understand.","آزادانه آلمانی صحبت کن؛ مربی بعد از حدود یک ثانیه سکوت جواب می‌دهد. اگر متوجه نشدی بگو «Wie bitte?».")}</p>
+    <p class="small muted">${L.ptt?ex("Phases move on by the number of answers you give; the clock stops while the tutor is thinking. Say „Wie bitte?“ if you don't understand.","مراحل با تعداد جواب‌هایت جلو می‌روند و وقتی مربی فکر می‌کند، زمان متوقف است. اگر متوجه نشدی بگو «Wie bitte?».")
+      :ex("Hands-free: the tutor answers after about a second of silence. Use headphones, and switch to Hold to talk if the room is noisy. Say „Wie bitte?“ if you don't understand.","حالت بدون دکمه: مربی بعد از حدود یک ثانیه سکوت جواب می‌دهد. از هدفون استفاده کن و اگر محیط شلوغ است، Hold to talk را انتخاب کن.")}</p>
   </div>`;
 }
+function drawWait(){ const el=$("#liveWait"); const L=S.live; if(!el||!L) return; clearInterval(drawWait._i);
+  if(!L.waiting){ el.hidden=true; return; }
+  const upd=()=>{ if(!S.live||!S.live.waiting){ el.hidden=true; clearInterval(drawWait._i); return; } const s=Math.floor((Date.now()-S.live.waiting)/1000); el.hidden=false;
+    el.innerHTML=`<span class="dots"><i></i><i></i><i></i></span> Frau Berger is thinking… <span class="tnum">${s}s</span>${s>=12?` · <span class="small">${S.live.ptt?"no answer yet: hold the button and say it again":"no answer yet: say „Hallo?“ or type below"}</span>`:""}`; };
+  upd(); drawWait._i=setInterval(upd,250); }
+function pttDown(){ const L=S.live; if(!L||!L.sess||!L.ptt||L.holding) return; if(L.sess.pttDown()){ L.holding=true; const b=$("#pttBtn"), l=$("#pttLbl"); if(b) b.classList.add("on"); if(l) l.textContent="Speak now · let go when you're done"; vib(); } }
+function pttUp(){ const L=S.live; if(!L||!L.holding) return; L.holding=false; try{ L.sess.pttUp(); }catch(e){} const b=$("#pttBtn"), l=$("#pttLbl"); if(b) b.classList.remove("on"); if(l) l.textContent="Hold to talk"; }
+document.addEventListener("pointerdown", e=>{ if(e.target.closest&&e.target.closest("#pttBtn")){ e.preventDefault(); try{ e.target.closest("#pttBtn").setPointerCapture(e.pointerId); }catch(_){} pttDown(); } });
+["pointerup","pointercancel"].forEach(t=>document.addEventListener(t, ()=>{ if(S.live&&S.live.holding) pttUp(); }));
+document.addEventListener("contextmenu", e=>{ if(e.target.closest&&e.target.closest("#pttBtn")) e.preventDefault(); });
+document.addEventListener("keydown", e=>{ if(!S.live||e.code!=="Space"||e.repeat) { if(S.live&&e.code==="Space"&&e.repeat&&S.live.holding) e.preventDefault(); return; } const tag=e.target.tagName; if(tag==="INPUT"||tag==="TEXTAREA") return; e.preventDefault(); pttDown(); });
+document.addEventListener("keyup", e=>{ if(S.live&&e.code==="Space"&&S.live.holding){ e.preventDefault(); pttUp(); } });
+function sendNote(L, text){ L.note=text; flushNote(L); }
+function flushNote(L){ if(!L||!L.note||!L.sess||S.live!==L) return; const s=L.sess; if(s.modelSpeaking||s.pttActive||s.waitSince||L.holding) return; const t=L.note; L.note=null; try{ s.sendText(t); }catch(e){} }
 function drawLiveLog(){ const el=$("#liveLog"); if(!el||!S.live) return; const items=[...S.live.log, ...(S.live.partial?[S.live.partial]:[])];
   el.innerHTML = items.length ? items.map(x=>`<div class="lmsg ${x.role}"><span class="label">${x.role==="you"?"You":"Frau Berger"}</span><div>${esc(x.text)}</div></div>`).join("") : `<p class="muted small" style="text-align:center;padding:30px 0">${S.live.status==="live"?"Frau Berger is about to start…":"…"}</p>`;
   el.scrollTop=el.scrollHeight; }
@@ -1390,7 +1474,7 @@ async function endLive(){
   const talk=L.log.map(x=>x.text).join(" ");
   if(talk.length>60 && S.ai && S.uid){
     L.status="summarizing"; render();
-    try{ const {sess,xp}=await analyseSession({n:L.n, mode:L.mode, log:L.log, started:L.started, source:"live"}); clearDraft();
+    try{ const {sess,xp}=await analyseSession({n:L.n, mode:L.mode, log:L.log, started:L.started, source:"live", lat:L.lat, ptt:L.ptt}); clearDraft();
       S.live=null; S.view="speaking"; S.sess={day:L.n, id:sess.id}; S.report=null; toast(`Session saved · +${xp} XP`); render(); window.scrollTo(0,0); return; }
     catch(e){ saveDraft(); toast("Couldn't analyse it right now. The session is kept; save it later from Progress."); }
   } else if(talk.length<=60) clearDraft();
@@ -1404,7 +1488,7 @@ function examFacts(){
   const mod=(title, mins, pts, pass, rows, note)=>`<section class="card stack"><div class="row between"><h2>${title}</h2><span class="chip tnum">${mins} · ${pts}</span></div>${pass?`<p class="small"><b>Minimum:</b> ${pass}</p>`:""}
     <div class="tablewrap"><table class="gram"><tr><td>Part</td><td>Task</td><td>Items</td><td>Notes</td></tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>${note?`<p class="small muted">${note}</p>`:""}</section>`;
   return `<div style="padding-top:8px"><h2>Exam facts</h2><p class="muted small">Checked against the official ÖSD ZA1 rules (10/2023) and Modellsatz.</p></div>
-  <div class="hero"><div class="dayline"><span class="chip at">Exam day</span><span>Saturday 14 November 2026</span><span class="fa">شنبه ۲۳ آبان ۱۴۰۵</span></div>
+  <div class="hero"><div class="dayline"><span class="chip at">Exam day</span><span>${examLong()}</span><span class="fa">${examFa()}</span></div>
     <p><b>Divan Institute, Tehran.</b> Written part (Lesen, Hören, Schreiben) as a group, then the oral part (Sprechen) one-to-one with an examiner. No dictionary allowed.</p>
     <div class="grid2"><div class="sunk"><div class="label">Written · 75 points</div><b>Pass: 38</b> and the minimum in each part</div><div class="sunk"><div class="label">Oral · 25 points</div><b>Pass: 12</b></div></div>
     <p class="small muted">${ex("The two modules are graded separately and can be taken or retaken separately.","دو بخش جداگانه نمره‌دهی می‌شوند و می‌توان جداگانه آن‌ها را داد یا تکرار کرد.")}</p></div>
@@ -1439,7 +1523,11 @@ function vSettings(){
     <p class="small muted">${ex("A full study day on the path earns about 150–200 XP.","یک روز کامل مطالعه حدود ۱۵۰ تا ۲۰۰ امتیاز می‌دهد.")}</p></div></section>
   <section class="card stack"><h2>Exam mode for Hören</h2><label class="row"><input type="checkbox" data-set="strict" ${S.st.strict?"checked":""}> Limit audio plays like the real exam</label></section>
   <section class="card stack"><h2>Plan</h2><div class="field"><label for="startIn">Day 1 date</label><input type="text" id="startIn" value="${attr(S.st.start)}" data-set="start" placeholder="YYYY-MM-DD" inputmode="numeric"></div>
-    ${schedule().drop.length?`<div class="banner info"><div>${ex(`Because Day 1 is ${fmtDate(startDate())}, ${schedule().drop.map(d=>"Day "+d).join(" and ")} (buffer) ${schedule().drop.length>1?"are":"is"} skipped so the plan still ends with a rest day on Fri 13 Nov. ${schedule().drop.length>1?"They stay":"It stays"} open as optional extra practice.`,`چون روز اول ${fmtFa(startDate())} است، ${schedule().drop.map(d=>"روز "+d).join(" و ")} (جبرانی) حذف شد تا برنامه با یک روز استراحت در ۲۲ آبان تمام شود.`)}</div></div>`:""}<p class="small muted">Exam: Saturday 14 November 2026 (23 Aban 1405).</p></section>
+    <div class="field"><label for="examIn">Exam date</label><input type="text" id="examIn" value="${attr(S.st.exam||DEFAULT_EXAM)}" data-set="exam" placeholder="YYYY-MM-DD" inputmode="numeric"></div>
+    <p class="small muted">${examLong()} · <span class="fa">${examFa()}</span> · ${daysLeft()} days left</p>
+    <div class="field"><span class="lb">Daily study time</span><div class="row">${[2,3,4].map(h=>`<button class="opt ${dayHours()===h?"sel":""}" data-act="day-hours" data-v="${h}">${h} hours</button>`).join("")}</div></div>
+    ${schedule().anchorN>1?`<p class="small muted">${ex(`Your plan restarted at Day ${schedule().anchorN} on ${fmtDate(schedule().anchorDate)}. Day ${schedule().list[schedule().list.length-1]} falls on ${fmtDate(dateOf(schedule().list[schedule().list.length-1]))}, the day before the exam.`,"")}</p>`:""}
+    ${schedule().drop.length?`<div class="banner info"><div>${ex(`To fit before the exam, ${schedule().drop.map(d=>"Day "+d).join(", ")} ${schedule().drop.length>1?"are":"is"} skipped (buffer days first). They stay open as optional practice.`,`برای جا شدن تا آزمون، ${schedule().drop.map(d=>"روز "+d).join("، ")} حذف شد.`)}</div></div>`:""}</section>
   <section class="card stack"><h2>Account &amp; sync</h2><p class="small">${syncTxt}</p>
     ${S.uid?`<div class="row between"><span class="small">Signed in as <b>${esc(S.email)}</b></span><button class="btn sm" data-act="signout">Sign out</button></div>`:`<button class="btn sm" data-act="auth-show">Sign in to sync</button>`}
     ${installHint()?`<div class="row">${installHint()}<span class="small muted">Adds the app to your home screen or Start menu.</span></div>`:isStandalone()?`<span class="chip ok">Installed</span>`:`<p class="small muted">To install: Chrome on Android → ⋮ → Install app. Edge on Windows → … → Apps → Install this site as an app.</p>`}</section>
@@ -1479,10 +1567,10 @@ function vib(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms||90); }catch(e
 /* units = weeks; each has its own colour like a game world */
 const UNITS=[
  {i:1,a:1,b:7,t:"Hallo! First steps",d:"Alphabet, introductions, numbers, verbs, family, jobs",c:"#58c322",cd:"#46a302"},
- {i:2,a:8,b:14,t:"Daily life",d:"Food, shopping, clock time, dates, free time, home",c:"#ce82ff",cd:"#a568cc"},
- {i:3,a:15,b:21,t:"Out and about",d:"City, health, clothes and weather, travel, Perfekt, forms",c:"#1db0f0",cd:"#1590cc"},
- {i:4,a:22,b:28,t:"Exam training",d:"Mock 1 and 2, strategies for every exam part",c:"#ff9a1f",cd:"#e07c00"},
- {i:5,a:29,b:34,t:"Final sprint",d:"Mock 3, the final mock, repair and rest",c:"#ff6fae",cd:"#e0498c"}];
+ {i:2,a:8,b:15,t:"Daily life",d:"Food, shopping, clock time, dates, free time, home",c:"#ce82ff",cd:"#a568cc"},
+ {i:3,a:16,b:22,t:"Out and about",d:"City, health, clothes and weather, travel, Perfekt, forms",c:"#1db0f0",cd:"#1590cc"},
+ {i:4,a:23,b:36,t:"Exam training",d:"Übungstest A, mock 1, strategies, vocabulary and grammar sweeps",c:"#ff9a1f",cd:"#e07c00"},
+ {i:5,a:37,b:52,t:"Final sprint",d:"Mock 2, mock 3, the final mock, repair and rest",c:"#ff6fae",cd:"#e0498c"}];
 function unitOf(n){ return UNITS.find(u=>n>=u.a&&n<=u.b)||UNITS[0]; }
 function uStyle(n){ const u=unitOf(n); return `--u:${u.c};--ud:${u.cd}`; }
 
@@ -1494,9 +1582,12 @@ const NODE_INFO={
  lesen:["Lesen","Reading in the exact ÖSD exam format.","خواندن دقیقاً با قالب آزمون ÖSD.","bookopen"],
  schreiben:["Schreiben","Fill in the form and write the email.","فرم را پر کن و ایمیل را بنویس.","mail"],
  sprechen:["Sprechen","Practise all three speaking parts out loud.","هر سه بخش صحبت را بلند تمرین کن.","mic"],
- quiz:["Daily quiz","Ten questions on everything from today.","ده سؤال از همه مطالب امروز.","trophy"]
+ quiz:["Daily quiz","Ten questions on everything from today.","ده سؤال از همه مطالب امروز.","trophy"],
+ drill:["Grammar gym","Verb endings, der/die/das, question words and word order: your most frequent mistakes.","پایانه فعل، der/die/das، کلمات پرسشی و ترتیب کلمات: اشتباهات پرتکرار تو.","bulb"],
+ hoertrainer:["Hör-Trainer","Numbers, phone numbers, times, days and spelled names: the skills for Hören Teil 2.","اعداد، شماره تلفن، ساعت، روزها و اسم‌های هجی‌شده: مهارت‌های بخش ۲ شنیدن.","headph"],
+ tutor:["Tutor session","Speak with your tutor about today's weak spots. Push-to-talk keeps it fast.","با مربی درباره نقاط ضعف امروز صحبت کن.","mic"]
 };
-const PLAYER_STEPS=new Set(["learn","practice","quiz","diktat"]);
+const PLAYER_STEPS=new Set(["learn","practice","quiz","diktat","drill","hoertrainer","mix","words","minitest","repair"]);
 function chunk(arr, max){ if(!arr||!arr.length) return []; const k=Math.ceil(arr.length/max), size=Math.ceil(arr.length/k); const out=[]; for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size)); return out; }
 function learnParts(d){ const P=[];
   if(d.alphabet&&d.alphabet.length) P.push({id:"abc",title:"Alphabet",icon:"abc",desc:["Hear every letter, then spell names like in Hören Teil 2.","حروف را بشنو و بعد اسم‌ها را هجی کن، مثل بخش ۲ شنیدن."]});
@@ -1506,21 +1597,21 @@ function learnParts(d){ const P=[];
   if(d.grammar&&d.grammar.length) P.push({id:"gram",title:"Grammar",icon:"bulb",desc:[d.grammar.map(g=>g.topic).join(" · "),"دستور زبان امروز"]});
   return P; }
 function practiceParts(d){ return chunk(d.exercises||[],11).map((c,i,a)=>({id:"x"+i,title:a.length>1?`Practice ${i+1}`:"Practice",icon:"star",items:c,desc:["Mixed exercises on today's grammar and words.","تمرین‌های ترکیبی روی دستور و لغات امروز."]})); }
-function dayNodes(n,d){ const out=[];
+function dayNodes(n,d){ if(d&&d.synthetic) return synthNodes(n,d); const out=[];
   stepsFor(d).forEach(s=>{
-    if(s.id==="learn"||s.id==="practice"){ const parts=s.id==="learn"?learnParts(d):practiceParts(d); const per=Math.max(3,Math.round(s.min/Math.max(1,parts.length)));
+    if(s.id==="learn"||s.id==="practice"){ const parts=s.id==="learn"?learnParts(d):practiceParts(d); const per=Math.max(3,Math.round(s.min*dayHours()/3/Math.max(1,parts.length)));
       parts.forEach((p,pi)=>out.push({step:s.id, part:pi, parts:parts.length, title:p.title, icon:p.icon, min:per, desc:p.desc, kind:"lesson"})); }
-    else { const I=NODE_INFO[s.id]||[s.en,"","","star"]; out.push({step:s.id, part:0, parts:1, title:I[0], icon:I[3], min:s.min, desc:[I[1],I[2]], kind:PLAYER_STEPS.has(s.id)?"lesson":s.id==="review"?"review":"task"}); }
+    else { const I=NODE_INFO[s.id]||[s.en,"","","star"]; out.push({step:s.id, part:0, parts:1, title:I[0], icon:I[3], min:Math.max(3,Math.round(s.min*dayHours()/3)), desc:[I[1],I[2]], kind:PLAYER_STEPS.has(s.id)?"lesson":s.id==="review"?"review":s.id==="tutor"?"tutor":"task"}); }
   }); return out; }
 function nodeKey(n,nd){ return nd.parts>1 ? `${n}:${nd.step}#${nd.part}` : `${n}:${nd.step}`; }
-function nodeDone(n,nd){ return !!(S.st.done[n+":"+nd.step] || S.st.done[nodeKey(n,nd)]); }
+function nodeDone(n,nd){ if(nd.step==="tutor"&&(S.st.live[n]||[]).length) return true; if(nd.step==="mock"&&nd.mock&&S.st.mocks[nd.mock]) return true; return !!(S.st.done[n+":"+nd.step] || S.st.done[nodeKey(n,nd)]); }
 function dayAllDone(n){ const d=S.days[n]; return !!d && dayNodes(n,d).every(nd=>nodeDone(n,nd)); }
 
 /* ---------- Today: the path ---------- */
 const OFF=[0,46,72,46,0,-46,-72,-46];
 function pathHtml(n,d){
   const nodes=dayNodes(n,d); const cur=nodes.findIndex(x=>!nodeDone(n,x));
-  let h=`<div class="path" style="${uStyle(n)}">`, cum=0; const BR=[[60,5],[120,15],[180,5]];
+  let h=`<div class="path" style="${uStyle(n)}">`, cum=0; const BR=dayHours()>=4?[[60,5],[120,15],[180,5]]:dayHours()>=3?[[60,5],[120,15]]:[[60,10]];
   nodes.forEach((nd,i)=>{ const before=cum; cum+=nd.min; const done=nodeDone(n,nd), isCur=i===cur, locked=cur>=0&&i>cur; const x=OFF[i%OFF.length];
     h+=`<div class="pwrap ${isCur?"has-bubble":""}" style="--x:${x}px">${isCur?`<div class="bubble">${i===0?"Start":"Next"}</div>`:""}
       <button class="pnode ${done?"done":isCur?"cur":locked?"locked":""} ${nd.step==="quiz"?"big":""}" data-act="node" data-i="${i}" ${isCur?'id="curNode"':""} aria-expanded="${S.pop===i}" aria-label="${attr(nd.title+(done?", done":locked?", later":", next"))}">${ICONS[nd.icon]||ICONS.star}</button>
@@ -1537,6 +1628,8 @@ function popHtml(n,nd,i,o){
   const sub = (nd.parts>1? `${nd.step==="learn"?"Lesson":"Part"} ${nd.part+1} of ${nd.parts} · `:"") + `about ${nd.min} min` + (r&&r.total?` · last ${r.score}/${r.total}`:"");
   const xp = nd.kind==="task"?15:10;
   let label = o.done ? (nd.kind==="task"?"Open again":`Practise again +${xp} XP`) : o.locked ? "Jump ahead" : `Start +${xp} XP`;
+  if(nd.kind==="tutor") label = o.done ? "Talk again" : "Start talking";
+  if(nd.kind==="mock") label = o.done ? "Open the mock again" : "Start the mock";
   if(nd.step==="review" && !o.done){ const c=srsCounts(); const k=c.due+Math.min(25,c.fresh); label = k? `Review ${k} cards` : "Nothing due · mark done"; }
   return `<div class="pop ${o.done?"done":o.locked?"locked":""}" style="--x:${o.x}px" role="dialog" aria-label="${attr(nd.title)}">
     <div><h3>${esc(nd.title)}</h3><div class="sub">${sub}</div></div>
@@ -1556,6 +1649,10 @@ function tickBreak(){ clearInterval(tickBreak._i); tickBreak._i=setInterval(()=>
   if(left<=0){ clearInterval(tickBreak._i); sfx("done"); toast("Break over. Weiter geht's!"); } },500); }
 
 async function startNode(n, i){ const d=await getDay(n); if(!d) return; const nd=dayNodes(n,d)[i]; if(!nd) return; S.pop=null;
+  if(["drill","hoertrainer","mix","words","minitest","repair"].includes(nd.step)) for(let k=1;k<=n;k++) await getDay(k);
+  if(nd.kind==="tutor"){ S.liveMode=nd.mode||(hasReportData(n)?"review":"coach"); S.dayN=n; startLive(n); return; }
+  if(nd.kind==="blitz"){ S.blitzFor=n; startBlitz(); return; }
+  if(nd.kind==="mock"){ S.view="exam"; openMock(nd.mock); return; }
   if(nd.kind==="lesson"){ const screens=buildScreens(n,d,nd); if(!screens.length){ toast("Nothing to practise here yet"); return; }
     startLesson({n, step:nd.step, part:nd.part, parts:nd.parts, key:nodeKey(n,nd), title:nd.title, screens, node:i}); }
   else if(nd.kind==="review"){ for(const k of Object.keys(S.st.intro)) await getDay(+k); startFc("de");
@@ -1579,6 +1676,13 @@ function buildScreens(n,d,nd){ const seed=nd.step+nd.part+Date.now();
   if(nd.step==="practice"){ const p=practiceParts(d)[nd.part]; return p?p.items.map((it,i)=>exScreen(it, seed+i)):[]; }
   if(nd.step==="quiz") return (d.review_quiz||[]).map((q,i)=>exScreen({type:"mcq",prompt:q.q,options:q.options,answer:q.answer,explain_en:q.explain_en,explain_fa:q.explain_fa}, seed+i));
   if(nd.step==="diktat") return (d.diktat||[]).map(t=>({type:"dictation", text:t, noLog:true}));
+  const H=dayHours()/3;
+  if(nd.step==="drill") return drillScreens(n, Math.round((d.synthetic?16:12)*H));
+  if(nd.step==="hoertrainer") return hoerScreens(n, Math.round((d.synthetic?14:12)*H));
+  if(nd.step==="mix") return mixScreens(n, 15);
+  if(nd.step==="minitest") return mixScreens(n, 20).map(s=>Object.assign(s,{nohint:true}));
+  if(nd.step==="words") return wordsRecallScreens(n, Math.round(17*H));
+  if(nd.step==="repair") return repairScreens(n, recentMistakes(21));
   return []; }
 function exScreen(it, seed){ const b={explain_en:it.explain_en, explain_fa:it.explain_fa};
   if(it.type==="word_order"){ const w=String(it.prompt).split(/\s*·\s*/).filter(Boolean); return {...b,type:"word_order",words:shuf2(w,seed),answer:it.answer,q:it.answer}; }
@@ -1676,6 +1780,7 @@ function screenHtml(s,L){ const chk=L.state==="chk";
       <div class="wbank">${s.words.map((w,ix)=>L.wo.includes(ix)?`<span class="wtile ph" aria-hidden="true">${esc(w)}</span>`:`<button class="wtile" data-act="les-wo-add" data-ix="${ix}" ${chk?"disabled":""}>${esc(w)}</button>`).join("")}</div>`;
   case "translate": return `<h1 class="les-h">Write this in German</h1><div class="big-prompt" style="font-size:1.25rem">${esc(s.prompt)}</div>${textIn(L,"Type in German")}`;
   case "dictation": return `<h1 class="les-h">Type what you hear</h1><div class="listen-row">${bigSay(s.text)}${bigSay(s.text,true)}</div>${textIn(L,"Type in German")}`;
+  case "hear": return `<h1 class="les-h">${esc(s.h||"Type what you hear")}</h1><div class="listen-row">${bigSay(s.say)}${bigSay(s.say,true)}</div>${textIn(L,s.kind==="day"?"Wochentag":s.kind==="time"?"10:00":s.kind==="price"?"3,50":"0664 …",true)}`;
   case "spell": return `<h1 class="les-h">Type the name you hear spelled</h1><p class="muted small">${ex("In Hören Teil 2 a spelled name must be 100% correct.","در بخش ۲ شنیدن، اسمِ هجی‌شده باید کاملاً درست باشد.")}</p><div class="listen-row"><button class="bigsay" data-act="les-spell" aria-label="Spell again">${ICONS.speaker}</button></div>${textIn(L,"Surname",true)}`;
   case "match": return matchHtml(s,L);
   case "speak": return speakHtml(s,L);
@@ -1696,15 +1801,15 @@ function lesFoot(s,L){
   if(L.state==="chk"){ const r=L.res||{};
     if(r.skip) return `<div class="les-foot"><div class="in"><span class="small muted">${ex("Skipped. It won't count against you.","رد شد و حساب نمی‌شود.")}</span><button class="btn primary big" id="lesBtn" data-act="les-next">Continue</button></div></div>`;
     const praise=["Richtig!","Super!","Sehr gut!","Toll!","Perfekt!","Genau!","Ausgezeichnet!"][(L.pos*3+L.right)%7];
-    const body = r.ok ? `<div class="fbk"><div class="ic">${ICONS.check}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.note==="typo"?"Almost! Watch the spelling":r.note==="article"?"Almost! Remember the article":praise}</h3>${r.note==="typo"||r.note==="article"?`<div class="ans-line">${s.type==="write"?artHtml(answerText(s)):esc(answerText(s))}</div>`:""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`
-      : `<div class="fbk"><div class="ic">${ICONS.x}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.match?"Some pairs were wrong":s.free?"Not quite. Listen and try again later":"Correct answer:"}</h3>${r.match||s.free?"":`<div class="ans-line">${s.type==="article"?artHtml(s.answer+" "+s.prompt):esc(answerText(s))}</div>`}${r.diff||""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`;
+    const body = r.ok ? `<div class="fbk"><div class="ic">${ICONS.check}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.note==="typo"?"Almost! Watch the spelling":r.note==="close"?`Close: ${r.pct}% of the words right`:r.note==="article"?"Almost! Remember the article":praise}</h3>${r.note==="typo"||r.note==="article"||r.note==="close"?`<div class="ans-line">${s.type==="write"?artHtml(answerText(s)):esc(answerText(s))}</div>`:""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`
+      : `<div class="fbk"><div class="ic">${ICONS.x}</div><div class="stack" style="gap:4px;min-width:0"><h3>${r.match?"Some pairs were wrong":s.free?"Not quite. Listen and try again later":s.type==="dictation"&&r.pct!=null?`${r.pct}% of the words. Correct answer:`:"Correct answer:"}</h3>${r.match||s.free?"":`<div class="ans-line">${s.type==="article"?artHtml(s.answer+" "+s.prompt):esc(answerText(s))}</div>`}${r.diff||""}${r.heard!=null?`<div class="small">I heard: <i>${esc(r.heard)}</i> · ${r.score}%</div>`:""}${expl(s)}</div></div>`;
     return `<div class="les-foot ${r.ok?"ok":"bad"}" role="status"><div class="in">${body}<button class="btn big" id="lesBtn" data-act="les-next">Continue</button></div></div>`; }
   if(NOCHECK.has(s.type)) return `<div class="les-foot"><div class="in"><span></span><button class="btn primary big" id="lesBtn" data-act="les-next">Continue</button></div></div>`;
   if(s.type==="match") return `<div class="les-foot"><div class="in"><span class="small muted">${ex("Tap a German word, then its meaning.","یک کلمه آلمانی و بعد معنی‌اش را بزن.")}</span><button class="btn big" disabled>Check</button></div></div>`;
   if(s.type==="speak") return `<div class="les-foot"><div class="in"><button class="btn" data-act="les-skip">Can't speak now</button>${srAvail()?"":`<button class="btn primary big" id="lesBtn" data-act="les-said">I said it</button>`}</div></div>`;
   const can = CHOICE.has(s.type) ? L.pick!=null : s.type==="word_order" ? L.wo.length>0 : !!L.text.trim();
-  const hint = CHOICE.has(s.type) && (s.options||[]).length>2 ? `<button class="btn" data-act="les-hint" ${(S.st.coins||0)<10||(L.elim||[]).length?"disabled":""} title="Remove one wrong answer">${ICONS.bulb}Hint · ${COIN}10</button>` : "";
-  const skip = (s.type==="listen"||s.type==="dictation"||s.type==="spell") ? `<div class="row">${hint}<button class="btn" data-act="les-skip">Can't listen now</button></div>` : hint || `<span></span>`;
+  const hint = CHOICE.has(s.type) && !s.nohint && (s.options||[]).length>2 ? `<button class="btn" data-act="les-hint" ${(S.st.coins||0)<10||(L.elim||[]).length?"disabled":""} title="Remove one wrong answer">${ICONS.bulb}Hint · ${COIN}10</button>` : "";
+  const skip = (s.type==="listen"||s.type==="dictation"||s.type==="spell"||s.type==="hear") ? `<div class="row">${hint}<button class="btn" data-act="les-skip">Can't listen now</button></div>` : hint || `<span></span>`;
   return `<div class="les-foot"><div class="in">${skip}<button class="btn primary big" id="lesBtn" data-act="les-check" ${can?"":"disabled"}>Check</button></div></div>`; }
 function quitSheet(){ return `<div class="sheet-bg"><div class="sheet" role="dialog" aria-label="Quit lesson"><h2>Wait, don't go!</h2><p class="muted">${ex("You'll lose your progress in this lesson.","پیشرفتت در این درس از بین می‌رود.")}</p>
   <button class="btn primary big" data-act="les-quit-no">Keep learning</button><button class="btn ghost" data-act="les-quit-yes" style="color:var(--red-ink)">End session</button></div></div>`; }
@@ -1715,12 +1820,15 @@ function lesCheck(){ const L=S.les, s=lesCur(); if(!L||L.state!=="ans") return; 
   else if(s.type==="translate"){ your=L.text.trim(); if(!your) return; ok=(s.accept&&s.accept.length?s.accept:String(s.answer).split(" / ")).some(x=>norm(x)===norm(your)); }
   else if(s.type==="dictation"){ your=L.text.trim(); if(!your) return; const strip=t=>t.replace(/[.,!?;:„“"]/g,"").replace(/\s+/g," ").trim();
     if(strip(your)===strip(s.text)) ok=true; else if(norm(your)===norm(s.text)){ ok=true; extra.note="typo"; }
+    else { const tot=s.text.split(/\s+/).filter(Boolean).length; const good=lcsDiff(s.text, your).filter(t=>t.t==="ok").length; const pct=Math.round(good/Math.max(1,tot)*100); if(pct>=85){ ok=true; extra.note="close"; extra.pct=pct; } else extra.pct=pct; }
     if(!ok||extra.note) extra.diff=`<div class="small" style="line-height:1.9">${lcsDiff(s.text, your).map(t=>t.t==="ok"?esc(t.w):t.t==="extra"?`<s>${esc(t.w)}</s>`:`<u style="text-decoration-thickness:3px">${esc(t.w)}</u>`).join(" ")}</div>`; }
+  else if(s.type==="hear"){ your=L.text.trim(); if(!your) return; ok=hearOk(s,your); }
   else if(s.type==="spell"){ your=L.text.trim(); if(!your) return; ok=your.toLowerCase().replace(/\s/g,"")===s.word.toLowerCase(); }
   else if(s.type==="write"){ your=L.text.trim(); if(!your) return; if(norm(your)===norm(s.answer)) ok=true; else if(s.bare&&s.answer!==s.bare&&norm(your)===norm(s.bare)){ ok=true; extra.note="article"; } }
   gradeScreen(ok, your, extra); }
 function gradeScreen(ok, your, extra){ const L=S.les; const idx=L.queue[L.pos], s=L.screens[idx];
   L.state="chk"; L.res=Object.assign({ok, your}, extra||{});
+  if(!(idx in L.first)&&(s.type==="hear"||s.kind==="spelled_name")){ const hk=s.kind||"hear"; S.st.hearStats=S.st.hearStats||{}; const hs=S.st.hearStats[hk]=S.st.hearStats[hk]||{ok:0,n:0}; hs.n++; if(ok) hs.ok++; }
   if(!s.free){ if(!(idx in L.first)){ L.first[idx]=ok; L.graded++; if(ok) L.right++; else if(!s.noLog) logMistake(L.n||currentDay(), L.src||L.step, s.q||s.prompt||"", your, String(answerText(s)||""), s.kind||s.type); }
     if(!ok && !L.retried[idx]){ L.retried[idx]=1; L.queue.push(idx); } }
   if(ok){ L.combo++; L.maxCombo=Math.max(L.maxCombo,L.combo); sfx("ok"); const g=germanOf(s); if(g) setTimeout(()=>{ if(S.les===L){ stopSpeech(); speak(g); } },280); }
@@ -1745,12 +1853,13 @@ function finishLesson(){ const L=S.les; const acc=L.graded?Math.round(L.right/L.
   if(L.key){ const wasAll=dayAllDone(L.n); S.st.done[L.key]=Date.now(); if(L.graded) S.st.results[L.key]={score:L.right,total:L.graded,at:Date.now()};
     if(L.parts>1 && [...Array(L.parts).keys()].every(pi=>S.st.done[`${L.n}:${L.step}#${pi}`])) S.st.done[`${L.n}:${L.step}`]=S.st.done[`${L.n}:${L.step}`]||Date.now();
     dayDone=!wasAll && dayAllDone(L.n); }
+  if(L.src==="rust"&&S.st.comeback){ S.st.comeback.done=Date.now(); S.st.done["cb:"+dk(new Date())]=Date.now(); }
   if(L.step==="learn"&&L.n&&S.days[L.n]){ const p=learnParts(S.days[L.n])[L.part]; if(p&&p.items) seedSrs(L.n,p); }
   bump("lessons"); dbump("lessons"); if(perfect){ bump("perfect"); dbump("perfect"); } dmax("maxCombo", L.maxCombo||0);
   if(L.step==="diktat"){ dbump("listen"); if(perfect) bump("dictPerfect"); }
   let coins=addCoins(5+(perfect?5:0)); if(dayDone){ coins+=addCoins(50); bump("daysDone"); }
   const xp=addXp(10+(perfect?5:0)+comboBonus); checkBadges(); save(); sfx("done");
-  S.fin={title: dayDone?`Day ${L.n} complete!`:L.src==="mix"?"Review complete!":perfect?"Perfect lesson!":"Lesson complete!", xp, acc, ms, dayDone, n:L.n, node:L.node, combo:L.maxCombo, coins, comboBonus, boost:boostOn()};
+  S.fin={title: dayDone?`Day ${L.n} complete!`:L.src==="rust"?"Welcome back! Rust check done":L.src==="mix"?"Review complete!":perfect?"Perfect lesson!":"Lesson complete!", xp, acc, ms, dayDone, n:L.n, node:L.node, combo:L.maxCombo, coins, comboBonus, boost:boostOn()};
   S.les=null; render(); window.scrollTo(0,0); }
 function mockCta(n){ const m=MOCKS.find(x=>x.day===n); if(!m) return ""; const r=(S.st.mocks||{})[m.id];
   return `<section class="card stack" style="border-color:var(--orange)"><div class="row" style="flex-wrap:nowrap;gap:14px"><div style="color:var(--orange);flex:none">${ICONS.exam.replace('<svg','<svg width="38" height="38"')}</div>
@@ -1938,7 +2047,7 @@ function nextBlitz(){ const B=S.blitz; let c; do{ c=B.pool[Math.floor(Math.rando
 function tickBlitz(){ clearInterval(tickBlitz._i); tickBlitz._i=setInterval(()=>{ const B=S.blitz; if(!B){ clearInterval(tickBlitz._i); return; } const left=B.endAt-Date.now();
   const bar=$("#blitzBar"), t=$("#blitzT"); if(bar) bar.style.width=Math.max(0,left/600)+"%"; if(t) t.textContent=Math.max(0,Math.ceil(left/1000));
   if(left<=0){ clearInterval(tickBlitz._i); endBlitz(); } },200); }
-function endBlitz(){ const B=S.blitz; if(!B) return; S.blitz=null; stopSpeech(); const best=Math.max(S.st.blitzBest||0, B.score); const rec=B.score>(S.st.blitzBest||0)&&B.score>0; S.st.blitzBest=best;
+function endBlitz(){ const B=S.blitz; if(!B) return; S.blitz=null; if(S.blitzFor){ S.st.done[S.blitzFor+":blitz"]=Date.now(); S.blitzFor=null; } stopSpeech(); const best=Math.max(S.st.blitzBest||0, B.score); const rec=B.score>(S.st.blitzBest||0)&&B.score>0; S.st.blitzBest=best;
   dbump("blitz"); const coins=addCoins(Math.min(40,B.score)); const xp=B.score?addXp(Math.min(30,B.score)):0; checkBadges(); save(); sfx("done");
   S.fin={title:rec?"New high score!":"Wörter-Blitz", xp, acc:B.score+B.wrong?Math.round(B.score/(B.score+B.wrong)*100):null, ms:60000, coins, extra:`${B.score} word${B.score===1?"":"s"} · best ${best}`, n:null}; render(); }
 function vBlitz(){ const B=S.blitz, q=B.q, left=Math.max(0,B.endAt-Date.now());
@@ -2015,7 +2124,7 @@ function snapshotReport(n){ const R=dayReport(n); S.st.reports=S.st.reports||{};
 function hasReportData(n){ return Object.keys(S.st.results).some(k=>k.startsWith(n+":")) || dayMistakes(n).length>0 || !!emailGrade(n); }
 
 /* repair lesson built from today's mistakes */
-function repairScreens(n){ const mis=dayMistakes(n).filter(m=>m.q&&m.right); const seen=new Set(); const uniq=mis.filter(m=>!seen.has(m.q)&&seen.add(m.q)).slice(0,12);
+function repairScreens(n, list){ const mis=(list||dayMistakes(n)).filter(m=>m.q&&m.right&&(!list||!["number","phone","time","price","day","spelled_name"].includes(m.kind))); const seen=new Set(); const uniq=mis.filter(m=>!seen.has(m.q)&&seen.add(m.q)).slice(0,12);
   const rights=[...new Set((S.st.mistakes||[]).map(m=>m.right).filter(Boolean))];
   return uniq.map((m,i)=>{ const k=mistakeKind(m);
     if(k==="article") return {type:"article",prompt:m.q,options:["der","die","das"],answer:m.right,q:m.q,kind:"article",explain_en:`${m.right} ${m.q}`};
@@ -2053,7 +2162,7 @@ function vReport(){ const n=S.report; const d=S.days[n]; if(!d) return `<div cla
       ${scoreRow("Schreiben",R.Sch,15,null,"schreiben", R.Sch?(R.Sch.zeroed?"· email under 4 → 0":R.Sch.partial?"(form or email missing)":""):"")}
       ${R.W!=null?barRow("Written total",R.W,75,38):`<div class="small muted">${ex("Written total appears when Lesen, Hören and both Schreiben parts are done.","جمع کتبی وقتی ظاهر می‌شود که خواندن، شنیدن و هر دو بخش نوشتن انجام شده باشد.")}</div>`}
       ${R.sp?barRow("Sprechen (oral exam)",R.sp.pts,25,12):""}
-      <p class="small muted">${ex("Projected from today's practice sets onto the official ÖSD scale (Lesen 30, Hören 30, Schreiben 15, Sprechen 25). Pass: 38/75 written with Lesen ≥ 6, Hören ≥ 6 and email ≥ 4, plus 12/25 oral. Short practice sets swing a lot; the mocks on Days 22, 27, 29 and 31 are the real test.","تخمین روی مقیاس رسمی ÖSD از تمرین‌های امروز. قبولی: ۳۸ از ۷۵ کتبی با خواندن و شنیدن حداقل ۶ و ایمیل حداقل ۴، و ۱۲ از ۲۵ شفاهی.")}</p></section>
+      <p class="small muted">${ex("Projected from today's practice sets onto the official ÖSD scale (Lesen 30, Hören 30, Schreiben 15, Sprechen 25). Pass: 38/75 written with Lesen ≥ 6, Hören ≥ 6 and email ≥ 4, plus 12/25 oral. Short practice sets swing a lot; the mocks on Days 23, 29, 37, 43 and 47 are the real test.","تخمین روی مقیاس رسمی ÖSD از تمرین‌های امروز. قبولی: ۳۸ از ۷۵ کتبی با خواندن و شنیدن حداقل ۶ و ایمیل حداقل ۴، و ۱۲ از ۲۵ شفاهی.")}</p></section>
     ${partRows||emailRow?`<section class="card"><h2 style="margin-bottom:6px">Exam parts today</h2>${partRows}${emailRow}</section>`:""}
     <section class="card stack"><div class="row between"><h2>Your weak spots</h2>${R.weak.length?`<span class="chip bad">${R.weak.length}</span>`:""}</div>${weak}
       ${R.mis.length?`<div class="row"><button class="btn primary" data-act="rep-repair">Repair lesson · ${Math.min(12,new Set(R.mis.map(m=>m.q)).size)} items</button><button class="btn blue" data-act="live-start" data-n="${n}" data-mode="review">${ICONS.mic}Fix them with the tutor</button></div>`:""}</section>
@@ -2107,7 +2216,7 @@ function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
 function draftBanner(){ const D=getDraft(); if(!D||S.live) return ""; return `<div class="banner info"><div class="grow"><b>${ex("You have an unsaved tutor session","یک جلسه ذخیره‌نشده با مربی داری")}</b><div class="small">Day ${D.n} · ${new Date(D.started).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · ${D.log.length} lines</div>
   <div class="row" style="margin-top:8px"><button class="btn primary sm" data-act="draft-save" ${S.saveBusy?"disabled":""}>${S.saveBusy?"Saving…":"Save & analyse"}</button><button class="btn sm" data-act="draft-discard">Discard</button></div></div></div>`; }
 /* turn a transcript into a stored, analysed session (used by live sessions, recovered drafts and Gemini-app imports) */
-async function analyseSession({n, mode, log, started, source, rawText}){
+async function analyseSession({n, mode, log, started, source, rawText, lat, ptt}){
   const ms=Math.max(60000,(Date.now()-(started||Date.now())));
   const transcript=rawText || log.map(x=>(x.role==="you"?"Raam: ":"Tutor: ")+x.text).join("\n");
   if(transcript.length<60) throw new Error("The session was too short to analyse.");
@@ -2120,10 +2229,11 @@ async function analyseSession({n, mode, log, started, source, rawText}){
     topics:(s.topics_covered||[]).filter(t=>TEIL1_TOPICS.includes(t)), words_used:(s.new_words_used||[]).slice(0,20), criteria:hasCrit?crit:null,
     score_25:s.score_25!=null&&!isNaN(+s.score_25)?Math.max(0,Math.min(25,Math.round(+s.score_25))):(hasCrit?sum:null),
     metrics: log&&log.length ? sessionMetrics(log, ms) : {minutes:Math.max(1,Math.round(ms/60000))}};
+  if(lat&&lat.length){ const sorted=lat.slice().sort((a,b)=>a-b); sess.metrics.waitAvg=Math.round(lat.reduce((a,b)=>a+b,0)/lat.length/100)/10; sess.metrics.waitMax=Math.round(sorted[sorted.length-1]/100)/10; sess.metrics.ptt=!!ptt; }
   // keep the transcript: private storage folder when signed in, otherwise this device
   try{ if(S.uid){ const path=`${S.uid}/sessions/${sess.id}.json`; const { error } = await sb.storage.from("media").upload(path, new Blob([JSON.stringify({n, mode, transcript})],{type:"application/json"}), {upsert:true}); if(!error) sess.transcript=path; }
        if(!sess.transcript){ const T=JSON.parse(lsGet("osd-a1-transcripts")||"{}"); T[sess.id]=transcript.slice(0,20000); const ks=Object.keys(T); while(ks.length>12) delete T[ks.shift()]; lsSet("osd-a1-transcripts", JSON.stringify(T)); sess.transcript="local:"+sess.id; } }catch(e){}
-  const arr=S.st.live[n]=(S.st.live[n]||[]); arr.push(sess); if(arr.length>10) arr.shift();
+  const arr=S.st.live[n]=(S.st.live[n]||[]); arr.push(sess); if(arr.length>10) arr.shift(); S.st.done[n+":tutor"]=S.st.done[n+":tutor"]||Date.now();
   // close the loop: every corrected error becomes a flashcard and a mistake the report and repair lesson can use
   const said=norm((log||[]).filter(x=>x.role==="you").map(x=>x.text).join(" "));
   const real=e=>{ if(!e||!e.wrong||!e.right||norm(e.wrong)===norm(e.right)) return false; if(!said) return true; const w=norm(e.wrong).split(" ").filter(x=>x.length>1); return w.length>0 && w.filter(x=>said.includes(x)).length/w.length>=0.6; };
@@ -2156,7 +2266,7 @@ function vSpeaking(){ const all=allSessions(); const scored=all.filter(x=>x.scor
     <p class="small muted">${ex("Words per turn is the best simple sign of fluency: A1 speakers move from 2–3 words to full 6–8 word sentences.","«کلمه در هر نوبت» ساده‌ترین نشانه روانی است: از ۲–۳ کلمه به جمله‌های کامل ۶–۸ کلمه‌ای برس.")}</p></section>
     <section class="card stack"><h2>Sprechen score</h2>${scored.length?lineChart(scored.slice(-12).map(x=>({y:x.score_25,t:`Day ${x.day}`})),25,12,"Sprechen score per session"):`<p class="small muted">${ex("No scored session yet. Do one session in Exam simulation mode to get your first score out of 25.","هنوز جلسه نمره‌دار نداری. یک جلسه در حالت شبیه‌سازی آزمون انجام بده.")}</p>`}</section>
     ${critAvg.some(c=>c[3]!=null)?`<section class="card stack"><h2>ÖSD criteria</h2><p class="small muted">Average of your last 3 scored sessions</p>${critAvg.map(([k,l,mx,v])=>v==null?"":barRow(l,v,mx,null)).join("")}</section>`:""}
-    <section class="card stack"><h2>Teil 1 topics practised</h2><div class="row">${TEIL1_TOPICS.map(t=>`<span class="chip ${topics.has(t)?"ok":""}">${topics.has(t)?ICONS.check.replace('<svg','<svg width="12" height="12"'):""} ${t}</span>`).join("")}</div><p class="small muted">${ex("In the exam you talk about 4 of these 6. Cover all six before Day 21.","در آزمون درباره ۴ مورد از این ۶ صحبت می‌کنی. تا روز ۲۱ همه را تمرین کن.")}</p></section>
+    <section class="card stack"><h2>Teil 1 topics practised</h2><div class="row">${TEIL1_TOPICS.map(t=>`<span class="chip ${topics.has(t)?"ok":""}">${topics.has(t)?ICONS.check.replace('<svg','<svg width="12" height="12"'):""} ${t}</span>`).join("")}</div><p class="small muted">${ex("In the exam you talk about 4 of these 6. Cover all six before Mock 1 (Day 29).","در آزمون درباره ۴ مورد از این ۶ صحبت می‌کنی. تا آزمون آزمایشی ۱ (روز ۲۹) همه را تمرین کن.")}</p></section>
     ${errs.length?`<section class="card stack"><h2>Your recurring speaking errors</h2>${errs.map(([c,v])=>`<div class="bar-row"><div class="row between small"><b>${esc(ERR_CAT[c])}</b><span class="tnum">${v}</span></div><div class="bar"><i class="bad" style="width:${Math.round(v/emax*100)}%"></i></div></div>`).join("")}<p class="small muted">${ex("Every corrected error is now a flashcard in Review and part of the next repair lesson. The tutor drills the top ones next time.","هر اشتباه اصلاح‌شده حالا یک فلش‌کارت در Review است و مربی دفعه بعد روی مهم‌ترین‌ها کار می‌کند.")}</p></section>`:""}
     <section class="card"><div class="row between" style="margin-bottom:4px"><h2>Sessions</h2><button class="btn blue sm" data-act="live-start" data-n="${currentDay()}">${ICONS.mic}New session</button></div>${all.length?all.slice().reverse().map(sessionCard).join(""):`<p class="small muted">No sessions yet.</p>`}</section>
     <details class="acc"><summary>Add a session from the Gemini app</summary><div class="in stack">
@@ -2168,7 +2278,7 @@ function sessionDetail(x, day){ const m=x.metrics||{};
     <section class="card stack"><div class="row between"><h2>Result</h2>${x.score_25!=null?`<span class="chip ${x.score_25>=12?"ok":"bad"} tnum" style="font-size:.95rem">${x.score_25}/25 · ${x.score_25>=22?"sehr gut":x.score_25>=19?"gut":x.score_25>=12?"bestanden":"nicht bestanden"}</span>`:""}</div>
       ${x.summary_en?`<p>${esc(x.summary_en)}</p>`:""}
       ${x.criteria?SP_CRIT.map(([k,l,mx])=>x.criteria[k]==null?"":barRow(l,x.criteria[k],mx,null)).join(""):""}
-      ${m.myWords!=null?`<div class="tiles">${[["chat","var(--purple)",m.myWords,"words you said"],["bolt","var(--gold)",m.avgLen,"words per turn"],["clock","var(--blue)",m.minutes+" min","length"],["mic","var(--blue)",m.talkShare+"%","of the talking was you"],["flagAT","var(--red)",m.germanShare+"%","German"],["review","var(--green)",m.turns,"turns"]].map(([ic,c,v,l])=>`<div class="tile"><div class="ti" style="color:${c}">${ICONS[ic]}</div><b class="tnum">${v}</b><span>${l}</span></div>`).join("")}</div>`:""}
+      ${m.myWords!=null?`<div class="tiles">${[["chat","var(--purple)",m.myWords,"words you said"],["bolt","var(--gold)",m.avgLen,"words per turn"],["clock","var(--blue)",m.minutes+" min","length"],["mic","var(--blue)",m.talkShare+"%","of the talking was you"],["flagAT","var(--red)",m.germanShare+"%","German"],["review","var(--green)",m.turns,"turns"],...(m.waitAvg!=null?[["clock","var(--orange)",m.waitAvg+" s","average wait for the tutor"]]:[])].map(([ic,c,v,l])=>`<div class="tile"><div class="ti" style="color:${c}">${ICONS[ic]}</div><b class="tnum">${v}</b><span>${l}</span></div>`).join("")}</div>`:""}
       ${x.confidence==null?`<div class="stack" style="gap:6px"><span class="small"><b>How did it feel?</b></span><div class="row">${["Very hard","Hard","OK","Good","Easy"].map((l,i)=>`<button class="opt" data-act="sess-conf" data-v="${i+1}" data-day="${day}" data-id="${attr(x.id||x.idx)}">${l}</button>`).join("")}</div></div>`:`<div class="small muted">You felt: ${["Very hard","Hard","OK","Good","Easy"][x.confidence-1]}</div>`}</section>
     ${(x.strengths||[]).length?`<section class="card stack"><h2>What went well</h2>${x.strengths.map(s=>`<div class="row" style="flex-wrap:nowrap;align-items:flex-start"><span style="color:var(--green)">${ICONS.check.replace('<svg','<svg width="18" height="18"')}</span><span>${esc(s)}</span></div>`).join("")}</section>`:""}
     ${(x.errors||[]).length?`<section class="card stack"><h2>Corrections · added to your cards</h2>${x.errors.map(e=>`<div class="sunk small"><span class="label">${esc(ERR_CAT[e.category]||"")}</span><br><span style="color:var(--red-ink);text-decoration:line-through">${esc(e.wrong)}</span> → <b style="color:var(--green-ink)">${esc(e.right)}</b>${e.why_en?`<br><span class="muted">${esc(e.why_en)}</span>`:""}</div>`).join("")}</section>`:""}
@@ -2230,16 +2340,24 @@ function sessionPlan(n, mode, total){ let R=null; try{ if(hasReportData(n)) R=da
   const sum=P.reduce((a,p)=>a+p[1],0), k=total/sum; return P.map(([t,m,i])=>({t, min:Math.max(1,Math.round(m*k)), ins:i})); }
 function regie(L, i, extra){ const p=L.plan[i], N=L.plan.length;
   return `[APP NOTE – instructions from the app, not from Raam. Do not read aloud or mention this note.] Phase ${i+1} of ${N}: ${p.t} (about ${p.min} minutes). ${p.ins} ${i<N-1?"Stay in this phase and keep asking questions until the next APP NOTE arrives. Do not wrap up or say goodbye.":"This is the final phase."}${extra?" "+extra:""}`; }
+function phaseTarget(p){ return Math.max(3, Math.round(p.min*2.5)); } // about one answer every 24 s of active time
+function phasePct(L){ const p=L.plan[L.phase]; return Math.min(100, Math.max(L.phaseUsed/(p.min*600), L.phaseTurns/phaseTarget(p)*100)); }
 function livePhaseTick(){ clearInterval(livePhaseTick._i); livePhaseTick._i=setInterval(()=>{ const L=S.live; if(!L||!L.plan){ clearInterval(livePhaseTick._i); return; }
-  if(L.status!=="live"||L.paused) return; const p=L.plan[L.phase]; const left=L.phaseEnd-Date.now();
-  const t=$("#phaseLeft"); if(t) t.textContent=fmtMs(Math.max(0,left)); const bar=$("#phaseBar"); if(bar) bar.style.width=Math.min(100,Math.max(0,100-left/(p.min*600)))+"%";
-  const tot=$("#liveTotal"); if(tot) tot.textContent=fmtMs(Date.now()-L.started);
-  if(left<=0){ if(L.phase<L.plan.length-1) nextPhase(); else if(!L.complete){ L.complete=true; sfx("done"); render(); } } },1000); }
-function nextPhase(){ const L=S.live; if(!L||!L.plan||L.phase>=L.plan.length-1) return; L.phase++; L.phaseEnd=Date.now()+L.plan[L.phase].min*60000;
-  try{ L.sess&&L.sess.sendText(regie(L,L.phase)); }catch(e){} sfx("tap"); render(); }
+  const now=Date.now(), dt=L.lastTick?now-L.lastTick:0; L.lastTick=now;
+  if(L.status!=="live"||L.paused) return;
+  if(!L.waiting) L.phaseUsed+=dt; // the clock stops while the tutor is thinking
+  if(L.note&&!L.waiting&&!L.holding&&L.sess&&!L.sess.modelSpeaking&&now-(L.noteAt||0)>4000){ L.noteAt=now; flushNote(L); }
+  const p=L.plan[L.phase]; const left=p.min*60000-L.phaseUsed; const tg=phaseTarget(p);
+  const t=$("#phaseLeft"); if(t) t.textContent=fmtMs(Math.max(0,left)); const bar=$("#phaseBar"); if(bar) bar.style.width=phasePct(L)+"%";
+  const pt=$("#phaseTurns"); if(pt) pt.textContent=`${Math.min(L.phaseTurns,tg)}/${tg} answers`;
+  const tot=$("#liveTotal"); if(tot) tot.textContent=fmtMs(now-L.started);
+  if(left<=0||L.phaseTurns>=tg){ if(L.phase<L.plan.length-1) nextPhase(); else if(!L.complete&&left<=0){ L.complete=true; sfx("done"); render(); } } },1000); }
+function nextPhase(){ const L=S.live; if(!L||!L.plan||L.phase>=L.plan.length-1) return; L.phase++; L.phaseUsed=0; L.phaseTurns=0;
+  sendNote(L, regie(L,L.phase)); sfx("tap"); render(); }
 function phaseBlock(L){ if(!L.plan) return ""; const p=L.plan[L.phase];
-  return `<div class="card stack phasecard"><div class="row between"><div><div class="label">Phase ${L.phase+1} of ${L.plan.length} · total <span id="liveTotal" class="tnum">${fmtMs(Date.now()-L.started)}</span> / ${tutorMinutes()} min</div><h3>${esc(p.t)}</h3></div><span class="tnum phase-left" id="phaseLeft">${fmtMs(Math.max(0,L.phaseEnd-Date.now()))}</span></div>
-    <div class="lbar"><i id="phaseBar" style="width:${Math.min(100,Math.max(0,100-(L.phaseEnd-Date.now())/(p.min*600)))}%"></i></div>
+  const tg=phaseTarget(p);
+  return `<div class="card stack phasecard"><div class="row between"><div><div class="label">Phase ${L.phase+1} of ${L.plan.length} · total <span id="liveTotal" class="tnum">${fmtMs(Date.now()-L.started)}</span> / ${tutorMinutes()} min</div><h3>${esc(p.t)}</h3></div><div style="text-align:right"><span class="tnum phase-left" id="phaseLeft">${fmtMs(Math.max(0,p.min*60000-L.phaseUsed))}</span><div class="small muted tnum" id="phaseTurns">${Math.min(L.phaseTurns,tg)}/${tg} answers</div></div></div>
+    <div class="lbar"><i id="phaseBar" style="width:${phasePct(L)}%"></i></div>
     <div class="phases">${L.plan.map((x,i)=>`<span class="ph ${i<L.phase?"done":i===L.phase?"cur":""}">${esc(x.t.replace(/^Weak spot \d+: /,"Weak: "))}</span>`).join("")}</div>
     ${L.complete?`<div class="banner info"><div>${ex("Plan finished. Let the tutor finish the recap, then press End session to save everything.","برنامه تمام شد. بگذار مربی جمع‌بندی کند، بعد End session را بزن تا ذخیره شود.")}</div></div>`:""}
     <div class="row">${L.phase<L.plan.length-1?`<button class="btn sm" data-act="live-next">Next phase</button>`:""}<button class="btn sm" data-act="live-more">+5 min</button></div></div>`; }
@@ -2326,6 +2444,7 @@ document.addEventListener("click", async e=>{
     let sc=0,tot=0; Object.entries(S.st.results).forEach(([rk,r])=>{ if(rk.startsWith(n+":"+step)&&r&&r.total){ sc+=r.score; tot+=r.total; } });
     const dayDone=!wasAll&&dayAllDone(n); if(dayDone){ coins+=addCoins(50); bump("daysDone"); } checkBadges(); save(); sfx("done"); stopSpeech();
     S.fin={title:dayDone?`Day ${n} complete!`:`${(NODE_INFO[step]||[step])[0]} complete!`, xp:gx, coins, boost:boostOn(), acc:tot?Math.round(sc/tot*100):null, ms:S.stepAt?Date.now()-S.stepAt:0, dayDone, n}; S.step=null; S.timer=null; render(); window.scrollTo(0,0); }
+  else if(a==="day-hours"){ S.st.dayHours=+b.dataset.v; save(); render(); }
   else if(a==="goal"){ S.st.goal=+b.dataset.v; save(); render(); }
   else if(a==="quest-claim"){ const D=dayData(); D.claimed=D.claimed||{}; if(D.claimed[b.dataset.q]) return; D.claimed[b.dataset.q]=1; const r=addCoins(+b.dataset.r); bump("quests"); checkBadges(); save(); sfx("done"); toast(`Quest complete: +${r} Schilling`); render(); }
   else if(a==="shop-buy"){ const v=b.dataset.v, c=S.st.coins||0;
@@ -2354,6 +2473,10 @@ document.addEventListener("click", async e=>{
     S.saveBusy=false; render(); window.scrollTo(0,0); }
   else if(a==="cel-next"){ S.cel.shift(); render(); window.scrollTo(0,0); }
   else if(a==="blitz-start"){ startBlitz(); }
+  else if(a==="rust-start"){ const n=+b.dataset.n; for(let k=1;k<=n;k++) await getDay(k); const screens=rustScreens(n); if(!screens.length){ toast("Nothing to check yet"); return; } startLesson({src:"rust", n, title:"Rust check", screens}); }
+  else if(a==="rust-skip"){ if(S.st.comeback){ S.st.comeback.skip=true; save(); } render(); }
+  else if(a==="replan"){ replanTo(+b.dataset.n); toast(`Today is now Day ${b.dataset.n}`); render(); }
+  else if(a==="replan-no"){ S.st.replanDismiss=dk(new Date()); save(); render(); }
   else if(a==="blitz-quit"){ clearInterval(tickBlitz._i); S.blitz=null; stopSpeech(); render(); }
   else if(a==="blitz-pick"){ const B=S.blitz; if(!B||B.flash) return; const i=+b.dataset.v; const ok=B.q.options[i]===B.q.answer; B.flash={i,ok};
     if(ok){ B.score++; B.combo++; sfx("ok"); } else { B.wrong++; B.combo=0; sfx("bad"); vib(60); }
@@ -2368,7 +2491,7 @@ document.addEventListener("click", async e=>{
   else if(a==="letter"){ stopSpeech(); speak(LETTER_TTS[b.dataset.v]||b.dataset.v); }
   else if(a==="spell"){ spellOut(($("#spellIn")||{}).value||"Raam"); }
   else if(a==="play"){ const k=b.dataset.key; const max=+b.dataset.max; const g=k.split("|")[0]; const unlimited=(!S.st.strict&&!isTest(g))||S.checked[g];
-    const used=S.plays[k]||0; if(!unlimited&&used>=max) return; S.plays[k]=used+1; const it=SAY_BANK[+b.dataset.i]; render(); if(it) speakLines(it.lines,false); }
+    const used=S.plays[k]||0; if(!unlimited&&used>=max) return; S.plays[k]=used+1; const it=SAY_BANK[+b.dataset.i]; render(); if(it) speakLines(it.lines,!!b.dataset.slow); }
   else if(a==="pick"){ const k=b.dataset.key; if(S.ex[k]) return; const items=itemsFor(b.dataset.src); const it=items[+b.dataset.i]; const ok=b.dataset.v===it.answer; S.ex[k]={pick:b.dataset.v, ok};
     if(!ok) logMistake(S.dayN||currentDay(), b.dataset.src, it.prompt, b.dataset.v, it.answer); render(); }
   else if(a==="wo-add"){ const k=b.dataset.key; (S.wo[k]=S.wo[k]||[]).push(+b.dataset.ix); render(); }
@@ -2431,11 +2554,12 @@ document.addEventListener("click", async e=>{
   else if(a==="pron"){ pronCheck(b.dataset.k, b.dataset.t); }
   else if(a==="live-mode"){ S.liveMode=b.dataset.v; render(); }
   else if(a==="tutor-min"){ S.st.tutorMin=+b.dataset.v; save(); render(); }
+  else if(a==="talk-mode"){ S.st.talkMode=b.dataset.v; save(); render(); }
   else if(a==="live-start"){ if(b.dataset.mode) S.liveMode=b.dataset.mode; else if(S.liveMode==="coach"&&hasReportData(+b.dataset.n)&&!b.closest(".tutor-card")) S.liveMode="review"; startLive(+b.dataset.n); }
   else if(a==="live-mute"){ if(S.live&&S.live.sess){ S.live.muted=!S.live.muted; S.live.sess.setMuted(S.live.muted); render(); } }
   else if(a==="live-end"){ clearInterval(livePhaseTick._i); endLive(); }
   else if(a==="live-next"){ nextPhase(); }
-  else if(a==="live-more"){ if(S.live&&S.live.plan){ S.live.phaseEnd+=5*60000; S.live.complete=false; S.live.plan[S.live.phase].min+=5; render(); } }
+  else if(a==="live-more"){ if(S.live&&S.live.plan){ S.live.complete=false; S.live.plan[S.live.phase].min+=5; render(); } }
   else if(a==="recap-start"){ const n=+b.dataset.n; const screens=recapScreens(n); if(!screens.length){ toast("Finish a Words lesson first"); return; } startLesson({src:"recap", n, key:n+":recap", step:"recap", parts:1, title:"Evening recap", screens}); }
   else if(a==="copy-context"){ copyContext(+b.dataset.n); }
   else if(a==="reset-no"){ S.confirmReset=false; render(); }
@@ -2466,7 +2590,7 @@ document.addEventListener("keydown", e=>{
 document.addEventListener("mousedown", e=>{ if(e.target.closest('[data-act="les-key"]')) e.preventDefault(); });
 document.addEventListener("submit", e=>{
   if(e.target.id==="authForm"){ e.preventDefault(); submitAuth(); }
-  if(e.target.id==="liveText"){ e.preventDefault(); const i=$("#liveTextIn"); const v=i&&i.value.trim(); if(v&&S.live&&S.live.sess){ S.live.sess.sendText(v); S.live.log.push({role:"you",text:v}); i.value=""; drawLiveLog(); } }
+  if(e.target.id==="liveText"){ e.preventDefault(); const i=$("#liveTextIn"); const v=i&&i.value.trim(); if(v&&S.live&&S.live.sess){ S.live.sess.sendUserText(v); S.live.log.push({role:"you",text:v}); S.live.phaseTurns++; i.value=""; drawLiveLog(); } }
 });
 document.addEventListener("change", e=>{
   const t=e.target;
@@ -2483,8 +2607,165 @@ document.addEventListener("change", e=>{
   if(t.dataset.set==="voice"){ S.st.voice=t.value; save(); speak("Grüß Gott!"); }
   if(t.dataset.set==="strict"){ S.st.strict=t.checked; save(); }
   if(t.dataset.set==="sfx"){ S.st.sfx=t.checked; save(); if(t.checked) sfx("ok"); }
+  if(t.dataset.set==="exam"){ if(/^\d{4}-\d{2}-\d{2}$/.test(t.value)){ S.st.exam=t.value; schedule._k=null; S.dayN=currentDay(); save(); render(); } else toast("Use the format YYYY-MM-DD"); }
   if(t.dataset.set==="start"){ if(/^\d{4}-\d{2}-\d{2}$/.test(t.value)){ S.st.start=t.value; schedule._k=null; S.dayN=currentDay(); save(); render(); } else toast("Use the format YYYY-MM-DD"); }
 });
+
+/* ====================== v10: 3-hour plan, comeback mode, auto review days, trainers ====================== */
+function rng(seed){ let x=hashStr(String(seed))||1; return ()=>{ x^=x<<13; x^=x>>>17; x^=x<<5; return ((x>>>0)%100000)/100000; }; }
+function pick(arr, r){ return arr[Math.floor(r()*arr.length)]; }
+function capFirst(t){ return t.charAt(0).toUpperCase()+t.slice(1); }
+
+/* --- Grammar gym: verb endings, articles, question words, word order (generated, no AI needed) --- */
+const PRONS=["ich","du","er","wir","ihr","sie"];
+const VERBS=[ // [infinitive, English, day introduced, forms ich/du/er/wir/ihr/sie, complement]
+ ["heißen","be called",1,["heiße","heißt","heißt","heißen","heißt","heißen"],["Raam","Anna","Thomas","Gruber","Wieser","Huber"]],
+ ["sein","be",2,["bin","bist","ist","sind","seid","sind"],"in Wien"],
+ ["kommen","come",2,["komme","kommst","kommt","kommen","kommt","kommen"],"aus dem Iran"],
+ ["wohnen","live",2,["wohne","wohnst","wohnt","wohnen","wohnt","wohnen"],"in Teheran"],
+ ["sprechen","speak",2,["spreche","sprichst","spricht","sprechen","sprecht","sprechen"],"Persisch"],
+ ["haben","have",3,["habe","hast","hat","haben","habt","haben"],"zwei Kinder"],
+ ["lernen","learn",4,["lerne","lernst","lernt","lernen","lernt","lernen"],"Deutsch"],
+ ["machen","do",4,["mache","machst","macht","machen","macht","machen"],"heute Sport"],
+ ["arbeiten","work",4,["arbeite","arbeitest","arbeitet","arbeiten","arbeitet","arbeiten"],"in Wien"],
+ ["trinken","drink",4,["trinke","trinkst","trinkt","trinken","trinkt","trinken"],"Kaffee"],
+ ["schreiben","write",4,["schreibe","schreibst","schreibt","schreiben","schreibt","schreiben"],"eine E-Mail"],
+ ["lesen","read",4,["lese","liest","liest","lesen","lest","lesen"],"ein Buch"],
+ ["verstehen","understand",4,["verstehe","verstehst","versteht","verstehen","versteht","verstehen"],"die Frage"],
+ ["spielen","play",4,["spiele","spielst","spielt","spielen","spielt","spielen"],"Fußball"],
+ ["fahren","go (by vehicle)",6,["fahre","fährst","fährt","fahren","fahrt","fahren"],"nach Graz"],
+ ["essen","eat",8,["esse","isst","isst","essen","esst","essen"],"gern Reis"],
+ ["möchten","would like",8,["möchte","möchtest","möchte","möchten","möchtet","möchten"],"einen Tee"],
+ ["kaufen","buy",9,["kaufe","kaufst","kauft","kaufen","kauft","kaufen"],"Brot"],
+ ["nehmen","take",9,["nehme","nimmst","nimmt","nehmen","nehmt","nehmen"],"den Bus"],
+ ["gehen","go",12,["gehe","gehst","geht","gehen","geht","gehen"],"ins Kino"],
+ ["können","can",12,["kann","kannst","kann","können","könnt","können"],"gut kochen"],
+ ["wollen","want",12,["will","willst","will","wollen","wollt","wollen"],"Deutsch lernen"],
+ ["sehen","see",13,["sehe","siehst","sieht","sehen","seht","sehen"],"den Film"],
+ ["müssen","must",17,["muss","musst","muss","müssen","müsst","müssen"],"zum Arzt gehen"],
+ ["dürfen","may",17,["darf","darfst","darf","dürfen","dürft","dürfen"],"hier parken"]];
+const QWORDS=[["___ wohnst du? – In Wien.","Wo",2],["___ kommst du? – Aus dem Iran.","Woher",2],["___ heißen Sie? – Raam.","Wie",1],["___ ist das? – Das ist Frau Pichler.","Wer",2],
+ ["___ machst du heute? – Ich lerne Deutsch.","Was",4],["___ alt bist du? – Dreißig.","Wie",3],["___ Sprachen sprichst du? – Persisch und Englisch.","Welche",2],["___ wohnen Sie? – In Teheran.","Wo",2],
+ ["___ kommen Sie? – Aus Österreich.","Woher",2],["___ kostet das? – Drei Euro.","Wie viel",9],["___ beginnt der Kurs? – Um zehn Uhr.","Wann",10],["___ fährst du? – Nach Graz.","Wohin",16]];
+const QW_OPTS=["Wo","Woher","Wohin","Wie","Was","Wer","Wann","Welche","Wie viel"];
+const ORDER_BANK=[["Heute lerne ich Deutsch.","Today I am learning German.",4],["Hast du heute Zeit?","Do you have time today?",3],["Wohnst du in Wien?","Do you live in Vienna?",4],
+ ["Ich verstehe die Frage nicht.","I don't understand the question.",4],["Sprechen Sie Englisch?","Do you speak English?",4],["Woher kommen Sie?","Where do you come from?",2],
+ ["Jetzt wohne ich in Teheran.","Now I live in Tehran.",2],["Wie alt sind Sie?","How old are you?",3],["Am Montag arbeite ich nicht.","On Monday I don't work.",11],["Morgen fahre ich nach Graz.","Tomorrow I'm going to Graz.",6]];
+function knownNouns(n){ const out=[]; for(let k=1;k<=n;k++){ const d=S.days[k]; if(d&&!d.synthetic) (d.vocab||[]).forEach(v=>{ if(["der","die","das"].includes(v.article)) out.push(v); }); } return out; }
+function drillScreens(n, count){ const r=rng("drill"+n+Date.now()); const out=[]; const lvl=Math.max(1,n);
+  const verbs=VERBS.filter(v=>v[2]<=lvl); const mis=(S.st.mistakes||[]); const conjWeak=mis.filter(m=>m.kind==="gap"||m.kind==="translate").length;
+  const nConj=Math.round((count||14)*(conjWeak>3?0.45:0.4)), nArt=3, nQ=3, nOrd=Math.max(1,(count||14)-nConj-nArt-nQ);
+  for(let i=0;i<nConj&&verbs.length;i++){ const v=pick(verbs,r), pi=Math.floor(r()*6); const comp=Array.isArray(v[4])?v[4][pi]:v[4]; const form=v[3][pi];
+    const pron=pi===5&&r()<0.5?"Sie":PRONS[pi]; const prompt=`${capFirst(pron)} ___ ${comp}.`;
+    if(i%3===2) out.push({type:"write", h:"Type the right verb form", en:`${prompt} (${v[0]})`, answer:form, q:`${prompt} (${v[0]})`, kind:"conjugation", explain_en:`${pron} ${form} · ${v[0]} = ${v[1]}`});
+    else { const others=[...new Set(v[3].filter(f=>f!==form))]; out.push({type:"gap", prompt:prompt+` (${v[0]})`, options:shuffled([form,...shuffled(others,"o"+i+r()).slice(0,3)],"g"+i+r()), answer:form, q:prompt, kind:"conjugation", explain_en:`${pron} → ${form} (${v[0]}: ${v[3].slice(0,3).join(", ")} …)`}); } }
+  const nouns=knownNouns(n); const wrongArt=new Set(mis.filter(m=>m.kind==="article"||(m.kind==="write"&&/^(der|die|das) /i.test(m.right||""))).map(m=>String(m.q).replace(/^(der|die|das)\s+/i,"")));
+  const pref=nouns.filter(v=>wrongArt.has(v.de)||wrongArt.has(v.en)); const pool=[...shuffled(pref,"p"+n), ...shuffled(nouns,"a"+n+r())];
+  const seenN=new Set(); pool.filter(v=>!seenN.has(v.de)&&seenN.add(v.de)).slice(0,nArt).forEach(v=>out.push({type:"article",prompt:v.de,options:["der","die","das"],answer:v.article,q:v.de,kind:"article",explain_en:`${v.article} ${v.de}${v.plural&&v.plural!=="-"?", "+v.plural:""} · ${v.en}`}));
+  shuffled(QWORDS.filter(q=>q[2]<=lvl),"q"+n+r()).slice(0,nQ).forEach(([p,a])=>{ const opts=shuffled([a,...shuffled(QW_OPTS.filter(x=>x!==a&&!(a==="Wie"&&x==="Wie viel")),"qo"+p).slice(0,3)],"qs"+p); out.push({type:"gap",prompt:p,options:opts,answer:a,q:p,kind:"question_word",explain_en:a==="Wo"?"wo = where (place) · woher = where from · wohin = where to":a==="Woher"?"woher = where from (origin)":""}); });
+  shuffled(ORDER_BANK.filter(o=>o[2]<=lvl),"w"+n+r()).slice(0,nOrd).forEach(([de,en])=>{ const w=de.split(/\s+/); out.push({type:"word_order",words:shuf2(w,"wo"+de+r()),answer:de,q:de,en,kind:"word_order",explain_en:"The verb is always in position 2 in a statement and first in a yes/no question."}); });
+  return shuffled(out,"dr"+n+r()); }
+
+/* --- Hör-Trainer: numbers, phone numbers, times, days, prices and spelled names (TTS, generated) --- */
+const DAYS_DE=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
+const SURNAMES=["Gruber","Pichler","Wieser","Huber","Steiner","Moser","Hofer","Bauer","Leitner","Weber","Fuchs","Berger","Novak","Karimi","Rahimi","Schuster"];
+const HOURS_DE=["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf","zwölf"];
+function hoerScreens(n, count){ const r=rng("hoer"+n+Date.now()); const out=[]; const N=count||12;
+  const num=()=>{ const max=n<3?20:n<9?100:1000; const x=Math.floor(r()*(max+1)); out.push({type:"hear",kind:"number",h:"Type the number you hear",say:String(x),answer:String(x),q:"number "+x}); };
+  const phone=()=>{ const d=Array.from({length:6},()=>Math.floor(r()*10)).join(""); const pre=pick(["0664","0676","0699","0650"],r);
+    const say=`${pre.split("").join(" ")}, ${d.slice(0,2)}, ${d.slice(2,4)}, ${d.slice(4,6)}`; out.push({type:"hear",kind:"phone",h:"Write the phone number",say,answer:`${pre} ${d}`,q:"phone "+pre+" "+d}); };
+  const name=()=>{ const w=pick(SURNAMES,r); out.push({type:"spell",word:w,kind:"spelled_name"}); };
+  const day=()=>{ const w=pick(DAYS_DE,r); const t=pick([`Der Termin ist am ${w}.`,`Wir treffen uns am ${w}.`,`Am ${w} habe ich Zeit.`,`Der Kurs beginnt am ${w}.`],r); out.push({type:"hear",kind:"day",h:"Which day do you hear?",say:t,answer:w,q:t}); };
+  const time=()=>{ const hr=1+Math.floor(r()*12); const half=n>=10&&r()<0.5; const say=half?`um halb ${HOURS_DE[hr===12?12:hr]}`:`um ${hr} Uhr`; const H=half?(hr-1===0?12:hr-1):hr; const ans=`${H}:${half?"30":"00"}`;
+    out.push({type:"hear",kind:"time",h:"What time? (for example 10:00)",say:pick([`Der Termin ist ${say}.`,`Kommen Sie bitte ${say}.`,`Der Bus fährt ${say}.`],r),answer:ans,q:"time "+ans,explain_en:half?"halb acht = 7:30 (half before eight)":""}); };
+  const price=()=>{ const e=1+Math.floor(r()*20), c=pick([0,20,50,80,90,99],r); const ans=c?`${e},${String(c).padStart(2,"0")}`:`${e}`; out.push({type:"hear",kind:"price",h:"How much? (for example 3,50)",say:c?`${e} Euro ${c}`:`${e} Euro`,answer:ans,q:"price "+ans}); };
+  const plan=[num,num,phone,name,day,time,num,phone,name,day]; if(n>=9) plan.push(price,price); if(n>=4) plan.push(time);
+  shuffled(plan,"hp"+n+r()).slice(0,N).forEach(f=>f()); return out; }
+function hearOk(s, v){ const digits=x=>String(x).replace(/\D/g,"");
+  if(s.kind==="number"||s.kind==="phone"||s.kind==="price"){ const a=digits(s.answer), b=digits(v); if(s.kind==="price"){ return b===a||b===digits(s.answer.replace(",",""))||(!s.answer.includes(",")&&b===a+"00"); } return a===b; }
+  if(s.kind==="time"){ const t=String(v).replace(/uhr/i,"").trim(); const m=t.match(/^(\d{1,2})(?:[:.](\d{2}))?$/); if(!m) return false; const [h,mi]=s.answer.split(":"); return +m[1]===+h&&(m[2]||"00")===mi; }
+  return norm(v)===norm(s.answer); }
+
+/* --- writing tasks for review days (graded by the examiner AI, like Schreiben Teil 2) --- */
+const EMAIL_TASKS=[
+ {email_from:"Lukas",email_de:"Hallo!\nAm Samstag mache ich eine Party in meiner Wohnung. Kommst du auch? Bitte schreib mir bald.\nViele Grüße\nLukas",task_de:"Antworten Sie Lukas. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Lukas.",points_de:["Danke für die Einladung","Wann kommen Sie?","Was bringen Sie mit?"],model_answer_de:"Hallo Lukas,\ndanke für die Einladung! Ich komme gern. Ich komme am Samstag um acht Uhr. Ich bringe einen Kuchen mit. Bis Samstag!\nLiebe Grüße\nRaam",useful_phrases:["Danke für …","Ich komme gern …","Ich bringe … mit."]},
+ {email_from:"Anna",email_de:"Liebe Freunde,\nich habe jetzt eine neue Wohnung in Graz! Sie ist klein, aber schön. Besuch mich bald!\nAnna",task_de:"Antworten Sie Anna. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Anna.",points_de:["Gratulieren Sie","Wann können Sie kommen?","Fragen Sie nach der Adresse"],model_answer_de:"Liebe Anna,\nsuper, gratuliere zur neuen Wohnung! Ich kann am Sonntag kommen. Wie ist deine Adresse? Ich freue mich!\nLiebe Grüße\nRaam",useful_phrases:["Gratuliere!","Ich kann am … kommen.","Wie ist deine Adresse?"]},
+ {email_from:"Thomas",email_de:"Hallo Raam,\ndu lernst jetzt Deutsch, oder? Wie ist dein Kurs? Erzähl mal!\nThomas",task_de:"Antworten Sie Thomas. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Thomas.",points_de:["Wo ist der Kurs?","Wann lernen Sie?","Wie ist der Lehrer / die Lehrerin?"],model_answer_de:"Hallo Thomas,\nja, ich lerne Deutsch! Der Kurs ist in Teheran. Ich lerne jeden Tag drei Stunden. Die Lehrerin ist sehr nett. Deutsch ist schwer, aber schön!\nViele Grüße\nRaam",useful_phrases:["Der Kurs ist in …","Ich lerne jeden Tag …","Die Lehrerin ist …"]},
+ {email_from:"Sarah",email_de:"Hi!\nWas machst du am Wochenende? Ich habe am Samstag Zeit.\nSarah",task_de:"Antworten Sie Sarah. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Sarah.",points_de:["Was machen Sie am Wochenende?","Laden Sie Sarah ins Kino ein","Wann treffen Sie sich?"],model_answer_de:"Hallo Sarah,\nam Samstag lerne ich Deutsch, aber am Abend habe ich Zeit. Gehen wir ins Kino? Wir treffen uns um sieben Uhr am Kino. Bis Samstag!\nLiebe Grüße\nRaam",useful_phrases:["Am Wochenende …","Gehen wir …?","Wir treffen uns um …"]},
+ {email_from:"Peter",email_de:"Hallo!\nAm Freitag habe ich Geburtstag und mache ein Fest. Kommst du?\nPeter",task_de:"Antworten Sie Peter. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Peter.",points_de:["Gratulieren Sie zum Geburtstag","Sie können nicht kommen – warum?","Schlagen Sie einen anderen Tag vor"],model_answer_de:"Lieber Peter,\nalles Gute zum Geburtstag! Leider kann ich am Freitag nicht kommen, ich arbeite bis zehn Uhr. Hast du am Samstag Zeit? Dann trinken wir einen Kaffee.\nLiebe Grüße\nRaam",useful_phrases:["Alles Gute zum Geburtstag!","Leider kann ich nicht …","Hast du am … Zeit?"]},
+ {email_from:"Maria",email_de:"Hallo Raam,\nim Dezember besuche ich Teheran! Was kann ich dort machen?\nMaria",task_de:"Antworten Sie Maria. Schreiben Sie circa 30 Wörter.",task_en:"Reply to Maria.",points_de:["Freuen Sie sich","Was kann Maria in Teheran sehen?","Geben Sie Ihre Telefonnummer"],model_answer_de:"Hallo Maria,\ntoll, ich freue mich! In Teheran kannst du den Basar und die Berge sehen. Das Essen ist sehr gut. Meine Telefonnummer ist 0912 345 6789. Ruf mich an!\nLiebe Grüße\nRaam",useful_phrases:["Ich freue mich!","Du kannst … sehen.","Meine Telefonnummer ist …"]}];
+
+/* --- review, buffer, mock and rest days build themselves from earlier days --- */
+function learnedBefore(n){ const out={vocab:[],phrases:[],ex:[],quiz:[]}; for(let k=1;k<n;k++){ const d=S.days[k]; if(!d||d.synthetic) continue;
+  (d.vocab||[]).forEach(v=>out.vocab.push(v)); (d.phrases||[]).forEach(x=>out.phrases.push(x)); (d.exercises||[]).forEach(e=>out.ex.push(e));
+  (d.review_quiz||[]).forEach(q=>out.quiz.push({type:"mcq",prompt:q.q,options:q.options,answer:q.answer,explain_en:q.explain_en,explain_fa:q.explain_fa})); } return out; }
+async function buildSynthetic(n){ for(let k=1;k<n;k++) await getDay(k); const p=PLAN[n-1], t=p.t.toLowerCase(); const d={synthetic:true, day:n, title:p.t, title_fa:p.fa};
+  if(p.k==="rest"||p.k==="mock") return d;
+  const src=[]; for(let k=1;k<n;k++){ const x=S.days[k]; if(x&&!x.synthetic) src.push(k); }
+  const withH=src.filter(k=>S.days[k].hoeren), withL=src.filter(k=>S.days[k].lesen);
+  if(withH.length&&!/lesen \+ hören|schreiben|sprechen/.test(t)||/hören/.test(t)&&withH.length){ const m=withH[hashStr("h"+n)%withH.length]; d.hoeren=JSON.parse(JSON.stringify(S.days[m].hoeren)); d.hoerenFrom=m; }
+  if(/lesen/.test(t)&&withL.length){ const m=withL[hashStr("l"+n)%withL.length]; d.lesen=JSON.parse(JSON.stringify(S.days[m].lesen)); d.lesenFrom=m; }
+  const dk_=src.flatMap(k=>S.days[k].diktat||[]); if(dk_.length) d.diktat=shuffled(dk_,"dk"+n).slice(0,6);
+  if(/schreiben|bootcamp|buffer|fix/.test(t)||p.k==="review"&&n%3===0){ d.schreiben={teil2:Object.assign({word_target:30},EMAIL_TASKS[n%EMAIL_TASKS.length])}; }
+  return d; }
+function synthNodes(n,d){ const p=PLAN[n-1], t=p.t.toLowerCase(), H=dayHours()/3; const N=[];
+  const add=(step,title,icon,min,desc,kind,extra)=>N.push(Object.assign({step,part:0,parts:1,title,icon,min:Math.max(3,Math.round(min*H)),desc,kind},extra||{}));
+  add("review","Review cards","review",p.k==="rest"?10:20,[NODE_INFO.review[1],NODE_INFO.review[2]],"review");
+  if(p.k==="rest"){ add("blitz","Wörter-Blitz","bolt",5,["One quick round, then rest.","یک دور سریع، بعد استراحت."],"blitz"); return N; }
+  if(p.k==="mock"){ const m=MOCKS.find(x=>x.day===n)||MOCKS.find(x=>x.id==="ta"); add("mock",m.short,"exam",120,[m.how,""],"mock",{mock:m.id}); add("tutor","Tutor: oral exam","mic",25,["A full oral exam simulation with score.","شبیه‌سازی کامل آزمون شفاهی با نمره."],"tutor",{mode:"exam"}); return N; }
+  const sp=/sprechen/.test(t), hoer=/hören/.test(t), gram=/grammar/.test(t), vocab=/vocabulary|sweep/.test(t);
+  if(/mini-test/.test(t)) add("minitest","Mini-test","trophy",20,["20 exam-style questions on everything so far. No hints.","۲۰ سؤال به سبک آزمون از همه مطالب. بدون راهنما."],"lesson");
+  add("mix","Mixed review","star",15,["Questions from all earlier days, mixed.","سؤال‌های ترکیبی از همه روزهای قبل."],"lesson");
+  add("words","Words recall","book",vocab?30:15,["Write and recognise earlier words from memory.","لغات قبلی را از حفظ بنویس و تشخیص بده."],"lesson");
+  add("drill","Grammar gym","bulb",gram?30:15,[NODE_INFO.drill[1],NODE_INFO.drill[2]],"lesson");
+  add("hoertrainer","Hör-Trainer","headph",hoer?20:10,[NODE_INFO.hoertrainer[1],NODE_INFO.hoertrainer[2]],"lesson");
+  if(d.hoeren) add("hoeren",`Hören (from Day ${d.hoerenFrom})`,"headph",20,["The listening tasks of an earlier day, again. Use the slow button if you need it.","تمرین شنیدن یک روز قبل، دوباره."],"task");
+  if(d.diktat) add("diktat","Dictation","pencil",10,[NODE_INFO.diktat[1],NODE_INFO.diktat[2]],"lesson");
+  if(d.lesen) add("lesen",`Lesen (from Day ${d.lesenFrom})`,"bookopen",15,[NODE_INFO.lesen[1],NODE_INFO.lesen[2]],"task");
+  if(d.schreiben) add("schreiben","Email practice","mail",20,["Write a 30-word email; the examiner AI grades it.","یک ایمیل ۳۰ کلمه‌ای بنویس؛ هوش مصنوعی نمره می‌دهد."],"task");
+  if((S.st.mistakes||[]).some(m=>m.q&&m.right)) add("repair","Repair lesson","pencil",15,["Your recent mistakes, asked again.","اشتباهات اخیرت، دوباره."],"lesson");
+  add("blitz","Wörter-Blitz","bolt",5,["60 seconds, as many words as you can.","۶۰ ثانیه، هر چند کلمه که می‌توانی."],"blitz");
+  add("tutor",sp?"Tutor: oral exam":"Tutor session","mic",sp?30:25,[NODE_INFO.tutor[1],NODE_INFO.tutor[2]],"tutor",sp?{mode:"exam"}:{});
+  return N; }
+function wordsRecallScreens(n, count){ const L=learnedBefore(n); const V=L.vocab, P=L.phrases; if(V.length<4) return []; const seed="wr"+n+Date.now(); const full=V.map(vfull); const out=[];
+  shuffled(V,seed+"w").slice(0,5).forEach(v=>out.push(writeScreen(v)));
+  shuffled(V,seed+"r").slice(0,4).forEach((v,j)=>out.push({type:"reverse",en:v.en,fa:v.fa,options:opts(vfull(v),full,4,seed+"R"+j),answer:vfull(v),q:v.en,sayOpts:true}));
+  shuffled(V.filter(v=>["der","die","das"].includes(v.article)),seed+"a").slice(0,3).forEach(v=>out.push({type:"article",prompt:v.de,options:["der","die","das"],answer:v.article,q:v.de,kind:"article"}));
+  shuffled(V,seed+"l").slice(0,2).forEach((v,j)=>out.push({type:"listen",prompt:"What do you hear?",say:vfull(v),options:opts(vfull(v),full,4,seed+"L"+j),answer:vfull(v),noLog:true}));
+  if(P.length>=4) shuffled(P,seed+"p").slice(0,3).forEach((x,j)=>out.push({type:"mcq",h:"What do you say?",prompt:x.en,options:opts(x.de,P.map(y=>y.de),3,seed+"P"+j),answer:x.de,q:x.en}));
+  return shuffled(out,seed).slice(0,count||17); }
+function mixScreens(n, count){ const L=learnedBefore(n); const items=[...L.ex,...L.quiz]; const seed="mx"+n+Date.now(); return shuffled(items,seed).slice(0,count||15).map((it,i)=>exScreen(it,seed+i)); }
+function recentMistakes(days){ const since=Date.now()-days*DAY_MS; return (S.st.mistakes||[]).filter(m=>m.q&&m.right&&(m.at||0)>=since); }
+
+function synthIntro(n,d){ const p=PLAN[n-1]; const learned=[]; for(let k=1;k<n;k++){ const x=S.days[k]; if(x&&!x.synthetic) learned.push(k); }
+  const txt = p.k==="rest" ? ex("Rest day. One short card review and a Blitz round keep the words warm. Nothing else today.","روز استراحت. یک مرور کوتاه کارت‌ها و یک دور Blitz کافی است.")
+    : p.k==="mock" ? ex("Mock exam day: do the whole exam with the timers, in one sitting, like the real thing. Then let the tutor test your speaking.","روز آزمون آزمایشی: کل آزمون را با زمان‌سنج و یک‌جا انجام بده، مثل آزمون واقعی. بعد مربی صحبت کردنت را می‌سنجد.")
+    : ex(`This day builds itself from what you've already studied${learned.length?` (Days ${learned[0]}–${learned[learned.length-1]})`:""} and from your own mistakes. Every lesson is new each time you open it.`,`این روز از درس‌هایی که خوانده‌ای و از اشتباهات خودت ساخته می‌شود. هر بار که درسی را باز کنی، سؤال‌ها تازه‌اند.`);
+  return `<section class="card row" style="flex-wrap:nowrap;gap:12px"><div style="color:var(--blue);flex:none">${ICONS[p.k==="mock"?"exam":p.k==="rest"?"cup":"review"].replace('<svg','<svg width="30" height="30"')}</div><div class="small">${txt}</div></section>`; }
+/* --- comeback mode and replanning --- */
+function studyGap(){ const set=studyDates(); const t=todayMid(); for(let i=0;i<200;i++){ const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i); if(set.has(sdKey(d))) return i; } return null; }
+function detectComeback(){ const g=studyGap(); const today=dk(new Date()); if(g!=null&&g>=3&&!(S.st.comeback&&S.st.comeback.date===today)){ S.st.comeback={date:today, gap:g}; save(); } }
+function rustScreens(n){ const out=[]; const L=learnedBefore(n); if(!L.vocab.length) return [];
+  out.push(...wordsRecallScreens(n,7)); out.push(...drillScreens(Math.max(1,n-1),5)); out.push(...hoerScreens(n,3));
+  shuffled(L.quiz,"rq"+n).slice(0,3).forEach((q,i)=>out.push(exScreen(q,"rq"+n+i))); return out; }
+function comebackCard(n){ const C=S.st.comeback; const today=dk(new Date()); if(!C||C.date!==today||C.done||C.skip) return "";
+  const c=srsCounts();
+  return `<section class="card stack comeback"><div class="edi-row">${edi(76,"happy")}<div class="speech"><b>Willkommen zurück!</b><span>${ex(`You were away ${C.gap} days. That's okay: nothing is lost, and your plan has moved with you. Start with a 10-minute rust check, then continue with today's day.`,`${C.gap} روز نبودی. اشکالی ندارد: چیزی از دست نرفته و برنامه با تو جابه‌جا شده. با یک بازبینی ۱۰ دقیقه‌ای شروع کن، بعد درس امروز را ادامه بده.`)}</span></div></div>
+    <div class="stack" style="gap:6px"><div class="row" style="flex-wrap:nowrap"><span class="chip acc">1</span><span class="grow"><b>Rust check</b> · 15 quick questions from earlier days</span></div>
+      <div class="row" style="flex-wrap:nowrap"><span class="chip acc">2</span><span class="grow"><b>Review cards</b> · ${c.due} due after your break</span></div>
+      <div class="row" style="flex-wrap:nowrap"><span class="chip acc">3</span><span class="grow"><b>Day ${n}</b> · today's path below</span></div></div>
+    <div class="row"><button class="btn primary" data-act="rust-start" data-n="${n}">Start the rust check</button><button class="btn ghost" data-act="rust-skip">Skip</button></div></section>`; }
+function firstUnfinished(upTo){ for(let k=1;k<upTo;k++){ const d=S.days[k]; if(!d) return null; if(!dayAllDone(k)) return k; } return null; }
+function replanCard(n){ if(n!==currentDay()) return ""; const fu=firstUnfinished(n); if(!fu||n-fu<2||S.st.replanDismiss===dk(new Date())) return "";
+  return `<div class="banner info"><div class="grow"><b>${ex(`Day ${fu} isn't finished yet.`,`روز ${fu} هنوز تمام نشده.`)}</b><div class="small">${ex(`Move your plan so today is Day ${fu}? Buffer days at the end are used up first, so the exam date doesn't change.`,`برنامه را جابه‌جا کنم تا امروز روز ${fu} باشد؟ اول روزهای جبرانی آخر برنامه استفاده می‌شوند.`)}</div>
+    <div class="row" style="margin-top:8px"><button class="btn primary sm" data-act="replan" data-n="${fu}">Move my plan</button><button class="btn sm" data-act="replan-no">Not now</button></div></div></div>`; }
+async function migratePlan(){ if((S.st.planV||1)>=2) return; S.st.exam=S.st.exam||DEFAULT_EXAM; S.st.dayHours=S.st.dayHours||3;
+  for(let n=1;n<=8;n++) await getDay(n);
+  for(let n=1;n<=PLAN.length;n++){ const d=S.days[n]; if(!d||d.synthetic) continue; const old=STEPS.filter(s=>!["drill","hoertrainer","tutor"].includes(s.id)&&s.has(d));
+    if(old.length&&old.every(s=>S.st.done[n+":"+s.id])){ const ts=S.st.done[n+":quiz"]||S.st.done[n+":"+old[old.length-1].id]; ["drill","hoertrainer","tutor"].forEach(k=>{ if(!S.st.done[n+":"+k]) S.st.done[n+":"+k]=ts; }); } }
+  let fu=1; while(fu<PLAN.length&&S.days[fu]&&dayAllDone(fu)) fu++;
+  if(fu>1&&dateOf(fu)<todayMid()) S.st.anchor={n:fu, date:dk(new Date())};
+  S.st.planV=2; schedule._k=null; S.dayN=currentDay(); save(); }
 
 /* ---------- boot ---------- */
 (async function boot(){
@@ -2493,7 +2774,7 @@ document.addEventListener("change", e=>{
   await Promise.all([loadIndex(), initHealth(), loadExtras()]);
   await initAuth();
   if(S.st.freezes==null) S.st.freezes=1;
-  applyFreezes(); updateLeague();
+  applyFreezes(); updateLeague(); detectComeback(); await migratePlan();
   for(const n of S.published) if(n<=currentDay()+1) getDay(n);
   await getDay(S.dayN);
   render();

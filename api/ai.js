@@ -11,7 +11,7 @@ Guiding points: ${(p.points || []).join("; ") || "(the three questions in the em
 Learner's reply:
 """${p.text}"""
 Official criteria: Kommunikative Angemessenheit/Textsorte (0–1), Textaufbau (0–1: greeting, logical order, sign-off), Lexik (0–4), Formale Richtigkeit (0–4: grammar, word order, spelling, capital letters). Then deductions: 20–24 words −1, 15–19 words −2, under 15 words = not assessed (score 0); one guiding point answered too briefly or missing −1, only one point answered −2, off topic = 0. Score cannot go below 0. Maximum 10; at least 4 is required, otherwise the whole Schreiben module scores 0.
-Be fair to an absolute beginner (day ${p.day} of 34) but apply the rules exactly. Count words yourself.
+Be fair to an absolute beginner (day ${p.day} of ${p.plan || 52}) but apply the rules exactly. Count words yourself.
 Reply with JSON only:
 {"score": number 0-10 after deductions, "words": number, "criteria":[{"name":"Task & register","score":"x/1","comment_en":""},{"name":"Text structure","score":"x/1","comment_en":""},{"name":"Vocabulary","score":"x/4","comment_en":""},{"name":"Accuracy","score":"x/4","comment_en":""}], "deductions":["e.g. 22 words −1"], "errors":[{"wrong":"","right":"","why_en":"","why_fa":"short Persian explanation"}], "corrected_de":"the learner's text, minimally corrected", "tip_en":"one concrete tip", "tip_fa":"the same tip in Persian"}`;
 }
@@ -24,7 +24,7 @@ ${JSON.stringify(p.lesson).slice(0, 200000)}`;
 }
 
 function summarizePrompt(p) {
-  return `You are an ÖSD A1 speaking coach. Below is the transcript of a voice practice session (Day ${p.day} of 34) between the tutor and Raam, an absolute beginner. Transcription of the learner may contain recognition errors; judge kindly.
+  return `You are an ÖSD A1 speaking coach. Below is the transcript of a voice practice session (Day ${p.day} of ${p.plan || 52}) between the tutor and Raam, an absolute beginner. Transcription of the learner may contain recognition errors; judge kindly.
 TRANSCRIPT:
 ${String(p.transcript).slice(0, 60000)}
 SESSION MODE: ${p.mode || "coach"}. WEAK POINTS HE CAME IN WITH: ${(p.weak || []).join("; ") || "none listed"}.
