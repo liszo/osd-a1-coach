@@ -2770,19 +2770,25 @@ function synthIntro(n,d){ const p=PLAN[n-1]; const learned=[]; for(let k=1;k<n;k
   return `<section class="card row" style="flex-wrap:nowrap;gap:12px"><div style="color:var(--blue);flex:none">${ICONS[p.k==="mock"?"exam":p.k==="rest"?"cup":"review"].replace('<svg','<svg width="30" height="30"')}</div><div class="small">${txt}</div></section>`; }
 /* --- comeback mode and replanning --- */
 function studyGap(){ const set=studyDates(); const t=todayMid(); for(let i=0;i<200;i++){ const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i); if(set.has(sdKey(d))) return i; } return null; }
-function detectComeback(){ const g=studyGap(); const today=dk(new Date()); if(g!=null&&g>=3&&!(S.st.comeback&&S.st.comeback.date===today)){ S.st.comeback={date:today, gap:g}; save(); } }
+// After 3+ days away, the first day back becomes the restart day: the plan moves so today is the first unfinished day.
+async function detectComeback(){ const g=studyGap(); const today=dk(new Date()); if(g==null||g<3||(S.st.comeback&&S.st.comeback.date===today)) return;
+  S.st.comeback={date:today, gap:g}; const cur=currentDay();
+  for(let k=1;k<cur;k++) await getDay(k);
+  const fu=firstUnfinished(cur); if(fu&&fu<cur&&untouched(fu)){ S.st.anchor={n:fu, date:today}; S.st.comeback.resumed=fu; schedule._k=null; S.dayN=currentDay(); }
+  save(); }
 function rustScreens(n){ const out=[]; const L=learnedBefore(n); if(!L.vocab.length) return [];
   out.push(...wordsRecallScreens(n,7)); out.push(...drillScreens(Math.max(1,n-1),5)); out.push(...hoerScreens(n,3));
   shuffled(L.quiz,"rq"+n).slice(0,3).forEach((q,i)=>out.push(exScreen(q,"rq"+n+i))); return out; }
 function comebackCard(n){ const C=S.st.comeback; const today=dk(new Date()); if(!C||C.date!==today||C.done||C.skip) return "";
   const c=srsCounts();
-  return `<section class="card stack comeback"><div class="edi-row">${edi(76,"happy")}<div class="speech"><b>Willkommen zurück!</b><span>${ex(`You were away ${C.gap} days. That's okay: nothing is lost, and your plan has moved with you. Start with a 10-minute rust check, then continue with today's day.`,`${C.gap} روز نبودی. اشکالی ندارد: چیزی از دست نرفته و برنامه با تو جابه‌جا شده. با یک بازبینی ۱۰ دقیقه‌ای شروع کن، بعد درس امروز را ادامه بده.`)}</span></div></div>
+  return `<section class="card stack comeback"><div class="edi-row">${edi(76,"happy")}<div class="speech"><b>Willkommen zurück!</b><span>${ex(`You were away ${C.gap} days. That's okay: nothing is lost. Today is your restart day${C.resumed?`: the plan now continues with Day ${C.resumed}, and the exam date stays the same`:""}. Start with a 10-minute rust check, then continue with today's day.`,`${C.gap} روز نبودی. اشکالی ندارد: چیزی از دست نرفته. امروز روز شروع دوباره است${C.resumed?`: برنامه از روز ${C.resumed} ادامه پیدا می‌کند و تاریخ آزمون عوض نمی‌شود`:""}. با یک بازبینی ۱۰ دقیقه‌ای شروع کن، بعد درس امروز را ادامه بده.`)}</span></div></div>
     <div class="stack" style="gap:6px"><div class="row" style="flex-wrap:nowrap"><span class="chip acc">1</span><span class="grow"><b>Rust check</b> · 15 quick questions from earlier days</span></div>
       <div class="row" style="flex-wrap:nowrap"><span class="chip acc">2</span><span class="grow"><b>Review cards</b> · ${c.due} due after your break</span></div>
       <div class="row" style="flex-wrap:nowrap"><span class="chip acc">3</span><span class="grow"><b>Day ${n}</b> · today's path below</span></div></div>
     <div class="row"><button class="btn primary" data-act="rust-start" data-n="${n}">Start the rust check</button><button class="btn ghost" data-act="rust-skip">Skip</button></div></section>`; }
 function firstUnfinished(upTo){ for(let k=1;k<upTo;k++){ const d=S.days[k]; if(!d) return null; if(!dayAllDone(k)) return k; } return null; }
-function replanCard(n){ if(n!==currentDay()) return ""; const fu=firstUnfinished(n); if(!fu||n-fu<2||S.st.replanDismiss===dk(new Date())) return "";
+function untouched(k){ return !Object.keys(S.st.done).some(x=>x.startsWith(k+":")&&!/:(brk|chk|recap)/.test(x)); }
+function replanCard(n){ if(n!==currentDay()) return ""; const fu=firstUnfinished(n); if(!fu||S.st.replanDismiss===dk(new Date())) return ""; if(n-fu<2&&!untouched(fu)) return "";
   return `<div class="banner info"><div class="grow"><b>${ex(`Day ${fu} isn't finished yet.`,`روز ${fu} هنوز تمام نشده.`)}</b><div class="small">${ex(`Move your plan so today is Day ${fu}? Buffer days at the end are used up first, so the exam date doesn't change.`,`برنامه را جابه‌جا کنم تا امروز روز ${fu} باشد؟ اول روزهای جبرانی آخر برنامه استفاده می‌شوند.`)}</div>
     <div class="row" style="margin-top:8px"><button class="btn primary sm" data-act="replan" data-n="${fu}">Move my plan</button><button class="btn sm" data-act="replan-no">Not now</button></div></div></div>`; }
 async function migratePlan(){ if((S.st.planV||1)>=2) return; S.st.exam=S.st.exam||DEFAULT_EXAM; S.st.dayHours=S.st.dayHours||3;
@@ -2979,7 +2985,7 @@ function speakKeywords(script){ const words=[]; (script||[]).forEach(l=>String(l
   await Promise.all([loadIndex(), initHealth(), loadExtras()]);
   await initAuth();
   if(S.st.freezes==null) S.st.freezes=1;
-  applyFreezes(); updateLeague(); detectComeback(); await migratePlan();
+  applyFreezes(); updateLeague(); await migratePlan(); await detectComeback();
   for(const n of S.published) if(n<=currentDay()+1) getDay(n);
   await getDay(S.dayN);
   render();
